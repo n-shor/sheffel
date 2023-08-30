@@ -1,17 +1,17 @@
 %{
-#include "parser.tab.hpp"
-extern int yylval;
+#include "common.h"
+#include "parser.tab.h"
 %}
 
 %%
 
-[0-9]+ { yylval = atoi(yytext); return NUMBER; }
-[ \t]  { /* ignore whitespace */ }
-"+"    { return ADD; }
-"-"    { return SUB; }
-"*"    { return MUL; }
-\n     { return EOL; }
-.      { /* ignore everything else */ }
+[0-9]+  { yylval.val = atoi(yytext); return NUMBER; }
+[ \t]   { /* ignore whitespace */ }
+"+"     { return '+'; }
+"-"     { return '-'; }
+"*"     { return '*'; }
+\n      { /* ignore new lines */ }
+.       { /* ignore everything else */ }
 
 %%
 
