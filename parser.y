@@ -1,9 +1,10 @@
 %{
-#include "common.h"
+#include "common.hpp"
 extern int yylex();
 %}
 
-%union {
+%union
+{
     int val;
     Node* node;
 }
@@ -25,27 +26,36 @@ expr:
 
 %%
 
-int main() {
-    while (true) {
+int main() 
+{
+    while (true)
+    {
         std::cout << "Enter an expression or type 'exit' to quit: ";
-        if (yyparse() == 0 && root != nullptr) {
+
+        if (yyparse() == 0 && root != nullptr)
+        {
             std::cout << "Result: " << evaluate(root) << std::endl;
             std::cout << "AST: " << std::endl;
             printAST(root);
         }
+
         std::string line;
-        std::getline(std::cin, line);
+        std::cin >> line;
+
         if (line == "exit") break;
     }
     return 0;
 }
 
-void yyerror(const char *s) {
+void yyerror(const char *s)
+{
   std::cerr << "Error: " << s << std::endl;
 }
 
-int evaluate(Node* node) {
-    if (node->left == nullptr && node->right == nullptr) {
+int evaluate(Node* node)
+{
+    if (node->left == nullptr && node->right == nullptr)
+    {
         return std::stoi(node->value);
     }
     int leftValue = evaluate(node->left);
@@ -56,11 +66,15 @@ int evaluate(Node* node) {
     return 0;
 }
 
-void printAST(Node* node, int depth) {
+void printAST(Node* node, int depth)
+{
     if (node == nullptr) return;
-    for (int i = 0; i < depth; ++i) {
+
+    for (int i = 0; i < depth; ++i)
+    {
         std::cout << "  ";
     }
+
     std::cout << node->value << "\n";
     printAST(node->left, depth + 1);
     printAST(node->right, depth + 1);
