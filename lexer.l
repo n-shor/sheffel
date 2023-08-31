@@ -1,6 +1,6 @@
 %{
-#include "common.h"
-#include "parser.tab.h"
+#include "common.hpp"
+#include "parser.hpp"
 %}
 
 %%
