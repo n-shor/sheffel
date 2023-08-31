@@ -1,5 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -10,10 +9,9 @@ struct Node {
     Node* right = nullptr;
 };
 
-extern Node* root;
+static Node* root = nullptr;
 
 int evaluate(Node* node);
 void printAST(Node* node, int depth = 0);
 void yyerror(const char *s);
 
-#endif // COMMON_H
