@@ -9,7 +9,7 @@ struct Node {
     Node* right = nullptr;
 };
 
-static Node* root;
+static Node* root = nullptr;
 
 int evaluate(Node* node);
 void printAST(Node* node, int depth = 0);

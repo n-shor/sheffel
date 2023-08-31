@@ -10,40 +10,42 @@ extern int yylex();
 }
 
 %token <val> NUMBER
+%token ';'
 %left '+' '-'
 %left '*'
 %type <node> expr
+%type <node> command
 
 %%
 
+program:
+    /* empty */
+|   program command
+;
+
+command:
+    expr ';'  { 
+        std::cout << "Result: " << evaluate($1) << std::endl; 
+        std::cout << "AST: " << std::endl; 
+        printAST($1);
+        delete $1;
+    }
+;
+
 expr:
-    NUMBER          { $$ = new Node{std::to_string($1)}; root = $$; }
-|   expr '+' expr   { $$ = new Node{"+", $1, $3}; root = $$; }
-|   expr '-' expr   { $$ = new Node{"-", $1, $3}; root = $$; }
-|   expr '*' expr   { $$ = new Node{"*", $1, $3}; root = $$; }
-|   '(' expr ')'    { $$ = $2; root = $$; }
+    NUMBER          { $$ = new Node{std::to_string($1)}; }
+|   expr '+' expr   { $$ = new Node{"+", $1, $3}; }
+|   expr '-' expr   { $$ = new Node{"-", $1, $3}; }
+|   expr '*' expr   { $$ = new Node{"*", $1, $3}; }
+|   '(' expr ')'    { $$ = $2; }
 ;
 
 %%
 
 int main() 
 {
-    while (true)
-    {
-        std::cout << "Enter an expression or type 'exit' to quit: ";
-
-        if (yyparse() == 0 && root != nullptr)
-        {
-            std::cout << "Result: " << evaluate(root) << std::endl;
-            std::cout << "AST: " << std::endl;
-            printAST(root);
-        }
-
-        std::string line;
-        std::cin >> line;
-
-        if (line == "exit") break;
-    }
+    std::cout << "Enter expressions followed by a semicolon or type 'exit' to quit.\n";
+    yyparse();
     return 0;
 }
 

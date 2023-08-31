@@ -3,6 +3,7 @@
 #include "parser.hpp"
 %}
 
+
 %%
 
 [0-9]+  { yylval.val = atoi(yytext); return NUMBER; }
@@ -10,7 +11,7 @@
 "+"     { return '+'; }
 "-"     { return '-'; }
 "*"     { return '*'; }
-\n      { /* ignore new lines */ }
+";"     { return ';'; }
 .       { /* ignore everything else */ }
 
 %%
