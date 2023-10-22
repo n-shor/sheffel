@@ -10,7 +10,7 @@ extern int yylex();
 }
 
 %token <val> NUMBER
-%token ';'
+%token '\n'
 %left '+' '-'
 %left '*'
 %type <node> expr
@@ -44,7 +44,7 @@ expr:
 
 int main() 
 {
-    std::cout << "Enter expressions followed by a semicolon or type 'exit' to quit.\n";
+    std::cout << "Enter expressions followed by a newline or type 'exit' to quit.\n";
     yyparse();
     return 0;
 }
