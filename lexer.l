@@ -1,8 +1,8 @@
 %{
 #include "common.hpp"
 #include "parser.hpp"
+extern FILE *yyin;
 %}
-
 
 %%
 
@@ -11,7 +11,7 @@
 "+"     { return '+'; }
 "-"     { return '-'; }
 "*"     { return '*'; }
-"\n"    { return '\n'; }
+";"     { return ';'; }
 .       { /* ignore everything else */ }
 
 %%
