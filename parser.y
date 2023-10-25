@@ -1,6 +1,7 @@
 %{
 #include "common.hpp"
 extern int yylex();
+extern FILE *yyin;
 %}
 
 %union
@@ -42,10 +43,23 @@ expr:
 
 %%
 
-int main() 
+int main(int argc, char *argv[]) 
 {
-    std::cout << "Enter expressions followed by a semicolon or type 'exit' to quit.\n";
+    
+    if(argc < 2) {
+        std::cout << "Please provide a file path as an argument.\n";
+        return 1;
+    }
+    
+    yyin = fopen(argv[1], "r");
+    if (!yyin) {
+        std::cout << "Could not open " << argv[1] << " for reading.\n";
+        return 1;
+    }
+
     yyparse();
+
+    fclose(yyin);
     return 0;
 }
 

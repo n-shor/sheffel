@@ -1,8 +1,8 @@
 %{
 #include "common.hpp"
 #include "parser.hpp"
+extern FILE *yyin;
 %}
-
 
 %%
 
