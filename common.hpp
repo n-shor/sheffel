@@ -12,6 +12,7 @@ struct Node {
 static Node* root = nullptr;
 
 int evaluate(Node* node);
+void cleanAST(Node* node);
 void printAST(Node* node, int depth = 0);
 void yyerror(const char *s);
 

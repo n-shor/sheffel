@@ -26,10 +26,9 @@ program:
 
 command:
     expr ';'  { 
-        std::cout << "Result: " << evaluate($1) << std::endl; 
         std::cout << "AST: " << std::endl; 
         printAST($1);
-        delete $1;
+        cleanAST($1);
     }
 ;
 
@@ -68,18 +67,14 @@ void yyerror(const char *s)
   std::cerr << "Error: " << s << std::endl;
 }
 
-int evaluate(Node* node)
+void cleanAST(Node* node)
 {
-    if (node->left == nullptr && node->right == nullptr)
-    {
-        return std::stoi(node->value);
-    }
-    int leftValue = evaluate(node->left);
-    int rightValue = evaluate(node->right);
-    if (node->value == "+") return leftValue + rightValue;
-    if (node->value == "-") return leftValue - rightValue;
-    if (node->value == "*") return leftValue * rightValue;
-    return 0;
+    if (node == nullptr) return;
+
+    if (node->left == nullptr && node->right == nullptr) delete node;
+
+    cleanAST(node->left);
+    cleanAST(node->right);
 }
 
 void printAST(Node* node, int depth)
