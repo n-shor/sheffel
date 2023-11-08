@@ -12,3 +12,5 @@ flex -o "%build_dir%/lex.yy.cc" "%source_dir%/lexer.l"
 g++ "%build_dir%/parser.cpp" "%build_dir%/lex.yy.cc" -o "%build_dir%/parser" -static-libgcc -static-libstdc++ -static
 
 start "" %build_dir%/parser.exe %input_file%
+
+python "%source_dir%/ir_generator.py"
