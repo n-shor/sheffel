@@ -44,14 +44,16 @@ expr:
 
 int main(int argc, char *argv[]) 
 {
-    
-    if(argc < 2) {
+    if(argc < 2)
+    {
         std::cout << "Please provide a file path as an argument.\n";
         return 1;
     }
     
     yyin = fopen(argv[1], "r");
-    if (!yyin) {
+
+    if (!yyin)
+    {
         std::cout << "Could not open " << argv[1] << " for reading.\n";
         return 1;
     }
@@ -59,34 +61,29 @@ int main(int argc, char *argv[])
     yyparse();
 
     fclose(yyin);
-    return 0;
 }
 
 void yyerror(const char *s)
 {
-  std::cerr << "Error: " << s << std::endl;
+  std::cerr << "Error: " << s << "\n";
 }
 
 void cleanAST(Node* node)
 {
     if (node == nullptr) return;
 
-    if (node->left == nullptr && node->right == nullptr) delete node;
-
     cleanAST(node->left);
     cleanAST(node->right);
+
+    delete node;
 }
 
 void printAST(Node* node, int depth)
 {
     if (node == nullptr) return;
 
-    for (int i = 0; i < depth; ++i)
-    {
-        std::cout << "  ";
-    }
+    std::cout << std::string(2 * depth, ' ') << node->value << "\n";
 
-    std::cout << node->value << "\n";
     printAST(node->left, depth + 1);
     printAST(node->right, depth + 1);
 }
