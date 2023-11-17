@@ -11,7 +11,7 @@ extern FILE *yyin;
 }
 
 %token <val> NUMBER
-%token ';'
+%token '\n'
 %left '+' '-'
 %left '*'
 %type <node> expr
@@ -25,18 +25,18 @@ program:
 ;
 
 command:
-    expr ';'  { 
-        std::cout << "AST: " << std::endl; 
-        printAST($1);
-        cleanAST($1);
+    expr '\n'  { 
+        std::cout << "AST: " << std::endl;
+        std::cout << Node::json($1) << std::endl;
+        Node::clean($1);
     }
 ;
 
 expr:
     NUMBER          { $$ = new Node{std::to_string($1)}; }
-|   expr '+' expr   { $$ = new Node{"+", $1, $3}; }
-|   expr '-' expr   { $$ = new Node{"-", $1, $3}; }
-|   expr '*' expr   { $$ = new Node{"*", $1, $3}; }
+|   expr '+' expr   { $$ = new Node{"+", {$1, $3}}; }
+|   expr '-' expr   { $$ = new Node{"-", {$1, $3}}; }
+|   expr '*' expr   { $$ = new Node{"*", {$1, $3}}; }
 |   '(' expr ')'    { $$ = $2; }
 ;
 
@@ -44,14 +44,16 @@ expr:
 
 int main(int argc, char *argv[]) 
 {
-    
-    if(argc < 2) {
+    if(argc < 2)
+    {
         std::cout << "Please provide a file path as an argument.\n";
         return 1;
     }
-    
+
     yyin = fopen(argv[1], "r");
-    if (!yyin) {
+
+    if (!yyin)
+    {
         std::cout << "Could not open " << argv[1] << " for reading.\n";
         return 1;
     }
@@ -59,34 +61,35 @@ int main(int argc, char *argv[])
     yyparse();
 
     fclose(yyin);
-    return 0;
+
+    getchar();
 }
 
 void yyerror(const char *s)
 {
-  std::cerr << "Error: " << s << std::endl;
+  std::cerr << "Error: " << s << "\n";
 }
 
-void cleanAST(Node* node)
+void Node::clean(Node* node)
 {
-    if (node == nullptr) return;
+    for (Node* child : node->children)
+        clean(child);
 
-    if (node->left == nullptr && node->right == nullptr) delete node;
-
-    cleanAST(node->left);
-    cleanAST(node->right);
+    delete node;
 }
 
-void printAST(Node* node, int depth)
+std::string Node::json(Node* node)
 {
-    if (node == nullptr) return;
+    if (node->children.size() == 0) return node->value;
 
-    for (int i = 0; i < depth; ++i)
-    {
-        std::cout << "  ";
-    }
+    std::ostringstream oss;
 
-    std::cout << node->value << "\n";
-    printAST(node->left, depth + 1);
-    printAST(node->right, depth + 1);
+    oss << "[" << node->value;
+
+    for (Node* child : node->children)
+        oss << ", " << json(child);
+
+    oss << "]";
+
+    return std::move(oss).str();
 }
