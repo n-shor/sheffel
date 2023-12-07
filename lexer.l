@@ -11,7 +11,7 @@ extern FILE *yyin;
 "+"     { return '+'; }
 "-"     { return '-'; }
 "*"     { return '*'; }
-"\n"     { return '\n'; }
+"\n"    { return '\n'; }
 .       { /* ignore everything else */ }
 
 %%

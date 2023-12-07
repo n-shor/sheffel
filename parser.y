@@ -24,16 +24,16 @@ program:
 |   program command
 ;
 
+
 command:
-    expr '\n'  { 
-        std::cout << "AST: " << std::endl;
-        std::cout << Node::json($1) << std::endl;
-        Node::clean($1);
+    expr '\n' {
+        
     }
 ;
 
 expr:
-    NUMBER          { $$ = new Node{std::to_string($1)}; }
+    expr '\n' expr  { $$ = new Node{"\n", {$1, $3}}; }
+|   NUMBER          { $$ = new Node{std::to_string($1)}; }
 |   expr '+' expr   { $$ = new Node{"+", {$1, $3}}; }
 |   expr '-' expr   { $$ = new Node{"-", {$1, $3}}; }
 |   expr '*' expr   { $$ = new Node{"*", {$1, $3}}; }
@@ -44,17 +44,28 @@ expr:
 
 int main(int argc, char *argv[]) 
 {
-    if(argc < 2)
+    switch (argc)
     {
-        std::cout << "Please provide a file path as an argument.\n";
-        return 1;
+        case 1:
+            std::cout << "Missing input file path.\n";
+            return 1;
+
+        case 2:
+            std::cout << "Missing output file path.\n";
+            return 1;
+
+        case 3:
+            break; // good
+
+        default:
+            std::cout << "Too many arguments.\n";
     }
 
     yyin = fopen(argv[1], "r");
 
     if (!yyin)
     {
-        std::cout << "Could not open " << argv[1] << " for reading.\n";
+        std::cout << "Could not open input file " << argv[1] << " for reading.\n";
         return 1;
     }
 
@@ -62,6 +73,11 @@ int main(int argc, char *argv[])
 
     fclose(yyin);
 
+    
+
+    std::cout << Node::json(root) << std::endl;
+    Node::clean(root);
+    
     getchar();
 }
 
