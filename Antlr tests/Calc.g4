@@ -1,16 +1,10 @@
 grammar Calc;
 
 // Parser rules
-expr   : term ((PLUS | MINUS) term)* ;
-term   : factor ((MUL | DIV) factor)* ;
-factor : INT | LPAREN expr RPAREN ;
+expr   : term (('+' | '-') term)* ;
+term   : factor (('*' | '/') factor)* ;
+factor : NUMBER | '(' expr ')' | ('-' | '+') factor ;
 
 // Lexer rules
-WS      : [ \t\r\n]+ -> skip ;
-INT     : [0-9]+ ;
-PLUS    : '+' ;
-MINUS   : '-' ;
-MUL     : '*' ;
-DIV     : '/' ;
-LPAREN  : '(' ;
-RPAREN  : ')' ;
+NUMBER : '-'? [0-9]+ ('.' [0-9]+)? ;
+WS     : [ \t\r\n]+ -> skip ;
