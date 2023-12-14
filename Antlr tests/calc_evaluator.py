@@ -7,10 +7,17 @@ class CalcEvaluator(CalcListener):
     def __init__(self):
         self.stack = []
 
-    def exitExpr(self, ctx:CalcParser.ExprContext):
+    def exitInt(self, ctx:CalcParser.IntContext):
+        self.stack.append(self.stack.pop())
+
+        
+    def exitFloat(self, ctx:CalcParser.FloatContext):
+        self.stack.append(self.stack.pop())
+
+    def exitAddSub(self, ctx:CalcParser.AddSubContext):
         # Handle expressions with '+' and '-' operators
         for child in ctx.getChildren():
-            if isinstance(child, CalcParser.TermContext):
+            if isinstance(child, CalcParser.MulDevContext):
                 # Extract and push term values onto the stack
                 value = self.stack.pop()
                 self.stack.append(value)
@@ -27,14 +34,14 @@ class CalcEvaluator(CalcListener):
         # Final value is at the top of the stack
         self.stack.append(self.stack.pop())
 
-    def exitTerm(self, ctx:CalcParser.TermContext):
+    def exitMulDiv(self, ctx:CalcParser.MulDevContext):
         # Handle expressions with '*' and '/' operators
         for child in ctx.getChildren():
-            if isinstance(child, CalcParser.FactorContext):
+            """if isinstance(child, CalcParser.FactorContext):
                 # Extract and push factor values onto the stack
                 value = self.stack.pop()
-                self.stack.append(value)
-            elif isinstance(child, TerminalNode):
+                self.stack.append(value)"""
+            if isinstance(child, TerminalNode):
                 # Handle operators: *, /
                 op = child.getText()
                 right = self.stack.pop()
@@ -47,12 +54,12 @@ class CalcEvaluator(CalcListener):
         # Final value is at the top of the stack
         self.stack.append(self.stack.pop())
 
-
+    """
     def exitFactor(self, ctx:CalcParser.FactorContext):
         # For factors, just push the number onto the stack
         if ctx.getChildCount() == 1:
             self.stack.append(float(ctx.getText()))
-
+    """
     def getValue(self):
         # Get the final value from the stack
         return self.stack.pop() if self.stack else None

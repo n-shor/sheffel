@@ -8,30 +8,48 @@ else:
 # This class defines a complete listener for a parse tree produced by CalcParser.
 class CalcListener(ParseTreeListener):
 
-    # Enter a parse tree produced by CalcParser#expr.
-    def enterExpr(self, ctx:CalcParser.ExprContext):
+    # Enter a parse tree produced by CalcParser#prog.
+    def enterProg(self, ctx:CalcParser.ProgContext):
         pass
 
-    # Exit a parse tree produced by CalcParser#expr.
-    def exitExpr(self, ctx:CalcParser.ExprContext):
-        pass
-
-
-    # Enter a parse tree produced by CalcParser#term.
-    def enterTerm(self, ctx:CalcParser.TermContext):
-        pass
-
-    # Exit a parse tree produced by CalcParser#term.
-    def exitTerm(self, ctx:CalcParser.TermContext):
+    # Exit a parse tree produced by CalcParser#prog.
+    def exitProg(self, ctx:CalcParser.ProgContext):
         pass
 
 
-    # Enter a parse tree produced by CalcParser#factor.
-    def enterFactor(self, ctx:CalcParser.FactorContext):
+    # Enter a parse tree produced by CalcParser#Float.
+    def enterFloat(self, ctx:CalcParser.FloatContext):
         pass
 
-    # Exit a parse tree produced by CalcParser#factor.
-    def exitFactor(self, ctx:CalcParser.FactorContext):
+    # Exit a parse tree produced by CalcParser#Float.
+    def exitFloat(self, ctx:CalcParser.FloatContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#AddSub.
+    def enterAddSub(self, ctx:CalcParser.AddSubContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#AddSub.
+    def exitAddSub(self, ctx:CalcParser.AddSubContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#MulDev.
+    def enterMulDev(self, ctx:CalcParser.MulDevContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#MulDev.
+    def exitMulDev(self, ctx:CalcParser.MulDevContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#Int.
+    def enterInt(self, ctx:CalcParser.IntContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#Int.
+    def exitInt(self, ctx:CalcParser.IntContext):
         pass
 
 
