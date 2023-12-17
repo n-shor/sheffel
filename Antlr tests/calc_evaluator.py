@@ -36,10 +36,10 @@ class CalcEvaluator(CalcListener):
     def exitMulDiv(self, ctx:CalcParser.MulDivContext):
         # Handle expressions with '*' and '/' operators
         for child in ctx.getChildren():
-            """if isinstance(child, CalcParser.FactorContext):
+            if isinstance(child, CalcParser.FactorContext):
                 # Extract and push factor values onto the stack
                 value = self.stack.pop()
-                self.stack.append(value)"""
+                self.stack.append(value)
             if isinstance(child, TerminalNode):
                 # Handle operators: *, /
                 op = child.getText()
@@ -53,12 +53,11 @@ class CalcEvaluator(CalcListener):
         # Final value is at the top of the stack
         self.stack.append(self.stack.pop())
 
-    """
     def exitFactor(self, ctx:CalcParser.FactorContext):
         # For factors, just push the number onto the stack
         if ctx.getChildCount() == 1:
             self.stack.append(float(ctx.getText()))
-    """
+            
     def getValue(self):
         # Get the final value from the stack
         return self.stack.pop() if self.stack else None

@@ -3,8 +3,10 @@ prog: exper;
 
 // Parser rules
 
-exper: exper op=('*' | '/') exper #MulDiv
-| exper op=('-' | '+') exper #AddSub
+exper:
+| exper op=('*' | '/') exper 
+| exper op=('+' | '-') exper 
+| '(' exper ')' # Factor
 | INT # Int
 | FLOAT # Float
 ;
