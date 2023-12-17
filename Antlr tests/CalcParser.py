@@ -138,6 +138,29 @@ class CalcParser ( Parser ):
                 listener.exitFloat(self)
 
 
+    class MulDivContext(ExperContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a CalcParser.ExperContext
+            super().__init__(parser)
+            self.op = None # Token
+            self.copyFrom(ctx)
+
+        def exper(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(CalcParser.ExperContext)
+            else:
+                return self.getTypedRuleContext(CalcParser.ExperContext,i)
+
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterMulDiv" ):
+                listener.enterMulDiv(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitMulDiv" ):
+                listener.exitMulDiv(self)
+
+
     class AddSubContext(ExperContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a CalcParser.ExperContext
@@ -159,29 +182,6 @@ class CalcParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitAddSub" ):
                 listener.exitAddSub(self)
-
-
-    class MulDevContext(ExperContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a CalcParser.ExperContext
-            super().__init__(parser)
-            self.op = None # Token
-            self.copyFrom(ctx)
-
-        def exper(self, i:int=None):
-            if i is None:
-                return self.getTypedRuleContexts(CalcParser.ExperContext)
-            else:
-                return self.getTypedRuleContext(CalcParser.ExperContext,i)
-
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterMulDev" ):
-                listener.enterMulDev(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitMulDev" ):
-                listener.exitMulDev(self)
 
 
     class IntContext(ExperContext):
@@ -247,7 +247,7 @@ class CalcParser ( Parser ):
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,1,self._ctx)
                     if la_ == 1:
-                        localctx = CalcParser.MulDevContext(self, CalcParser.ExperContext(self, _parentctx, _parentState))
+                        localctx = CalcParser.MulDivContext(self, CalcParser.ExperContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_exper)
                         self.state = 11
                         if not self.precpred(self._ctx, 4):

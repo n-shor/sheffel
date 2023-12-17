@@ -26,21 +26,21 @@ class CalcListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CalcParser#MulDiv.
+    def enterMulDiv(self, ctx:CalcParser.MulDivContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#MulDiv.
+    def exitMulDiv(self, ctx:CalcParser.MulDivContext):
+        pass
+
+
     # Enter a parse tree produced by CalcParser#AddSub.
     def enterAddSub(self, ctx:CalcParser.AddSubContext):
         pass
 
     # Exit a parse tree produced by CalcParser#AddSub.
     def exitAddSub(self, ctx:CalcParser.AddSubContext):
-        pass
-
-
-    # Enter a parse tree produced by CalcParser#MulDev.
-    def enterMulDev(self, ctx:CalcParser.MulDevContext):
-        pass
-
-    # Exit a parse tree produced by CalcParser#MulDev.
-    def exitMulDev(self, ctx:CalcParser.MulDevContext):
         pass
 
 

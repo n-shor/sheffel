@@ -16,7 +16,7 @@ class CalcEvaluator(CalcListener):
     def exitAddSub(self, ctx:CalcParser.AddSubContext):
         # Handle expressions with '+' and '-' operators
         for child in ctx.getChildren():
-            if isinstance(child, CalcParser.MulDevContext):
+            if isinstance(child, CalcParser.MulDivContext):
                 # Extract and push term values onto the stack
                 value = self.stack.pop()
                 self.stack.append(value)
@@ -33,7 +33,7 @@ class CalcEvaluator(CalcListener):
         # Final value is at the top of the stack
         self.stack.append(self.stack.pop())
 
-    def exitMulDiv(self, ctx:CalcParser.MulDevContext):
+    def exitMulDiv(self, ctx:CalcParser.MulDivContext):
         # Handle expressions with '*' and '/' operators
         for child in ctx.getChildren():
             """if isinstance(child, CalcParser.FactorContext):

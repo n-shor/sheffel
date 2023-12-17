@@ -3,7 +3,7 @@ prog: exper;
 
 // Parser rules
 
-exper: exper op=('*' | '/') exper #MulDev
+exper: exper op=('*' | '/') exper #MulDiv
 | exper op=('-' | '+') exper #AddSub
 | INT # Int
 | FLOAT # Float
