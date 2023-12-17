@@ -11,6 +11,6 @@ exper: exper op=('*' | '/') exper #MulDev
 
 
 // Lexer rules
-INT    : '-'? [0-9]+ ;
-FLOAT  : '-'? [0-9]+ ('.' [0-9]+)? ; 
+INT    : [0-9]+ ;
+FLOAT  : [0-9]+ ('.' [0-9]+)? ; 
 WS     : [ \t\r\n]+ -> skip ;
