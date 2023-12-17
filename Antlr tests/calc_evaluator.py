@@ -7,12 +7,11 @@ class CalcEvaluator(CalcListener):
     def __init__(self):
         self.stack = []
 
-    def exitInt(self, ctx:CalcParser.IntContext):
-        self.stack.append(self.stack.pop())
+    def exitInt(self, ctx: CalcParser.IntContext):
+        self.stack.append(int(ctx.getText()))
 
-        
-    def exitFloat(self, ctx:CalcParser.FloatContext):
-        self.stack.append(self.stack.pop())
+    def exitFloat(self, ctx: CalcParser.FloatContext):
+        self.stack.append(float(ctx.getText()))
 
     def exitAddSub(self, ctx:CalcParser.AddSubContext):
         # Handle expressions with '+' and '-' operators
