@@ -34,6 +34,9 @@ class ASTPrettyPrinter(calcVisitor):
     def visitInt(self, ctx) -> str:
         return self.nodify(self.index, ctx.INT().getText())
 
+    def visitFloat(self, ctx) -> str:
+        return self.nodify(self.index, ctx.FLOAT().getText())
+
     def visitStr(self, ctx) -> str:
         return self.nodify(self.index, ctx.STR().getText())
 
