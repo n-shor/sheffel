@@ -1,7 +1,7 @@
 from antlr4 import *
 from antlr4.InputStream import InputStream
-from calcLexer import calcLexer
-from calcParser import calcParser
+from CalcLexer import calcLexer
+from CalcParser import calcParser
 
 class Parser:
 

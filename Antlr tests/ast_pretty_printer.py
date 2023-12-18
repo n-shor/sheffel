@@ -3,8 +3,8 @@
 # project imports #
 #                 #
 ###################
-from calcVisitor import calcVisitor
-from calcParser import calcParser
+from CalcVisitor import calcVisitor
+from CalcParser import calcParser
 
 class ASTPrettyPrinter(calcVisitor):
 

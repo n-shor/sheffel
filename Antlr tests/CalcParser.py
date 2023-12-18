@@ -11,18 +11,18 @@ else:
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\f")
-        buf.write("\35\4\2\t\2\4\3\t\3\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\3")
-        buf.write("\3\5\3\20\n\3\3\3\3\3\3\3\3\3\3\3\3\3\7\3\30\n\3\f\3\16")
-        buf.write("\3\33\13\3\3\3\2\3\4\4\2\4\2\4\3\2\6\7\4\2\5\5\b\b\2\36")
-        buf.write("\2\6\3\2\2\2\4\17\3\2\2\2\6\7\5\4\3\2\7\3\3\2\2\2\b\t")
-        buf.write("\b\3\1\2\t\n\7\3\2\2\n\13\5\4\3\2\13\f\7\4\2\2\f\20\3")
-        buf.write("\2\2\2\r\20\7\n\2\2\16\20\7\t\2\2\17\b\3\2\2\2\17\r\3")
-        buf.write("\2\2\2\17\16\3\2\2\2\20\31\3\2\2\2\21\22\f\7\2\2\22\23")
-        buf.write("\t\2\2\2\23\30\5\4\3\b\24\25\f\6\2\2\25\26\t\3\2\2\26")
-        buf.write("\30\5\4\3\7\27\21\3\2\2\2\27\24\3\2\2\2\30\33\3\2\2\2")
-        buf.write("\31\27\3\2\2\2\31\32\3\2\2\2\32\5\3\2\2\2\33\31\3\2\2")
-        buf.write("\2\5\17\27\31")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\r")
+        buf.write("\36\4\2\t\2\4\3\t\3\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\3")
+        buf.write("\3\3\3\5\3\21\n\3\3\3\3\3\3\3\3\3\3\3\3\3\7\3\31\n\3\f")
+        buf.write("\3\16\3\34\13\3\3\3\2\3\4\4\2\4\2\4\3\2\6\7\4\2\5\5\b")
+        buf.write("\b\2 \2\6\3\2\2\2\4\20\3\2\2\2\6\7\5\4\3\2\7\3\3\2\2\2")
+        buf.write("\b\t\b\3\1\2\t\n\7\3\2\2\n\13\5\4\3\2\13\f\7\4\2\2\f\21")
+        buf.write("\3\2\2\2\r\21\7\n\2\2\16\21\7\13\2\2\17\21\7\t\2\2\20")
+        buf.write("\b\3\2\2\2\20\r\3\2\2\2\20\16\3\2\2\2\20\17\3\2\2\2\21")
+        buf.write("\32\3\2\2\2\22\23\f\b\2\2\23\24\t\2\2\2\24\31\5\4\3\t")
+        buf.write("\25\26\f\7\2\2\26\27\t\3\2\2\27\31\5\4\3\b\30\22\3\2\2")
+        buf.write("\2\30\25\3\2\2\2\31\34\3\2\2\2\32\30\3\2\2\2\32\33\3\2")
+        buf.write("\2\2\33\5\3\2\2\2\34\32\3\2\2\2\5\20\30\32")
         return buf.getvalue()
 
 
@@ -39,7 +39,7 @@ class calcParser ( Parser ):
     literalNames = [ "<INVALID>", "'('", "')'", "'+'", "'*'", "'/'", "'-'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "ADD", "MUL", 
-                      "DIV", "SUB", "STR", "INT", "NEWLINE", "WS" ]
+                      "DIV", "SUB", "STR", "INT", "FLOAT", "NEWLINE", "WS" ]
 
     RULE_prog = 0
     RULE_expr = 1
@@ -55,8 +55,9 @@ class calcParser ( Parser ):
     SUB=6
     STR=7
     INT=8
-    NEWLINE=9
-    WS=10
+    FLOAT=9
+    NEWLINE=10
+    WS=11
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -141,6 +142,24 @@ class calcParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitStr" ):
                 listener.exitStr(self)
+
+
+    class FloatContext(ExprContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a calcParser.ExprContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def FLOAT(self):
+            return self.getToken(calcParser.FLOAT, 0)
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterFloat" ):
+                listener.enterFloat(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitFloat" ):
+                listener.exitFloat(self)
 
 
     class MulDivContext(ExprContext):
@@ -245,7 +264,7 @@ class calcParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 13
+            self.state = 14
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [calcParser.T__0]:
@@ -267,18 +286,25 @@ class calcParser ( Parser ):
                 self.state = 11
                 self.match(calcParser.INT)
                 pass
+            elif token in [calcParser.FLOAT]:
+                localctx = calcParser.FloatContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 12
+                self.match(calcParser.FLOAT)
+                pass
             elif token in [calcParser.STR]:
                 localctx = calcParser.StrContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 12
+                self.state = 13
                 self.match(calcParser.STR)
                 pass
             else:
                 raise NoViableAltException(self)
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 23
+            self.state = 24
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,2,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
@@ -286,17 +312,17 @@ class calcParser ( Parser ):
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    self.state = 21
+                    self.state = 22
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,1,self._ctx)
                     if la_ == 1:
                         localctx = calcParser.MulDivContext(self, calcParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 15
-                        if not self.precpred(self._ctx, 5):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
                         self.state = 16
+                        if not self.precpred(self._ctx, 6):
+                            from antlr4.error.Errors import FailedPredicateException
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
+                        self.state = 17
                         localctx.op = self._input.LT(1)
                         _la = self._input.LA(1)
                         if not(_la==calcParser.MUL or _la==calcParser.DIV):
@@ -304,18 +330,18 @@ class calcParser ( Parser ):
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 17
-                        self.expr(6)
+                        self.state = 18
+                        self.expr(7)
                         pass
 
                     elif la_ == 2:
                         localctx = calcParser.AddSubContext(self, calcParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 18
-                        if not self.precpred(self._ctx, 4):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
                         self.state = 19
+                        if not self.precpred(self._ctx, 5):
+                            from antlr4.error.Errors import FailedPredicateException
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
+                        self.state = 20
                         localctx.op = self._input.LT(1)
                         _la = self._input.LA(1)
                         if not(_la==calcParser.ADD or _la==calcParser.SUB):
@@ -323,12 +349,12 @@ class calcParser ( Parser ):
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 20
-                        self.expr(5)
+                        self.state = 21
+                        self.expr(6)
                         pass
 
              
-                self.state = 25
+                self.state = 26
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,2,self._ctx)
 
@@ -354,11 +380,11 @@ class calcParser ( Parser ):
 
     def expr_sempred(self, localctx:ExprContext, predIndex:int):
             if predIndex == 0:
-                return self.precpred(self._ctx, 5)
+                return self.precpred(self._ctx, 6)
          
 
             if predIndex == 1:
-                return self.precpred(self._ctx, 4)
+                return self.precpred(self._ctx, 5)
          
 
 

@@ -17,7 +17,7 @@ import subprocess
 # project imports #
 #                 #
 ###################
-from parser import Parser
+from parser_1 import Parser
 from ast_pretty_printer import ASTPrettyPrinter
 
 class Compiler:

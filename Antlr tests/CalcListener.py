@@ -26,6 +26,15 @@ class calcListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by calcParser#Float.
+    def enterFloat(self, ctx:calcParser.FloatContext):
+        pass
+
+    # Exit a parse tree produced by calcParser#Float.
+    def exitFloat(self, ctx:calcParser.FloatContext):
+        pass
+
+
     # Enter a parse tree produced by calcParser#MulDiv.
     def enterMulDiv(self, ctx:calcParser.MulDivContext):
         pass
