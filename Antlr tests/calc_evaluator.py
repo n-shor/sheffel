@@ -13,7 +13,7 @@ class CalcEvaluator(CalcListener):
     def exitFloat(self, ctx: CalcParser.FloatContext):
         self.list.append(float(ctx.getText()))
 
-    def exitAddSub(self, ctx:CalcParser.AddSubContext):
+    def exitAddSub(self, ctx: CalcParser.AddSubContext):
         # Handle expressions with '+' and '-' operators
         for child in ctx.getChildren():
             if isinstance(child, CalcParser.MulDivContext):
@@ -33,7 +33,7 @@ class CalcEvaluator(CalcListener):
         # Final value is at the top of the list
         self.list.append(self.list.pop())
 
-    def exitMulDiv(self, ctx:CalcParser.MulDivContext):
+    def exitMulDiv(self, ctx: CalcParser.MulDivContext):
         # Handle expressions with '*' and '/' operators
         for child in ctx.getChildren():
             if isinstance(child, CalcParser.FactorContext):
