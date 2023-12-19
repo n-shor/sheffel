@@ -1,75 +1,66 @@
-# Generated from calc.g4 by ANTLR 4.9.2
+# Generated from Calc.g4 by ANTLR 4.9.2
 from antlr4 import *
 if __name__ is not None and "." in __name__:
-    from .calcParser import calcParser
+    from .CalcParser import CalcParser
 else:
-    from calcParser import calcParser
+    from CalcParser import CalcParser
 
-# This class defines a complete listener for a parse tree produced by calcParser.
-class calcListener(ParseTreeListener):
+# This class defines a complete listener for a parse tree produced by CalcParser.
+class CalcListener(ParseTreeListener):
 
-    # Enter a parse tree produced by calcParser#prog.
-    def enterProg(self, ctx:calcParser.ProgContext):
+    # Enter a parse tree produced by CalcParser#prog.
+    def enterProg(self, ctx:CalcParser.ProgContext):
         pass
 
-    # Exit a parse tree produced by calcParser#prog.
-    def exitProg(self, ctx:calcParser.ProgContext):
-        pass
-
-
-    # Enter a parse tree produced by calcParser#Str.
-    def enterStr(self, ctx:calcParser.StrContext):
-        pass
-
-    # Exit a parse tree produced by calcParser#Str.
-    def exitStr(self, ctx:calcParser.StrContext):
+    # Exit a parse tree produced by CalcParser#prog.
+    def exitProg(self, ctx:CalcParser.ProgContext):
         pass
 
 
-    # Enter a parse tree produced by calcParser#Float.
-    def enterFloat(self, ctx:calcParser.FloatContext):
+    # Enter a parse tree produced by CalcParser#Float.
+    def enterFloat(self, ctx:CalcParser.FloatContext):
         pass
 
-    # Exit a parse tree produced by calcParser#Float.
-    def exitFloat(self, ctx:calcParser.FloatContext):
-        pass
-
-
-    # Enter a parse tree produced by calcParser#MulDiv.
-    def enterMulDiv(self, ctx:calcParser.MulDivContext):
-        pass
-
-    # Exit a parse tree produced by calcParser#MulDiv.
-    def exitMulDiv(self, ctx:calcParser.MulDivContext):
+    # Exit a parse tree produced by CalcParser#Float.
+    def exitFloat(self, ctx:CalcParser.FloatContext):
         pass
 
 
-    # Enter a parse tree produced by calcParser#AddSub.
-    def enterAddSub(self, ctx:calcParser.AddSubContext):
+    # Enter a parse tree produced by CalcParser#MulDiv.
+    def enterMulDiv(self, ctx:CalcParser.MulDivContext):
         pass
 
-    # Exit a parse tree produced by calcParser#AddSub.
-    def exitAddSub(self, ctx:calcParser.AddSubContext):
-        pass
-
-
-    # Enter a parse tree produced by calcParser#Int.
-    def enterInt(self, ctx:calcParser.IntContext):
-        pass
-
-    # Exit a parse tree produced by calcParser#Int.
-    def exitInt(self, ctx:calcParser.IntContext):
+    # Exit a parse tree produced by CalcParser#MulDiv.
+    def exitMulDiv(self, ctx:CalcParser.MulDivContext):
         pass
 
 
-    # Enter a parse tree produced by calcParser#Paren.
-    def enterParen(self, ctx:calcParser.ParenContext):
+    # Enter a parse tree produced by CalcParser#AddSub.
+    def enterAddSub(self, ctx:CalcParser.AddSubContext):
         pass
 
-    # Exit a parse tree produced by calcParser#Paren.
-    def exitParen(self, ctx:calcParser.ParenContext):
+    # Exit a parse tree produced by CalcParser#AddSub.
+    def exitAddSub(self, ctx:CalcParser.AddSubContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#Factor.
+    def enterFactor(self, ctx:CalcParser.FactorContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#Factor.
+    def exitFactor(self, ctx:CalcParser.FactorContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#Int.
+    def enterInt(self, ctx:CalcParser.IntContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#Int.
+    def exitInt(self, ctx:CalcParser.IntContext):
         pass
 
 
 
-del calcParser
+del CalcParser

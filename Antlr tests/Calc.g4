@@ -1,31 +1,20 @@
-grammar calc;
-
+grammar Calc;
 prog: expr;
 
-/*********/
-/*       */
-/* rules */
-/*       */
-/*********/
-expr: expr op=('*'|'/') expr # MulDiv
-    | expr op=('+'|'-') expr # AddSub
-    | '(' expr ')'           # Paren
-    | INT                    # Int
-    | FLOAT                  # Float
-    | STR                    # Str
-    ;
+// Parser rules
 
-/**********/
-/*        */
-/* tokens */
-/*        */
-/**********/
-ADD: '+' ;
-MUL: '*' ;
-DIV: '/' ;
-SUB: '-' ;
-STR: [a-zA-Z]+ ;
-INT: [0-9]+ ;
-FLOAT: [0-9]+ ('.' [0-9]+)? ;
-NEWLINE:'\r'? '\n';
-WS: [ \t]+ -> skip;
+expr:
+  expr op=('*' | '/') expr # MulDiv
+| expr op=('+' | '-') expr # AddSub
+| INT # Int
+| FLOAT # Float
+| LPAREN expr RPAREN # Factor
+;
+
+
+// Lexer rules
+LPAREN : '(' ;
+RPAREN : ')' ;
+INT    : [0-9]+ ;
+FLOAT  : [0-9]+ ('.' [0-9]+)? ; 
+WS     : [ \t\r\n]+ -> skip ;
