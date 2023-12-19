@@ -1,18 +1,20 @@
 grammar Calc;
-prog: exper;
+prog: expr;
 
 // Parser rules
 
-exper:
-| exper op=('*' | '/') exper 
-| exper op=('+' | '-') exper 
-| '(' exper ')' # Factor
+expr:
+  expr op=('*' | '/') expr # MulDiv
+| expr op=('+' | '-') expr # AddSub
 | INT # Int
 | FLOAT # Float
+| LPAREN expr RPAREN # Factor
 ;
 
 
 // Lexer rules
+LPAREN : '(' ;
+RPAREN : ')' ;
 INT    : [0-9]+ ;
 FLOAT  : [0-9]+ ('.' [0-9]+)? ; 
 WS     : [ \t\r\n]+ -> skip ;

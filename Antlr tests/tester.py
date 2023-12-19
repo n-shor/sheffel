@@ -10,7 +10,7 @@ def main():
     token_stream = CommonTokenStream(lexer)
     parser = CalcParser(token_stream)
 
-    tree = parser.exper()
+    tree = parser.expr()
     
     calc_evaluator = CalcEvaluator()
     walker = ParseTreeWalker()

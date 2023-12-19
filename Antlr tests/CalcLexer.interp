@@ -16,8 +16,8 @@ null
 null
 null
 null
-null
-null
+LPAREN
+RPAREN
 INT
 FLOAT
 WS
@@ -27,8 +27,8 @@ T__0
 T__1
 T__2
 T__3
-T__4
-T__5
+LPAREN
+RPAREN
 INT
 FLOAT
 WS

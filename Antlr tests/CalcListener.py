@@ -44,6 +44,15 @@ class CalcListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CalcParser#Factor.
+    def enterFactor(self, ctx:CalcParser.FactorContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#Factor.
+    def exitFactor(self, ctx:CalcParser.FactorContext):
+        pass
+
+
     # Enter a parse tree produced by CalcParser#Int.
     def enterInt(self, ctx:CalcParser.IntContext):
         pass

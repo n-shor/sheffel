@@ -53,10 +53,10 @@ class CalcEvaluator(CalcListener):
         # Final value is at the top of the stack
         self.stack.append(self.stack.pop())
 
-    def exitFactor(self, ctx:CalcParser.FactorContext):
-        # For factors, just push the number onto the stack
+    def exitFactor(self, ctx: CalcParser.FactorContext):
         if ctx.getChildCount() == 1:
             self.stack.append(float(ctx.getText()))
+
             
     def getValue(self):
         # Get the final value from the stack

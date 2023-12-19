@@ -46,8 +46,8 @@ class CalcLexer(Lexer):
     T__1 = 2
     T__2 = 3
     T__3 = 4
-    T__4 = 5
-    T__5 = 6
+    LPAREN = 5
+    RPAREN = 6
     INT = 7
     FLOAT = 8
     WS = 9
@@ -60,9 +60,9 @@ class CalcLexer(Lexer):
             "'*'", "'/'", "'+'", "'-'", "'('", "')'" ]
 
     symbolicNames = [ "<INVALID>",
-            "INT", "FLOAT", "WS" ]
+            "LPAREN", "RPAREN", "INT", "FLOAT", "WS" ]
 
-    ruleNames = [ "T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "INT", 
+    ruleNames = [ "T__0", "T__1", "T__2", "T__3", "LPAREN", "RPAREN", "INT", 
                   "FLOAT", "WS" ]
 
     grammarFileName = "Calc.g4"
