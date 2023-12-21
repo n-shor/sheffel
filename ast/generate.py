@@ -1,10 +1,19 @@
-from antlr4 import *
-
-import io
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4.tree.Trees import Trees, escapeWhitespace
 
 from .CalcLexer import CalcLexer
 from .CalcParser import CalcParser
 from .calc_evaluator import CalcEvaluator
+
+def claim_children(tree: CalcParser.ProgContext, rule_names: list[str]):
+    
+    if tree.getChildCount() == 0:
+        yield escapeWhitespace(Trees.getNodeText(tree, rule_names), False)
+    
+    for i in range(0, tree.getChildCount()):
+        yield from claim_children(tree.getChild(i), rule_names)
+    
+
 
 def generate(code: str):
     
@@ -19,7 +28,5 @@ def generate(code: str):
     calc_evaluator = CalcEvaluator()
     walker = ParseTreeWalker()
     walker.walk(calc_evaluator, tree)
-
-    # print(tree.toStringTree(recog=parser))  # Print the AST
     
-    return calc_evaluator.list, calc_evaluator.variables
+    yield from claim_children(tree, parser.ruleNames)

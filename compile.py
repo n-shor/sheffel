@@ -8,9 +8,11 @@ def compile(input_file_path: str):
     with open(input_file_path, 'r') as f:
         code = f.read()
     
-    expressions, variables = generate_ast(code)
-    generate_ir(expressions, variables)
-    make_ir()
+    for n in generate_ast(code):
+        print(n)
+    
+    #generate_ir(tree)
+    #make_ir()
 
 def main():
     compile('./code.shf')
