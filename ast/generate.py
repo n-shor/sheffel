@@ -5,14 +5,15 @@ from .CalcLexer import CalcLexer
 from .CalcParser import CalcParser
 from .calc_evaluator import CalcEvaluator
 
-def claim_children(tree: CalcParser.ProgContext, rule_names: list[str]):
-    
-    if tree.getChildCount() == 0:
-        yield escapeWhitespace(Trees.getNodeText(tree, rule_names), False)
-    
-    for i in range(0, tree.getChildCount()):
-        yield from claim_children(tree.getChild(i), rule_names)
-    
+from .expression_tree import Expression
+
+"""
+def get_node_text(node: CalcParser.ProgContext, rule_names: list[str]):
+    return escapeWhitespace(Trees.getNodeText(node, rule_names), False)
+
+def build_expression(tree: CalcParser.ProgContext, rule_names: list[str]):
+    return ...
+"""
 
 
 def generate(code: str):
@@ -29,4 +30,6 @@ def generate(code: str):
     walker = ParseTreeWalker()
     walker.walk(calc_evaluator, tree)
     
-    yield from claim_children(tree, parser.ruleNames)
+    #return build_expression(tree, parser.ruleNames)
+    
+    return Expression(...)
