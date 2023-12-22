@@ -3,7 +3,7 @@ import os
 from .env_constants import *
 
 from ..ast.nodes import Node
-from llvm_translator import LLVMTranslator
+from .llvm_translator import LLVMTranslator
 
 RAW_HELLO_WORLD_PROGRAM = """; Copied directly from the documentation
 ; Declare the string constant as a global constant.
