@@ -1,16 +1,16 @@
-from ast.generate import generate as generate_ast
+from lex_parse.create import create_ast
+#from ast.expression_tree import Expression
 
-from ir.generate import generate as generate_ir
-from ir.make import make as make_ir
+from ir_generate.create import create_ir
+from ir_generate.make import make
 
 def compile(input_file_path: str):
-    
     with open(input_file_path, 'r') as f:
         code = f.read()
     
-    tree = generate_ast(code)
-    generate_ir(tree)
-    make_ir()
+    tree = create_ast(code)
+    create_ir(tree)
+    make()
 
 def main():
     compile('./code.shf')

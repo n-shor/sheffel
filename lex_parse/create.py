@@ -5,7 +5,6 @@ from .CalcLexer import CalcLexer
 from .CalcParser import CalcParser
 from .calc_evaluator import CalcEvaluator
 
-from .expression_tree import Expression
 
 """
 def get_node_text(node: CalcParser.ProgContext, rule_names: list[str]):
@@ -16,7 +15,8 @@ def build_expression(tree: CalcParser.ProgContext, rule_names: list[str]):
 """
 
 
-def generate(code: str):
+def create_ast(code: str):
+    """Creates an AST from given code."""
     
     input_stream = InputStream(code)
     
@@ -32,4 +32,4 @@ def generate(code: str):
     
     #return build_expression(tree, parser.ruleNames)
     
-    return Expression(...)
+    return ...

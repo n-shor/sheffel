@@ -23,13 +23,13 @@ define i32 @main() { ; i32()*
 !0 = !{i32 42, null, !"string"}
 !foo = !{!0}"""
 
-def generate(expressions: list, variables: dict):
+def create_ir(ast):
+    """Creates an IR file from the AST."""
     
     with open(f'{BUILD_PATH}/{IR_FILE}', 'w') as f:
         f.write(RAW_HELLO_WORLD_PROGRAM)
 
-    print(expressions)
-    print(variables)
+    print(ast)
 
 if not os.path.isdir(BUILD_PATH):
     os.makedirs(BUILD_PATH)
