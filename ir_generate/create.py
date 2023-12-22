@@ -2,6 +2,9 @@ import os
 
 from .env_constants import *
 
+from ..ast.nodes import Node
+from llvm_translator import LLVMTranslator
+
 RAW_HELLO_WORLD_PROGRAM = """; Copied directly from the documentation
 ; Declare the string constant as a global constant.
 @.str = private unnamed_addr constant [14 x i8] c"hello world\0A\00"
@@ -23,13 +26,14 @@ define i32 @main() { ; i32()*
 !0 = !{i32 42, null, !"string"}
 !foo = !{!0}"""
 
-def create_ir(ast):
+def create_ir(ast: list[Node]):
     """Creates an IR file from the AST."""
     
+    translator = LLVMTranslator()
+    translator.generate(ast)
+    
     with open(f'{BUILD_PATH}/{IR_FILE}', 'w') as f:
-        f.write(RAW_HELLO_WORLD_PROGRAM)
-
-    print(ast)
+        f.write(translator.get_ir())
 
 if not os.path.isdir(BUILD_PATH):
     os.makedirs(BUILD_PATH)

@@ -1,18 +1,28 @@
 class Node:
     pass
 
-class Number(Node):
+class Literal(Node):
     def __init__(self):
         super().__init__()
 
-class IntegralNumber(Number):
+class NumericLiteral(Literal):
+    def __init__(self):
+        super().__init__()
+
+class IntegralLiteral(NumericLiteral):
     def __init__(self, value: int):
         super().__init__()
         
         self.value = value
 
-class FloatingNumber(Number):
+class FloatingLiteral(NumericLiteral):
     def __init__(self, value: float):
+        super().__init__()
+        
+        self.value = value
+
+class StringLiteral(Literal):
+    def __init__(self, value: str):
         super().__init__()
         
         self.value = value
