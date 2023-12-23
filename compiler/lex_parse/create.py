@@ -1,6 +1,8 @@
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from antlr4.tree.Trees import Trees, escapeWhitespace
 
+#from ..ast.nodes import
+
 from .CalcLexer import CalcLexer
 from .CalcParser import CalcParser
 from .calc_evaluator import CalcEvaluator
@@ -25,7 +27,7 @@ def create_ast(code: str):
     parser = CalcParser(token_stream)
 
     tree = parser.prog()  # Parse the entire program
-
+    print("xd")
     calc_evaluator = CalcEvaluator()
     walker = ParseTreeWalker()
     walker.walk(calc_evaluator, tree)

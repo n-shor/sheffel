@@ -34,10 +34,10 @@ class Operator(Node):
         self.signature = signature
         self.operands = operands
 
-class UnaryOperator(Node):
+class UnaryOperator(Operator):
     def __init__(self, signature: str, operand: Node):
         super().__init__(signature, operand)
 
-class BinaryOperator(Node):
+class BinaryOperator(Operator):
     def __init__(self, signature: str, left: Node, right: Node):
         super().__init__(signature, left, right)
