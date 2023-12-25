@@ -1,9 +1,10 @@
 import os
+from llvmlite import ir
 
-from .env_constants import *
+from .file_constants import *
 
 from ..ast.nodes import Node
-from .llvm_translator import LLVMTranslator
+from .llvm_translation import Function
 
 RAW_HELLO_WORLD_PROGRAM = """; Copied directly from the documentation
 ; Declare the string constant as a global constant.
@@ -26,14 +27,16 @@ define i32 @main() { ; i32()*
 !0 = !{i32 42, null, !"string"}
 !foo = !{!0}"""
 
+
 def create_ir(ast: list[Node]):
     """Creates an IR file from the AST."""
-    
-    translator = LLVMTranslator()
-    translator.generate(ast)
-    
+
+    func = Function(ir.Module(name='main_module'))
+    func.translate_lines(ast)
+
     with open(f'{BUILD_PATH}/{IR_FILE}', 'w') as f:
-        f.write(translator.get_ir())
+        f.write(func.get_ir())
+
 
 if not os.path.isdir(BUILD_PATH):
     os.makedirs(BUILD_PATH)

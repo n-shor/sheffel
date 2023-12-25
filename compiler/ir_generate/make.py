@@ -1,6 +1,6 @@
 import subprocess
 
-from .env_constants import *
+from .file_constants import *
 
 def make():
     """Responsible for every compilation step beyond IR generation"""
