@@ -17,6 +17,51 @@ class CalcListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CalcParser#EmptyLine.
+    def enterEmptyLine(self, ctx:CalcParser.EmptyLineContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#EmptyLine.
+    def exitEmptyLine(self, ctx:CalcParser.EmptyLineContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#ExpressionLine.
+    def enterExpressionLine(self, ctx:CalcParser.ExpressionLineContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#ExpressionLine.
+    def exitExpressionLine(self, ctx:CalcParser.ExpressionLineContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#AssignmentLine.
+    def enterAssignmentLine(self, ctx:CalcParser.AssignmentLineContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#AssignmentLine.
+    def exitAssignmentLine(self, ctx:CalcParser.AssignmentLineContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#DeclarationLine.
+    def enterDeclarationLine(self, ctx:CalcParser.DeclarationLineContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#DeclarationLine.
+    def exitDeclarationLine(self, ctx:CalcParser.DeclarationLineContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#dataType.
+    def enterDataType(self, ctx:CalcParser.DataTypeContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#dataType.
+    def exitDataType(self, ctx:CalcParser.DataTypeContext):
+        pass
+
+
     # Enter a parse tree produced by CalcParser#Float.
     def enterFloat(self, ctx:CalcParser.FloatContext):
         pass
@@ -41,6 +86,15 @@ class CalcListener(ParseTreeListener):
 
     # Exit a parse tree produced by CalcParser#AddSub.
     def exitAddSub(self, ctx:CalcParser.AddSubContext):
+        pass
+
+
+    # Enter a parse tree produced by CalcParser#Var.
+    def enterVar(self, ctx:CalcParser.VarContext):
+        pass
+
+    # Exit a parse tree produced by CalcParser#Var.
+    def exitVar(self, ctx:CalcParser.VarContext):
         pass
 
 
