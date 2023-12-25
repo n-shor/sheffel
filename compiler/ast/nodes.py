@@ -42,22 +42,6 @@ class StringLiteral(Literal):
         self.value = value
 
 
-class Variable(Node):
-    """Represents any reference to a variable name."""
-    def __init__(self, name: str):
-        super().__init__()
-
-        self.name = name
-
-
-class VariableDeclaration(Variable):
-    """Represents a declaration of a variable."""
-    def __init__(self, name: str, value_type: ir.Type):
-        super().__init__(name)
-
-        self.value_type = value_type
-
-
 class Operator(Node):
     """Represents a call to an operator: a function defined by a symbol."""
     def __init__(self, signature: str, *operands: Node):
@@ -77,3 +61,19 @@ class BinaryOperator(Operator):
     """Represents a call to an operator accepting two arguments: one to its left and one to its right."""
     def __init__(self, signature: str, left: Node, right: Node):
         super().__init__(signature, left, right)
+
+
+class Variable(Node):
+    """Represents any reference to a variable name."""
+    def __init__(self, name: str):
+        super().__init__()
+
+        self.name = name
+
+
+class VariableDeclaration(Variable):
+    """Represents a declaration of a variable."""
+    def __init__(self, name: str, value_type: ir.Type):
+        super().__init__(name)
+
+        self.value_type = value_type

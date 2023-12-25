@@ -35,6 +35,11 @@ class FunctionBlock:
             case Variable(name=name):
                 return self.builder.load(self._stack_variables[name])
 
+            case BinaryOperator(signature='=', operands=(VariableDeclaration(name=assigned_name, value_type=value_type), assignee)):
+                allocated = self.builder.alloca(value_type)
+                self._stack_variables[assigned_name] = allocated
+                return self.builder.store(self.translate(assignee), allocated)
+
             case BinaryOperator(signature='=', operands=(Variable(name=assigned_name), assignee)):
                 return self.builder.store(
                     self.translate(assignee),
