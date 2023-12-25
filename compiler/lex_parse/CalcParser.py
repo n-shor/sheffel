@@ -1,4 +1,4 @@
-# Generated from Calc.g4 by ANTLR 4.9.2
+# Generated from Calc.g4 by ANTLR 4.13.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -8,33 +8,28 @@ if sys.version_info[1] > 5:
 else:
 	from typing.io import TextIO
 
-
 def serializedATN():
-    with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\20")
-        buf.write(":\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\3\2\6\2\f\n\2\r\2\16")
-        buf.write("\2\r\3\3\3\3\3\3\3\3\3\3\5\3\25\n\3\3\3\3\3\3\3\3\3\3")
-        buf.write("\3\3\3\5\3\35\n\3\3\3\3\3\5\3!\n\3\3\4\3\4\3\5\3\5\3\5")
-        buf.write("\3\5\3\5\3\5\3\5\3\5\5\5-\n\5\3\5\3\5\3\5\3\5\3\5\3\5")
-        buf.write("\7\5\65\n\5\f\5\16\58\13\5\3\5\2\3\b\6\2\4\6\b\2\5\3\2")
-        buf.write("\5\6\3\2\7\b\3\2\t\n\2@\2\13\3\2\2\2\4 \3\2\2\2\6\"\3")
-        buf.write("\2\2\2\b,\3\2\2\2\n\f\5\4\3\2\13\n\3\2\2\2\f\r\3\2\2\2")
-        buf.write("\r\13\3\2\2\2\r\16\3\2\2\2\16\3\3\2\2\2\17!\7\3\2\2\20")
-        buf.write("\21\5\b\5\2\21\22\7\3\2\2\22!\3\2\2\2\23\25\5\6\4\2\24")
-        buf.write("\23\3\2\2\2\24\25\3\2\2\2\25\26\3\2\2\2\26\27\7\17\2\2")
-        buf.write("\27\30\7\4\2\2\30\31\5\b\5\2\31\32\7\3\2\2\32!\3\2\2\2")
-        buf.write("\33\35\5\6\4\2\34\33\3\2\2\2\34\35\3\2\2\2\35\36\3\2\2")
-        buf.write("\2\36\37\7\17\2\2\37!\7\3\2\2 \17\3\2\2\2 \20\3\2\2\2")
-        buf.write(" \24\3\2\2\2 \34\3\2\2\2!\5\3\2\2\2\"#\t\2\2\2#\7\3\2")
-        buf.write("\2\2$%\b\5\1\2%-\7\r\2\2&-\7\16\2\2\'-\7\17\2\2()\7\13")
-        buf.write("\2\2)*\5\b\5\2*+\7\f\2\2+-\3\2\2\2,$\3\2\2\2,&\3\2\2\2")
-        buf.write(",\'\3\2\2\2,(\3\2\2\2-\66\3\2\2\2./\f\b\2\2/\60\t\3\2")
-        buf.write("\2\60\65\5\b\5\t\61\62\f\7\2\2\62\63\t\4\2\2\63\65\5\b")
-        buf.write("\5\b\64.\3\2\2\2\64\61\3\2\2\2\658\3\2\2\2\66\64\3\2\2")
-        buf.write("\2\66\67\3\2\2\2\67\t\3\2\2\28\66\3\2\2\2\t\r\24\34 ,")
-        buf.write("\64\66")
-        return buf.getvalue()
-
+    return [
+        4,1,14,56,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,4,0,10,8,0,11,0,12,
+        0,11,1,1,1,1,1,1,1,1,1,1,3,1,19,8,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,
+        27,8,1,1,1,1,1,3,1,31,8,1,1,2,1,2,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,
+        3,3,3,43,8,3,1,3,1,3,1,3,1,3,1,3,1,3,5,3,51,8,3,10,3,12,3,54,9,3,
+        1,3,0,1,6,4,0,2,4,6,0,3,1,0,3,4,1,0,5,6,1,0,7,8,62,0,9,1,0,0,0,2,
+        30,1,0,0,0,4,32,1,0,0,0,6,42,1,0,0,0,8,10,3,2,1,0,9,8,1,0,0,0,10,
+        11,1,0,0,0,11,9,1,0,0,0,11,12,1,0,0,0,12,1,1,0,0,0,13,31,5,1,0,0,
+        14,15,3,6,3,0,15,16,5,1,0,0,16,31,1,0,0,0,17,19,3,4,2,0,18,17,1,
+        0,0,0,18,19,1,0,0,0,19,20,1,0,0,0,20,21,5,13,0,0,21,22,5,2,0,0,22,
+        23,3,6,3,0,23,24,5,1,0,0,24,31,1,0,0,0,25,27,3,4,2,0,26,25,1,0,0,
+        0,26,27,1,0,0,0,27,28,1,0,0,0,28,29,5,13,0,0,29,31,5,1,0,0,30,13,
+        1,0,0,0,30,14,1,0,0,0,30,18,1,0,0,0,30,26,1,0,0,0,31,3,1,0,0,0,32,
+        33,7,0,0,0,33,5,1,0,0,0,34,35,6,3,-1,0,35,43,5,11,0,0,36,43,5,12,
+        0,0,37,43,5,13,0,0,38,39,5,9,0,0,39,40,3,6,3,0,40,41,5,10,0,0,41,
+        43,1,0,0,0,42,34,1,0,0,0,42,36,1,0,0,0,42,37,1,0,0,0,42,38,1,0,0,
+        0,43,52,1,0,0,0,44,45,10,6,0,0,45,46,7,1,0,0,46,51,3,6,3,7,47,48,
+        10,5,0,0,48,49,7,2,0,0,49,51,3,6,3,6,50,44,1,0,0,0,50,47,1,0,0,0,
+        51,54,1,0,0,0,52,50,1,0,0,0,52,53,1,0,0,0,53,7,1,0,0,0,54,52,1,0,
+        0,0,7,11,18,26,30,42,50,52
+    ]
 
 class CalcParser ( Parser ):
 
@@ -46,7 +41,7 @@ class CalcParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'\n'", "'='", "'Int'", "'Float'", "'*'", 
+    literalNames = [ "<INVALID>", "'\\n'", "'='", "'Int'", "'Float'", "'*'", 
                      "'/'", "'+'", "'-'", "'('", "')'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
@@ -79,7 +74,7 @@ class CalcParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.9.2")
+        self.checkVersion("4.13.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -130,7 +125,7 @@ class CalcParser ( Parser ):
                 self.state = 11 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << CalcParser.T__0) | (1 << CalcParser.T__2) | (1 << CalcParser.T__3) | (1 << CalcParser.LPAREN) | (1 << CalcParser.INT) | (1 << CalcParser.FLOAT) | (1 << CalcParser.VAR))) != 0)):
+                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 14874) != 0)):
                     break
 
         except RecognitionException as re:
@@ -271,7 +266,7 @@ class CalcParser ( Parser ):
                 self.state = 18
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CalcParser.T__2 or _la==CalcParser.T__3:
+                if _la==3 or _la==4:
                     self.state = 17
                     self.dataType()
 
@@ -292,7 +287,7 @@ class CalcParser ( Parser ):
                 self.state = 26
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==CalcParser.T__2 or _la==CalcParser.T__3:
+                if _la==3 or _la==4:
                     self.state = 25
                     self.dataType()
 
@@ -344,7 +339,7 @@ class CalcParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 32
             _la = self._input.LA(1)
-            if not(_la==CalcParser.T__2 or _la==CalcParser.T__3):
+            if not(_la==3 or _la==4):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -511,7 +506,7 @@ class CalcParser ( Parser ):
             self.state = 42
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [CalcParser.INT]:
+            if token in [11]:
                 localctx = CalcParser.IntContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
@@ -519,21 +514,21 @@ class CalcParser ( Parser ):
                 self.state = 35
                 self.match(CalcParser.INT)
                 pass
-            elif token in [CalcParser.FLOAT]:
+            elif token in [12]:
                 localctx = CalcParser.FloatContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 36
                 self.match(CalcParser.FLOAT)
                 pass
-            elif token in [CalcParser.VAR]:
+            elif token in [13]:
                 localctx = CalcParser.VarContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 37
                 self.match(CalcParser.VAR)
                 pass
-            elif token in [CalcParser.LPAREN]:
+            elif token in [9]:
                 localctx = CalcParser.FactorContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
@@ -569,7 +564,7 @@ class CalcParser ( Parser ):
                         self.state = 45
                         localctx.op = self._input.LT(1)
                         _la = self._input.LA(1)
-                        if not(_la==CalcParser.T__4 or _la==CalcParser.T__5):
+                        if not(_la==5 or _la==6):
                             localctx.op = self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -588,7 +583,7 @@ class CalcParser ( Parser ):
                         self.state = 48
                         localctx.op = self._input.LT(1)
                         _la = self._input.LA(1)
-                        if not(_la==CalcParser.T__6 or _la==CalcParser.T__7):
+                        if not(_la==7 or _la==8):
                             localctx.op = self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
