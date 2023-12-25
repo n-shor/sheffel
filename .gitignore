@@ -5,3 +5,10 @@ venv/
 
 # build files
 build/
+
+# antlr files
+*.interp
+*.tokens
+*Lexer.py
+*Parser.py
+*Listener.py
