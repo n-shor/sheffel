@@ -1,10 +1,10 @@
-from compiler.compile import *
+from compiler.compile import compile_file, BinaryOperator, IntegralLiteral
 
 
 def main():
     compile_file('./code.shf', alternative_ast=[
-        BinaryOperator('=', VariableDeclaration('x', ir.IntType(32)), IntegralLiteral(13)),
-        BinaryOperator('=', Variable('x'), BinaryOperator('+', BinaryOperator('-', Variable('x'), IntegralLiteral(3)), IntegralLiteral(8)))
+        # BinaryOperator('+', BinaryOperator('+', IntegralLiteral(2), IntegralLiteral(1)), IntegralLiteral(8)),
+        BinaryOperator('+', IntegralLiteral(5), IntegralLiteral(7))
     ], make_executable=False)
 
 

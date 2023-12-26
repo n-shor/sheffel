@@ -1,24 +1,24 @@
 from antlr4 import *
 
-from .CalcLexer import CalcLexer
-from .CalcParser import CalcParser
-from .CalcListener import CalcListener
+from .GrammarLexer import GrammarLexer
+from .GrammarParser import GrammarParser
+from .GrammarListener import GrammarListener
 
-class CalcEvaluator(CalcListener):
+class GrammarEvaluator(GrammarListener):
     def __init__(self):
         self.variables = {}  # Store variables
         self.list = []  # For expression evaluation
 
-    def exitInt(self, ctx: CalcParser.IntContext):
+    def exitInt(self, ctx: GrammarParser.IntContext):
         self.list.append(int(ctx.getText()))
 
-    def exitFloat(self, ctx: CalcParser.FloatContext):
+    def exitFloat(self, ctx: GrammarParser.FloatContext):
         self.list.append(float(ctx.getText()))
 
-    def exitAddSub(self, ctx: CalcParser.AddSubContext):
+    def exitAddSub(self, ctx: GrammarParser.AddSubContext):
         # Handle expressions with '+' and '-' operators
         for child in ctx.getChildren():
-            if isinstance(child, CalcParser.MulDivContext):
+            if isinstance(child, GrammarParser.MulDivContext):
                 # Extract and push term values onto the list
                 value = self.list.pop()
                 self.list.append(value)
@@ -35,10 +35,10 @@ class CalcEvaluator(CalcListener):
         # Final value is at the top of the list
         self.list.append(self.list.pop())
 
-    def exitMulDiv(self, ctx: CalcParser.MulDivContext):
+    def exitMulDiv(self, ctx: GrammarParser.MulDivContext):
         # Handle expressions with '*' and '/' operators
         for child in ctx.getChildren():
-            if isinstance(child, CalcParser.FactorContext):
+            if isinstance(child, GrammarParser.FactorContext):
                 # Extract and push factor values onto the list
                 value = self.list.pop()
                 self.list.append(value)
@@ -55,17 +55,17 @@ class CalcEvaluator(CalcListener):
         # Final value is at the top of the list
         self.list.append(self.list.pop())
 
-    def exitFactor(self, ctx: CalcParser.FactorContext):
+    def exitFactor(self, ctx: GrammarParser.FactorContext):
         if ctx.getChildCount() == 1:
             self.list.append(float(ctx.getText()))
 
-    def exitVar(self, ctx: CalcParser.VarContext):
+    def exitVar(self, ctx: GrammarParser.VarContext):
         # Handle variable usage
         var_name = ctx.getText()
         value = self.variables.get(var_name)
         self.list.append(value)
 
-    def exitAssignmentLine(self, ctx: CalcParser.AssignmentLineContext):
+    def exitAssignmentLine(self, ctx: GrammarParser.AssignmentLineContext):
         if ctx.dataType():  # Check if a type is specified
             var_type = ctx.dataType().getText()
         else:
@@ -74,7 +74,7 @@ class CalcEvaluator(CalcListener):
         value = self.list.pop()  # Get the expression's value
         self.variables[var_name] = (var_type, value)  # Store type and value
 
-    def exitDeclarationLine(self, ctx: CalcParser.DeclarationLineContext):
+    def exitDeclarationLine(self, ctx: GrammarParser.DeclarationLineContext):
         if ctx.dataType():  # Check if a type is specified
             var_type = ctx.dataType().getText()
         else:
@@ -82,9 +82,9 @@ class CalcEvaluator(CalcListener):
         var_name = ctx.VAR().getText()
         self.variables[var_name] = (var_type, None)  # Store type, value is None
     
-    def exitEmptyLine(self, ctx: CalcParser.EmptyLineContext):
+    def exitEmptyLine(self, ctx: GrammarParser.EmptyLineContext):
         return
 
-    def exitExpressionLine(self, ctx: CalcParser.ExpressionLineContext):
+    def exitExpressionLine(self, ctx: GrammarParser.ExpressionLineContext):
         expr_value = self.list.pop()  # Evaluate the expression
 

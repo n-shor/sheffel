@@ -3,16 +3,16 @@ from antlr4.tree.Trees import Trees, escapeWhitespace
 
 #from ..ast.nodes import
 
-from .CalcLexer import CalcLexer
-from .CalcParser import CalcParser
-from .calc_evaluator import CalcEvaluator
+from .GrammarLexer import GrammarLexer
+from .GrammarParser import GrammarParser
+from .evaluator import GrammarEvaluator
 
 
 """
-def get_node_text(node: CalcParser.ProgContext, rule_names: list[str]):
+def get_node_text(node: GrammarParser.ProgContext, rule_names: list[str]):
     return escapeWhitespace(Trees.getNodeText(node, rule_names), False)
 
-def build_expression(tree: CalcParser.ProgContext, rule_names: list[str]):
+def build_expression(tree: GrammarParser.ProgContext, rule_names: list[str]):
     return ...
 """
 
@@ -22,15 +22,14 @@ def create_ast(code: str):
     
     input_stream = InputStream(code)
     
-    lexer = CalcLexer(input_stream)
+    lexer = GrammarLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
-    parser = CalcParser(token_stream)
+    parser = GrammarParser(token_stream)
 
     tree = parser.prog()  # Parse the entire program
-    print("xd")
-    calc_evaluator = CalcEvaluator()
+    Grammar_evaluator = GrammarEvaluator()
     walker = ParseTreeWalker()
-    walker.walk(calc_evaluator, tree)
+    walker.walk(Grammar_evaluator, tree)
     
     #return build_expression(tree, parser.ruleNames)
     
