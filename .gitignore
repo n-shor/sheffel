@@ -3,6 +3,9 @@ __pycache__/
 venv/
 *.pyc
 
+# pycharm
+.idea/
+
 # build files
 build/
 
