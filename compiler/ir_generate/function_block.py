@@ -22,32 +22,36 @@ class FunctionBlock:
 
         self._stack_variables: dict[str, ir.AllocaInstr] = {}
 
+        self._types: dict[str, ir.Type] = {
+            'Int': ir.IntType(32),
+            'Float': ir.FloatType()
+        }
+
     def translate(self, node: Node):
         match node:
-            case IntegralLiteral(value=value):
-                return ir.Constant(int32_t, value)
+            case Literal(value=value, literal_type=LiteralType(type_qualifier=type_qualifier)):
+                return ir.Constant(self._types[type_qualifier], value)
 
-            case VariableDeclaration(name=name, value_type=value_type):
-                allocated = self.builder.alloca(value_type)
+            # negative literals
+            case UnaryOperator(signature='-', operands=(NumericLiteral(value=value, literal_type=LiteralType(type_qualifier=type_qualifier)),)):
+                return ir.Constant(self._types[type_qualifier], value)
+
+            case VariableDeclaration(name=name, complete_type=CompleteType(type_qualifier=type_qualifier)):
+                allocated = self.builder.alloca(type_qualifier)
                 self._stack_variables[name] = allocated
                 return allocated
 
-            case Variable(name=name):
+            case WriteVariable(name=name):
+                return self._stack_variables[name]
+
+            case ReadVariable(name=name):
                 return self.builder.load(self._stack_variables[name])
 
-            case BinaryOperator(signature='=', operands=(VariableDeclaration(name=assigned_name, value_type=value_type), assignee)):
-                allocated = self.builder.alloca(value_type)
-                self._stack_variables[assigned_name] = allocated
-                return self.builder.store(self.translate(assignee), allocated)
-
-            case BinaryOperator(signature='=', operands=(Variable(name=assigned_name), assignee)):
+            case BinaryOperator(signature='=', operands=(assigned, assignee)):
                 return self.builder.store(
                     self.translate(assignee),
-                    self._stack_variables[assigned_name]
+                    self.translate(assigned)
                 )
-
-            case BinaryOperator(signature='='):
-                raise ValueError(f'Cannot assign to a non-variable.')
 
             case BinaryOperator(signature=signature, operands=(left, right)) if signature in self._binary_operators:
                 return self._binary_operators[signature](self.translate(left), self.translate(right))

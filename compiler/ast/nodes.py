@@ -1,45 +1,41 @@
-from llvmlite import ir
+from .types import CompleteType, LiteralType
 
 
 class Node:
     """A base node for representing any operation."""
-    pass
 
 
 class Literal(Node):
     """Represents a literal value."""
-    def __init__(self):
+    def __init__(self, value, literal_type: LiteralType):
         super().__init__()
+
+        self.value = value
+        self.literal_type = literal_type
 
 
 class NumericLiteral(Literal):
     """Represents a numeric literal value."""
-    def __init__(self):
-        super().__init__()
+    def __init__(self, value, literal_type: LiteralType):
+        super().__init__(value, literal_type)
 
 
 class IntegralLiteral(NumericLiteral):
     """Represents any negative or positive integer literal value."""
     def __init__(self, value: int):
-        super().__init__()
-
-        self.value = value
+        super().__init__(value, LiteralType('Int'))
 
 
 class FloatingLiteral(NumericLiteral):
     """Represents any floating point literal value."""
     def __init__(self, value: float):
-        super().__init__()
-
-        self.value = value
+        super().__init__(value, LiteralType('Float'))
 
 
 class StringLiteral(Literal):
     """Represents a literal string value."""
     def __init__(self, value: str):
-        super().__init__()
-
-        self.value = value
+        super().__init__(value, LiteralType('String'))
 
 
 class Operator(Node):
@@ -71,9 +67,21 @@ class Variable(Node):
         self.name = name
 
 
-class VariableDeclaration(Variable):
-    """Represents a declaration of a variable."""
-    def __init__(self, name: str, value_type: ir.Type):
+class ReadVariable(Variable):
+    """Represents any read from a variable name."""
+    def __init__(self, name: str):
         super().__init__(name)
 
-        self.value_type = value_type
+
+class WriteVariable(Variable):
+    """Represents any write to a variable name."""
+    def __init__(self, name: str):
+        super().__init__(name)
+
+
+class VariableDeclaration(WriteVariable):
+    """Represents a declaration of a variable."""
+    def __init__(self, name: str, complete_type: CompleteType):
+        super().__init__(name)
+
+        self.complete_type = complete_type
