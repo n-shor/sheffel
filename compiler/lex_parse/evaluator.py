@@ -4,6 +4,7 @@ from .GrammarLexer import GrammarLexer
 from .GrammarParser import GrammarParser
 from .GrammarListener import GrammarListener
 
+
 class GrammarEvaluator(GrammarListener):
     def __init__(self):
         self.variables = {}  # Store variables
@@ -81,10 +82,9 @@ class GrammarEvaluator(GrammarListener):
             var_type = None  # No type specified
         var_name = ctx.VAR().getText()
         self.variables[var_name] = (var_type, None)  # Store type, value is None
-    
+
     def exitEmptyLine(self, ctx: GrammarParser.EmptyLineContext):
         return
 
     def exitExpressionLine(self, ctx: GrammarParser.ExpressionLineContext):
         expr_value = self.list.pop()  # Evaluate the expression
-

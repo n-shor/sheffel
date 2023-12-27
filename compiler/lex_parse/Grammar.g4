@@ -7,11 +7,16 @@ prog: stat+;
 stat:
    '\n'                              # EmptyLine
 |  expr '\n'                         # ExpressionLine
-|  (dataType)? VAR '=' expr '\n'        # AssignmentLine
-|  (dataType)? VAR '\n'                 # DeclarationLine
+|  (behavior_qualifier)? (type_qualifier)(memory_qualifier) VAR '=' expr '\n'   # AssignmentDeclarationLine
+|  (behavior_qualifier)? (type_qualifier)(memory_qualifier) VAR '\n'            # DeclarationLine
+|  VAR '=' expr '\n'                                                            # VariableAssignmentLine
+|  '{' expr '}'                                                                 # SingleLineScope
+//|  expr '=' expr '\n'                                                           # AssignmentLine
 ;
 
-dataType: 'Int' | 'Float';
+memory_qualifier: '*' | '&';
+type_qualifier: 'Int' | 'Float';
+behavior_qualifier: 'noread' | 'nowrite';
 
 expr:
    expr op=('*' | '/') expr            # MulDiv
