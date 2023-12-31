@@ -7,17 +7,17 @@ class Node:
 
 class Literal(Node):
     """Represents a literal value."""
-    def __init__(self, value, literal_type: LiteralType):
+    def __init__(self, value, type_: LiteralType):
         super().__init__()
 
         self.value = value
-        self.literal_type = literal_type
+        self.type_ = type_
 
 
 class NumericLiteral(Literal):
     """Represents a numeric literal value."""
-    def __init__(self, value, literal_type: LiteralType):
-        super().__init__(value, literal_type)
+    def __init__(self, value, type_: LiteralType):
+        super().__init__(value, type_)
 
 
 class IntegralLiteral(NumericLiteral):
@@ -81,7 +81,7 @@ class WriteVariable(Variable):
 
 class VariableDeclaration(WriteVariable):
     """Represents a declaration of a variable."""
-    def __init__(self, name: str, complete_type: CompleteType):
+    def __init__(self, name: str, type_: CompleteType):
         super().__init__(name)
 
-        self.complete_type = complete_type
+        self.type_ = type_
