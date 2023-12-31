@@ -1,5 +1,7 @@
-from compiler.compile import *
 from llvmlite import ir
+
+from compiler.ast.nodes import *
+from compiler.compile import compile_file
 
 
 def main():
