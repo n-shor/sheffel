@@ -2,6 +2,7 @@ from llvmlite import ir
 
 from .ir_constants import ENTRY_LABEL_NAME, ENTRY_LABEL_FUNC_TYPE
 from ..ast.nodes import *
+from ..ast.types.literal_type import *
 
 
 class FunctionBlock:
@@ -27,15 +28,15 @@ class FunctionBlock:
 
     def translate(self, node: Node):
         match node:
-            case Literal(value=value, type_=LiteralType(type_name=type_name)):
-                return ir.Constant(self._types[type_name], value)
+            case Literal(value=value, type_=LiteralType(type_=type_)):
+                return ir.Constant(type_, value)
 
             # negative literals
-            case UnaryOperator(signature='-', operands=(NumericLiteral(value=value, type_=LiteralType(type_name=type_name)), )):
-                return ir.Constant(self._types[type_name], value)
+            case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType(type_=type_)), )):
+                return ir.Constant(type_, -value)
 
-            case VariableDeclaration(name=name, type_=CompleteType(type_name=type_name)):
-                allocated = self.builder.alloca(self._types[type_name])
+            case VariableDeclaration(name=name, type_=VariableType(base_type=type_, memory=ValueMemoryQualifier())):
+                allocated = self.builder.alloca(type_)
                 self._stack_variables[name] = allocated
                 return allocated
 

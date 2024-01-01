@@ -1,4 +1,9 @@
-from .types import CompleteType, LiteralType
+from .types.function_type import FunctionType
+from .types.variable_type import VariableType
+from .types.literal_type import LiteralType
+
+from .types.memory_qualifiers import ValueMemoryQualifier, ReferenceMemoryQualifier
+from .types.behavior_qualifiers import ConstBehaviorQualifier, NoWriteBehaviorQualifier, NoReadBehaviorQualifier
 
 
 class Node:
@@ -12,30 +17,6 @@ class Literal(Node):
 
         self.value = value
         self.type_ = type_
-
-
-class NumericLiteral(Literal):
-    """Represents a numeric literal value."""
-    def __init__(self, value, type_: LiteralType):
-        super().__init__(value, type_)
-
-
-class IntegralLiteral(NumericLiteral):
-    """Represents any negative or positive integer literal value."""
-    def __init__(self, value: int):
-        super().__init__(value, LiteralType('Int'))
-
-
-class FloatingLiteral(NumericLiteral):
-    """Represents any floating point literal value."""
-    def __init__(self, value: float):
-        super().__init__(value, LiteralType('Float'))
-
-
-class StringLiteral(Literal):
-    """Represents a literal string value."""
-    def __init__(self, value: str):
-        super().__init__(value, LiteralType('String'))
 
 
 class Operator(Node):
@@ -81,7 +62,40 @@ class WriteVariable(Variable):
 
 class VariableDeclaration(WriteVariable):
     """Represents a declaration of a variable."""
-    def __init__(self, name: str, type_: CompleteType):
+    def __init__(self, name: str, type_: VariableType):
         super().__init__(name)
 
+        self.type_ = type_
+
+
+class Return(Node):
+    """Represents a return call."""
+    def __init__(self, returnee: Node):
+        super().__init__()
+
+        self.returnee = returnee
+
+
+class Block(Node):
+    """Represents a block of code made of several lines."""
+    def __init__(self, *lines: Node):
+        super().__init__()
+
+        self.lines = lines
+
+
+class Value(Node):
+    """Represents any non-literal value."""
+    def __init__(self, type_: VariableType):
+        super().__init__()
+
+        self.type_ = type_
+
+
+class Function(Value):
+    """Represents a function creating statement."""
+    def __init__(self, block: Block, type_: FunctionType):
+        super().__init__(VariableType(type_.get_direct_unqualified_type(), ReferenceMemoryQualifier(), ConstBehaviorQualifier()))
+
+        self.block = block
         self.type_ = type_
