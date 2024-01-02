@@ -4,7 +4,7 @@ from llvmlite import ir
 from .file_constants import *
 
 from ..ast.nodes import Node
-from .function_block import FunctionBlock, EntryFunctionBlock
+from .translator.function import EntryFunction
 
 
 def create_ir(ast: list[Node]):
@@ -12,10 +12,15 @@ def create_ir(ast: list[Node]):
 
     module = ir.Module()
 
-    func = EntryFunctionBlock(module)
+    func = EntryFunction(module)
 
-    for node in ast:
-        func.translate(node)
+    func.translate(ast)
+
+    # mr = binding.parse_assembly(str(module))
+
+    # print(mr.triple)
+    # print(mr.name)
+    # print(mr.source_file)
 
     with open(f'{BUILD_PATH}/{IR_FILE}', 'w') as f:
         f.write(str(module))

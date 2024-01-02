@@ -1,15 +1,14 @@
 from llvmlite import ir
 
-from .ir_constants import ENTRY_LABEL_NAME, ENTRY_LABEL_FUNC_TYPE
-from ..ast.nodes import *
-from ..ast.types.literal_type import *
+from ...ast.nodes import *
+from ...ast.types.literal_type import NumericLiteralType
 
 
-class FunctionBlock:
-    def __init__(self, name: str, func_type: ir.FunctionType, module: ir.Module):
-        self.module = module
+class Block:
+    """A translation unit consisting of many uninterrupted lines."""
 
-        self.func = ir.Function(self.module, func_type, name)
+    def __init__(self, func: ir.Function):
+        self.func = func
         self.block = self.func.append_basic_block()
         self.builder = ir.IRBuilder(self.block)
 
@@ -26,8 +25,8 @@ class FunctionBlock:
             'Float': ir.FloatType()
         }
 
-    def translate(self, node: Node):
-        match node:
+    def add(self, line: Node):
+        match line:
             case Literal(value=value, type_=LiteralType(type_=type_)):
                 return ir.Constant(type_, value)
 
@@ -48,23 +47,25 @@ class FunctionBlock:
 
             case BinaryOperator(signature='=', operands=(assigned, assignee)):
                 return self.builder.store(
-                    self.translate(assignee),
-                    self.translate(assigned)
+                    self.add(assignee),
+                    self.add(assigned)
                 )
 
             case BinaryOperator(signature=signature, operands=(left, right)) if signature in self._binary_operators:
-                return self._binary_operators[signature](self.translate(left), self.translate(right))
+                return self._binary_operators[signature](self.add(left), self.add(right))
 
             case Operator(signature=signature):
                 raise ValueError(f'{signature} is an unknown operation.')
 
             case Node():
-                raise TypeError(f'{node} is of a primitive or unknown node type.')
+                raise TypeError(f'{line} is of a primitive or unknown node type.')
 
             case _:
-                raise TypeError(f'{node} is not a node type.')
+                raise TypeError(f'{line} is not a node type.')
 
+    def translate(self, code: list[Node]):
+        for line in code:
+            self.add(line)
 
-class EntryFunctionBlock(FunctionBlock):
-    def __init__(self, module: ir.Module):
-        super().__init__(ENTRY_LABEL_NAME, ENTRY_LABEL_FUNC_TYPE, module)
+        # add terminator
+
