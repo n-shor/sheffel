@@ -27,6 +27,9 @@ class Block:
 
     def add(self, line: Node):
         match line:
+            case Return(returnee=returnee):
+                return self.builder.ret(self.add(returnee))
+
             case Literal(value=value, type_=LiteralType(type_=type_)):
                 return ir.Constant(type_, value)
 
@@ -67,5 +70,4 @@ class Block:
         for line in code:
             self.add(line)
 
-        # add terminator
-
+        # print("Warning: missing terminator.")

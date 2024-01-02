@@ -68,14 +68,6 @@ class VariableDeclaration(WriteVariable):
         self.type_ = type_
 
 
-class Return(Node):
-    """Represents a return call."""
-    def __init__(self, returnee: Node):
-        super().__init__()
-
-        self.returnee = returnee
-
-
 class Block(Node):
     """Represents a block of code made of several lines."""
     def __init__(self, *lines: Node):
@@ -99,3 +91,11 @@ class Function(Value):
 
         self.block = block
         self.type_ = type_
+
+
+class Return(Node):
+    """Represents a return call."""
+    def __init__(self, returnee: Node):
+        super().__init__()
+
+        self.returnee = returnee
