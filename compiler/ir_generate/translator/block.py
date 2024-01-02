@@ -2,6 +2,7 @@ from llvmlite import ir
 
 from ...ast.nodes import *
 from ...ast.types.literal_type import NumericLiteralType
+from ...ast.types.unqualified_type import UnqualifiedType, NamedUnqualifiedType, DirectUnqualifiedType
 
 
 class Block:
@@ -25,6 +26,21 @@ class Block:
             'Float': ir.FloatType()
         }
 
+    def resolve_type(self, type_: UnqualifiedType):
+        """Resolves an unqualified ast type into a valid IR type."""
+        match type_:
+            case NamedUnqualifiedType(name=name):
+                return self._types[name]
+
+            case DirectUnqualifiedType(type_=type_):
+                return type_
+
+            case UnqualifiedType():
+                raise TypeError(f'{type_} is of a primitive or unknown qualified-type type.')
+
+            case _:
+                raise TypeError(f'{type_} is not a qualified-type type.')
+
     def add(self, line: Node):
         match line:
             case Return(returnee=returnee):
@@ -38,7 +54,7 @@ class Block:
                 return ir.Constant(type_, -value)
 
             case VariableDeclaration(name=name, type_=VariableType(base_type=type_, memory=ValueMemoryQualifier())):
-                allocated = self.builder.alloca(type_)
+                allocated = self.builder.alloca(self.resolve_type(type_))
                 self._stack_variables[name] = allocated
                 return allocated
 
