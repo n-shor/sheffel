@@ -15,19 +15,20 @@ class NumericLiteralType(LiteralType):
         super().__init__(type_)
 
 
-class IntegralLiteral(NumericLiteralType):
+class IntegralLiteralType(NumericLiteralType):
     """The type information of a literal negative or positive integer value."""
     def __init__(self):
         super().__init__(ir.IntType(32))
 
 
-class FloatingLiteral(NumericLiteralType):
+class FloatingLiteralType(NumericLiteralType):
     """The type information of a literal floating-point value."""
     def __init__(self):
         super().__init__(ir.DoubleType())
 
 
-class StringLiteral(LiteralType):
+class StringLiteralType(LiteralType):
     """The type information of a string literal."""
     def __init__(self):
         super().__init__(ir.IntType(8).as_pointer())
+        # make type a struct of char ptr and int
