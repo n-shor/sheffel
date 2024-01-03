@@ -39,7 +39,7 @@ class GrammarEvaluator(GrammarListener):
     def exitMulDiv(self, ctx: GrammarParser.MulDivContext):
         # Handle expressions with '*' and '/' operators
         for child in ctx.getChildren():
-            if isinstance(child, GrammarParser.FactorContext):
+            if isinstance(child, GrammarParser.ParenthesizeContext):
                 # Extract and push factor values onto the list
                 value = self.list.pop()
                 self.list.append(value)
@@ -56,7 +56,7 @@ class GrammarEvaluator(GrammarListener):
         # Final value is at the top of the list
         self.list.append(self.list.pop())
 
-    def exitFactor(self, ctx: GrammarParser.FactorContext):
+    def exitFactor(self, ctx: GrammarParser.ParenthesizeContext):
         if ctx.getChildCount() == 1:
             self.list.append(float(ctx.getText()))
 
@@ -66,7 +66,7 @@ class GrammarEvaluator(GrammarListener):
         value = self.variables.get(var_name)
         self.list.append(value)
 
-    def exitAssignmentLine(self, ctx: GrammarParser.AssignmentLineContext):
+    def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
         if ctx.dataType():  # Check if a type is specified
             var_type = ctx.dataType().getText()
         else:
@@ -75,7 +75,7 @@ class GrammarEvaluator(GrammarListener):
         value = self.list.pop()  # Get the expression's value
         self.variables[var_name] = (var_type, value)  # Store type and value
 
-    def exitDeclarationLine(self, ctx: GrammarParser.DeclarationLineContext):
+    def exitDeclaration(self, ctx: GrammarParser.DeclarationContext):
         if ctx.dataType():  # Check if a type is specified
             var_type = ctx.dataType().getText()
         else:
