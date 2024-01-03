@@ -5,32 +5,33 @@ prog: stat+;
 // Parser rules
 
 stat:
-   '\n'                              # EmptyLine
-|  expr '\n'                         # ExpressionLine
-|  (behavior_qualifier)? (type_qualifier)(memory_qualifier) VAR '=' expr '\n'   # AssignmentDeclarationLine
-|  (behavior_qualifier)? (type_qualifier)(memory_qualifier) VAR '\n'            # DeclarationLine
-|  VAR '=' expr '\n'                                                            # VariableAssignmentLine
-|  '{' expr '}'                                                                 # SingleLineScope
-//|  expr '=' expr '\n'                                                           # AssignmentLine
+   OPT_S '\n'                              # EmptyLine
+|  expr OPT_S '\n'                         # ExpressionLine
 ;
 
 memory_qualifier: '*' | '&';
-type_qualifier: 'Int' | 'Float';
+type_: 'Int' | 'Float';
 behavior_qualifier: 'noread' | 'nowrite';
 
 expr:
-   expr op=('*' | '/') expr            # MulDiv
-|  expr op=('+' | '-') expr            # AddSub
-|  INT                                 # Int
-|  FLOAT                               # Float
-|  VAR                                 # Var
-|  LPAREN expr RPAREN                  # Factor
+   expr OPT_S op=('*' | '/') OPT_S expr            # MulDiv
+|  expr OPT_S op=('+' | '-') OPT_S expr            # AddSub
+|  expr OPT_S op=CUSTOM_OP OPT_S expr              # CustomOperator
+|  expr OPT_S op='=' OPT_S expr                    # Assignment
+|  (behavior_qualifier MAN_S)? type_ OPT_S memory_qualifier VAR               # Declaration
+|  VAR                                             # Var
+|  INT                                             # Int
+|  FLOAT                                           # Float
+|  LPAREN OPT_S expr OPT_S RPAREN                  # Parenthesize
 ;
 
 // Lexer rules
 LPAREN : '(' ;
 RPAREN : ')' ;
-INT: [0-9]+;
-FLOAT: [0-9]+ ('.' [0-9]+)?;
-VAR: [a-zA-Z]+;
-WS : [ \t\r]+ -> skip ;  // Skips whitespace and carriage returns
+CUSTOM_OP: [!#$%&*+-/:;<=>?@^|~]+ ;
+INT: [0-9]+ ;
+FLOAT: [0-9]* '.' [0-9]+ ;
+VAR: [a-zA-Z_][a-zA-Z_0-9]* ;
+MAN_S: [ \t]+ ;
+OPT_S: [ \t]* ;
+FULL_SKIP: [\r]+ -> skip ;  // Skips carriage returns
