@@ -6,10 +6,7 @@ from compiler.compile import compile_file
 
 
 code = """
-int x = 5
-x = 5
-
-return 0
+5 + 5
 """
 
 

@@ -1,90 +1,95 @@
-from antlr4 import *
-
+from antlr4 import CommonTokenStream, InputStream
+from ..ast.nodes import *
+from ..ast.types.literal_type import *
 from .GrammarLexer import GrammarLexer
 from .GrammarParser import GrammarParser
 from .GrammarListener import GrammarListener
 
 
-class GrammarEvaluator(GrammarListener):
+class GrammarASTBuilder(GrammarListener):
     def __init__(self):
-        self.variables = {}  # Store variables
-        self.list = []  # For expression evaluation
+        self.root_node = None
+        self.variables = {}  # Store variables (for declarations and assignments)
+
+    def visit(self, ctx):
+        # Visit all child nodes recursively
+        for child in ctx.getChildren():
+            self.visit(child)
+
+        match ctx:
+            case GrammarParser.IntContext():
+                node = ASTNode("Int", value=int(ctx.getText()))
+            case GrammarParser.FloatContext():
+                node = ASTNode("Float", value=float(ctx.getText()))
+            case GrammarParser.AddSubContext():
+                node = ASTNode("AddSub", value=ctx.op)
+            case _:
+                raise TypeError("No matching context was found")
+
+        self.handle_ast_node(node)
+        # ... (add logic for other relevant contexts based on your grammar rules) ...
+
+    def handle_ast_node(self, node):
+        """
+        Handles the placement of a created AST node within the AST structure.
+        """
+        self.root_node = node if not self.root_node else self.root_node.children.append(node)
 
     def exitInt(self, ctx: GrammarParser.IntContext):
-        self.list.append(int(ctx.getText()))
+        node = Literal(int(ctx.getText()), IntegralLiteralType())
+        return node
 
     def exitFloat(self, ctx: GrammarParser.FloatContext):
-        self.list.append(float(ctx.getText()))
+        node = ASTNode("Float", value=float(ctx.getText()))
+        return node
 
     def exitAddSub(self, ctx: GrammarParser.AddSubContext):
-        # Handle expressions with '+' and '-' operators
+        node = ASTNode("AddSub")
         for child in ctx.getChildren():
-            if isinstance(child, GrammarParser.MulDivContext):
-                # Extract and push term values onto the list
-                value = self.list.pop()
-                self.list.append(value)
-            elif isinstance(child, TerminalNode):
-                # Handle operators: +, -
-                op = child.getText()
-                right = self.list.pop()
-                left = self.list.pop()
-                if op == '+':
-                    self.list.append(left + right)
-                elif op == '-':
-                    self.list.append(left - right)
-
-        # Final value is at the top of the list
-        self.list.append(self.list.pop())
+            if isinstance(child, GrammarParser.MulDivContext) or isinstance(child, GrammarParser.ParenthesizeContext):
+                node.children.append(self.visit(child))
+        return node
 
     def exitMulDiv(self, ctx: GrammarParser.MulDivContext):
-        # Handle expressions with '*' and '/' operators
+        node = ASTNode("MulDiv")
         for child in ctx.getChildren():
             if isinstance(child, GrammarParser.ParenthesizeContext):
-                # Extract and push factor values onto the list
-                value = self.list.pop()
-                self.list.append(value)
-            if isinstance(child, TerminalNode):
-                # Handle operators: *, /
-                op = child.getText()
-                right = self.list.pop()
-                left = self.list.pop()
-                if op == '*':
-                    self.list.append(left * right)
-                elif op == '/':
-                    self.list.append(left / right)
-
-        # Final value is at the top of the list
-        self.list.append(self.list.pop())
+                node.children.append(self.visit(child))
+        return node
 
     def exitFactor(self, ctx: GrammarParser.ParenthesizeContext):
         if ctx.getChildCount() == 1:
-            self.list.append(float(ctx.getText()))
+            # Handle a single value within parentheses
+            node = ASTNode(ctx.getText())
+            return node
+        else:
+            # Recursively build AST for the expression within parentheses
+            return self.visit(ctx.getChild(1))
 
     def exitVar(self, ctx: GrammarParser.VarContext):
-        # Handle variable usage
-        var_name = ctx.getText()
-        value = self.variables.get(var_name)
-        self.list.append(value)
+        node = ASTNode("Var", value=ctx.getText())
+        return node
 
     def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
-        if ctx.dataType():  # Check if a type is specified
-            var_type = ctx.dataType().getText()
-        else:
-            var_type = None  # No type specified
         var_name = ctx.VAR().getText()
-        value = self.list.pop()  # Get the expression's value
-        self.variables[var_name] = (var_type, value)  # Store type and value
+        expr_node = self.visit(ctx.expression())  # Build AST for the expression
+        self.variables[var_name] = expr_node  # Store the AST node for the variable
 
     def exitDeclaration(self, ctx: GrammarParser.DeclarationContext):
-        if ctx.dataType():  # Check if a type is specified
-            var_type = ctx.dataType().getText()
-        else:
-            var_type = None  # No type specified
         var_name = ctx.VAR().getText()
-        self.variables[var_name] = (var_type, None)  # Store type, value is None
+        node = ASTNode("Declaration", value=var_name)
+        return node
 
     def exitEmptyLine(self, ctx: GrammarParser.EmptyLineContext):
-        return
+        return None  # No AST node for empty lines
 
     def exitExpressionLine(self, ctx: GrammarParser.ExpressionLineContext):
-        expr_value = self.list.pop()  # Evaluate the expression
+        return self.visit(ctx.expression())  # Build AST for the expression
+
+    def build_ast(self, input_string):
+        lexer = GrammarLexer(InputStream(input_string))
+        stream = CommonTokenStream(lexer)
+        parser = GrammarParser(stream)
+        tree = parser.prog()
+        self.visit(tree)
+        return self.root_node
