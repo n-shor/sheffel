@@ -55,6 +55,10 @@ class Block:
             case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType(type_=type_)), )):
                 return ir.Constant(type_, -value)
 
+            # unary + operator is currently useless
+            case UnaryOperator(signature='+', operands=(operand,)):
+                return self.add(operand)
+
             case VariableDeclaration(name=name, type_=VariableType(base_type=type_, memory=ValueMemoryQualifier())):
                 allocated = self.builder.alloca(self.resolve_type(type_))
                 self._stack_variables[name] = allocated
