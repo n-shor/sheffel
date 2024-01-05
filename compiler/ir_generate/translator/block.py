@@ -41,8 +41,10 @@ class Block:
             case _:
                 raise TypeError(f'{type_} is not a qualified-type type.')
 
-    def add(self, line: Node):
-        match line:
+    def add(self, statement: Node):
+        """Adds a statement to the block."""
+
+        match statement:
             case Return(returnee=returnee):
                 return self.builder.ret(self.add(returnee))
 
@@ -77,13 +79,15 @@ class Block:
                 raise ValueError(f'{signature} is an unknown operation.')
 
             case Node():
-                raise TypeError(f'{line} is of a primitive or unknown node type.')
+                raise TypeError(f'{statement} is of a primitive or unknown node type.')
 
             case _:
-                raise TypeError(f'{line} is not a node type.')
+                raise TypeError(f'{statement} is not a node type.')
 
-    def translate(self, code: list[Node]):
-        for line in code:
-            self.add(line)
+    def translate(self, statements: list[Node]):
+        """Adds multiple statements to the block."""
+
+        for statement in statements:
+            self.add(statement)
 
         # print("Warning: missing terminator.")

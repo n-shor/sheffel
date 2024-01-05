@@ -12,8 +12,8 @@ class Function:
         self.module = module
         self.func = ir.Function(self.module, func_type, name)
 
-    def translate(self, code: list[Node]):
-        Block(self.func).translate(code)
+    def translate(self, statements: list[Node]):
+        Block(self.func).translate(statements)
 
 
 class EntryFunction(Function):
