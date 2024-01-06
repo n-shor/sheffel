@@ -5,7 +5,7 @@ from antlr4.tree.Trees import Trees, escapeWhitespace
 
 from .GrammarLexer import GrammarLexer
 from .GrammarParser import GrammarParser
-from .evaluator import GrammarEvaluator
+from .evaluator import GrammarASTBuilder
 
 
 """
@@ -27,9 +27,9 @@ def create_ast(code: str):
     parser = GrammarParser(token_stream)
 
     tree = parser.prog()  # Parse the entire program
-    Grammar_evaluator = GrammarEvaluator()
+    ASTBuilder = GrammarASTBuilder()
     walker = ParseTreeWalker()
-    walker.walk(Grammar_evaluator, tree)
+    walker.walk(ASTBuilder, tree)
     
     #return build_expression(tree, parser.ruleNames)
     
