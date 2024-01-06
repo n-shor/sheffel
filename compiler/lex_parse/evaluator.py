@@ -9,14 +9,8 @@ from .GrammarListener import GrammarListener
 class GrammarASTBuilder(GrammarListener):
     def __init__(self):
         self.root_node = None
-        self.variables = {}  # Store variables (for declarations and assignments)
-        # Should I be the one doing the storing??
 
     def visit(self, ctx):
-        # Visit all child nodes recursively
-        for child in ctx.getChildren():
-            self.visit(child)
-
         match ctx:
             case GrammarParser.IntContext():
                 node = self.exitInt(ctx)
@@ -33,9 +27,10 @@ class GrammarASTBuilder(GrammarListener):
             case GrammarParser.DeclarationContext():
                 node = self.exitDeclaration(ctx)
             case _:
-                raise TypeError("No matching context was found.")
+                raise TypeError(f"No matching context was found. Current context: {ctx}")
 
         self.handle_ast_node(node)
+        return node
 
     # Figure out what this is supposed to do XD
     def handle_ast_node(self, node):
@@ -45,47 +40,55 @@ class GrammarASTBuilder(GrammarListener):
         self.root_node = node if not self.root_node else self.root_node.children.append(node)
 
     def exitInt(self, ctx: GrammarParser.IntContext):
+        print("int")
         return Literal(int(ctx.getText()), IntegralLiteralType())
 
     def exitFloat(self, ctx: GrammarParser.FloatContext):
+        print("float")
         return Literal(float(ctx.getText()), FloatingLiteralType())
 
     def exitAddSub(self, ctx: GrammarParser.AddSubContext):
-        return BinaryOperator(ctx.op, ctx.expr(0), ctx.expr(1))  # change indexes if got an operator instead of an operand / wrong order
+        print("addsub")
+        return BinaryOperator(ctx.op, self.visit(ctx.getChild(0, GrammarParser.ExprContext)),
+                              self.visit(ctx.getChild(1, GrammarParser.ExprContext)))
 
     def exitMulDiv(self, ctx: GrammarParser.MulDivContext):
-        return BinaryOperator(ctx.op, ctx.expr(0), ctx.expr(1))  # change indexes if got an operator instead of an operand / wrong order
+        print("muldiv")
+        return BinaryOperator(ctx.op, self.visit(ctx.getChild(0, GrammarParser.ExprContext)),
+                              self.visit(ctx.getChild(1, GrammarParser.ExprContext)))
 
-    # This could cause some issues like the parenthesis not showing up or something IDK yet
     def exitFactor(self, ctx: GrammarParser.ParenthesizeContext):
-        return self.visit(ctx.expr())  # Does this add the parenthesis to the AST? Do we care if it doesn't?
+        print("factor")
+        return self.visit(ctx.getChild(0, GrammarParser.ExprContext))
 
     def exitVar(self, ctx: GrammarParser.VarContext):
+        print("variable")
         return Variable(ctx.getText())
 
     # Not sure what to do here, this should be a binary operator probably, but what about the read and write variables? Should I use them here somehow?
     def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
-        """
-        var_name = ctx.VAR().getText()
-        expr_node = self.visit(ctx.expression())  # Build AST for the expression
-        self.variables[var_name] = expr_node  # Store the AST node for the variable
-        Should I be doing this?
-        """
-        return BinaryOperator(ctx.op, ctx.expr(0), ctx.expr(1))
+        print("assignment")
+        return BinaryOperator(ctx.op, self.visit(ctx.getChild(0, GrammarParser.ExprContext)),
+                              self.visit(ctx.getChild(1, GrammarParser.ExprContext)))
 
     def exitDeclaration(self, ctx: GrammarParser.DeclarationContext):
-        return VariableDeclaration(ctx.VAR(), ctx.type_())
+        print("declaration")
+        return VariableDeclaration(ctx.getChild(0, GrammarParser.VarContext).getText(),
+                                   ctx.getChild(0, GrammarParser.Type_Context).getText())
 
     def exitEmptyLine(self, ctx: GrammarParser.EmptyLineContext):
+        print("empty line")
         return None  # No AST node for empty lines
 
     def exitExpressionLine(self, ctx: GrammarParser.ExpressionLineContext):
-        return self.visit(ctx.expr())  # Build AST for the expression
+        print("expression line")
+        return self.visit(ctx.getChild(0, GrammarParser.ExprContext))  # Build AST for the expression
 
     def build_ast(self, input_string):
         lexer = GrammarLexer(InputStream(input_string))
         stream = CommonTokenStream(lexer)
         parser = GrammarParser(stream)
         tree = parser.prog()
+        print("start2")
         self.visit(tree)
         return self.root_node

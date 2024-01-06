@@ -6,7 +6,8 @@ from compiler.compile import compile_file
 
 
 code = """
-5 + 5
+int x = 5
+x = x + 5
 """
 
 
