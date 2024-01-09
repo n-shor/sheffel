@@ -1,19 +1,19 @@
 from ..types import FunctionType, VariableType, ReferenceMemoryQualifier, ConstBehaviorQualifier
 
-from . import Node, Value
-
-
-class Block(Node):
-    """Represents a block of code made of several lines. This is effectively a scope."""
-    def __init__(self, *statements: Node):
-        super().__init__()
-
-        self.statements = statements
+from . import Node, Value, Block
 
 
 class Function(Value):
-    """Represents a function creating statement."""
-    def __init__(self, type_: FunctionType, *blocks: Block):
+    """Represents a function creating statement. The function has a type and body."""
+    def __init__(self, type_: FunctionType, block: Block):
         super().__init__(VariableType(type_, ReferenceMemoryQualifier(), ConstBehaviorQualifier()))
 
-        self.blocks = blocks
+        self.block = block
+
+
+class Return(Node):
+    """A terminator statement returning another statement."""
+    def __init__(self, returnee: Node):
+        super().__init__()
+
+        self.returnee = returnee

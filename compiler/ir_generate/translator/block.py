@@ -4,11 +4,14 @@ import compiler.ast.nodes as nodes
 from ...ast.nodes import *
 from ...ast.types import *
 
+from .type_resolver import resolve as resolve_type
+
 
 class Block:
     """A translation unit consisting of many uninterrupted lines."""
 
-    def __init__(self, func: ir.Function):
+    def __init__(self, syntax: nodes.Block, func: ir.Function):
+        self.syntax = syntax
         self.func = func
         self.block = self.func.append_basic_block()
         self.builder = ir.IRBuilder(self.block)
@@ -21,30 +24,28 @@ class Block:
 
         self._stack_variables: dict[str, ir.AllocaInstr] = {}
 
-        self._types: dict[str, ir.Type] = {
-            'Int': ir.IntType(32),
-            'Float': ir.FloatType()
-        }
-
-    def resolve_type(self, type_: UnqualifiedType) -> ir.Type:
-        return type_.get_direct(self._types.get)
-
-    def add(self, statement: Node):
+    def add(self, statement: Node) -> ir.Value | ir.Instruction:
         """Adds a statement to the block."""
 
         match statement:
+
+            case nodes.Block() as block:
+                next_ = Block(block, self.func)
+                next_.translate()
+                return self.builder.branch(next_.block)
+
             case Return(returnee=returnee):
                 return self.builder.ret(self.add(returnee))
 
             case Literal(value=value, type_=LiteralType() as type_):
-                return ir.Constant(self.resolve_type(type_), value)
+                return ir.Constant(resolve_type(type_), value)
 
             # negative literals
             case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
-                return ir.Constant(self.resolve_type(type_), -value)
+                return ir.Constant(resolve_type(type_), -value)
 
             case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
-                allocated = self.builder.alloca(self.resolve_type(type_))
+                allocated = self.builder.alloca(resolve_type(type_))
                 self._stack_variables[name] = allocated
                 return allocated
 
@@ -72,10 +73,13 @@ class Block:
             case _:
                 raise TypeError(f'{statement} is not a node type.')
 
-    def translate(self, statements: list[Node]):
-        """Adds multiple statements to the block."""
+    def translate(self) -> bool:
+        """Translates the entire block. Returns whether it is successfully terminated."""
 
-        for statement in statements:
-            self.add(statement)
+        for statement in self.syntax.statements:
 
-        # print("Warning: missing terminator.")
+            match self.add(statement):
+                case ir.Terminator():
+                    return True
+
+        return False
