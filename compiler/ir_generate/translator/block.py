@@ -26,20 +26,8 @@ class Block:
             'Float': ir.FloatType()
         }
 
-    def resolve_type(self, type_: UnqualifiedType):
-        """Resolves an unqualified ast type into a valid IR type."""
-        match type_:
-            case NamedUnqualifiedType(name=name):
-                return self._types[name]
-
-            case DirectUnqualifiedType(type_=type_):
-                return type_
-
-            case UnqualifiedType():
-                raise TypeError(f'{type_} is of a primitive or unknown qualified-type type.')
-
-            case _:
-                raise TypeError(f'{type_} is not a qualified-type type.')
+    def resolve_type(self, type_: UnqualifiedType) -> ir.Type:
+        return type_.get_direct(self._types.get)
 
     def add(self, statement: Node):
         """Adds a statement to the block."""
@@ -48,18 +36,14 @@ class Block:
             case Return(returnee=returnee):
                 return self.builder.ret(self.add(returnee))
 
-            case Literal(value=value, type_=LiteralType(type_=type_)):
-                return ir.Constant(type_, value)
+            case Literal(value=value, type_=LiteralType() as type_):
+                return ir.Constant(self.resolve_type(type_), value)
 
             # negative literals
-            case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType(type_=type_)), )):
-                return ir.Constant(type_, -value)
+            case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
+                return ir.Constant(self.resolve_type(type_), -value)
 
-            # unary + operator is currently useless
-            case UnaryOperator(signature='+', operands=(operand,)):
-                return self.add(operand)
-
-            case VariableDeclaration(name=name, type_=VariableType(base_type=type_, memory=ValueMemoryQualifier())):
+            case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
                 allocated = self.builder.alloca(self.resolve_type(type_))
                 self._stack_variables[name] = allocated
                 return allocated
