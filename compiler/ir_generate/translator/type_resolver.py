@@ -10,7 +10,7 @@ _types: dict[str, ir.Type] = {
 
 
 def resolver(name: str) -> ir.Type:
-    if result := _types.get(name) is None:
+    if (result := _types.get(name)) is None:
         raise ValueError(f'"{name}" is an unknown type.')
 
     return result
