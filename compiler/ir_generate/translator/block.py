@@ -1,8 +1,8 @@
 from llvmlite import ir
 
+import compiler.ast.nodes as nodes
 from ...ast.nodes import *
-from ...ast.types.literal_type import NumericLiteralType
-from ...ast.types.unqualified_type import UnqualifiedType, NamedUnqualifiedType, DirectUnqualifiedType
+from ...ast.types import *
 
 
 class Block:

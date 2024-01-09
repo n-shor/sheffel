@@ -1,6 +1,6 @@
 from llvmlite import ir
 
-from compiler.ast.nodes import *
+import compiler.ast.nodes as nodes
 from ..ir_constants import ENTRY_LABEL_NAME, ENTRY_LABEL_FUNC_TYPE
 
 from .block import Block
