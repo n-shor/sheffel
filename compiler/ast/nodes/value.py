@@ -1,7 +1,4 @@
-from ..types.behavior_qualifiers import ConstBehaviorQualifier
-from ..types.function_type import FunctionType
-from ..types.memory_qualifiers import ReferenceMemoryQualifier
-from ..types.variable_type import VariableType
+from ..types import VariableType, FunctionType, ConstBehaviorQualifier, ReferenceMemoryQualifier
 
 from .node import Node
 from .flow_control import Block

@@ -1,4 +1,4 @@
-from ..types.variable_type import VariableType
+from ..types import VariableType
 
 from .node import Node
 

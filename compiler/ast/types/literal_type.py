@@ -1,6 +1,6 @@
 from llvmlite import ir
 
-from .unqualified_type import DirectUnqualifiedType
+from . import DirectUnqualifiedType
 
 
 class LiteralType(DirectUnqualifiedType):

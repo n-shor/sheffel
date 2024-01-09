@@ -1,7 +1,6 @@
 from llvmlite import ir
 
-from .unqualified_type import UnqualifiedType, DirectUnqualifiedType
-from .variable_type import VariableType
+from . import UnqualifiedType, DirectUnqualifiedType, VariableType
 
 
 class FunctionType(UnqualifiedType):

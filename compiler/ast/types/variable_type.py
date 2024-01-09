@@ -1,6 +1,4 @@
-from .behavior_qualifiers import BehaviorQualifier
-from .memory_qualifiers import MemoryQualifier
-from .unqualified_type import UnqualifiedType
+from . import UnqualifiedType, BehaviorQualifier, MemoryQualifier
 
 
 class VariableType:

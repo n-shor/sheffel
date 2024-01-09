@@ -1,4 +1,4 @@
-from ..types.literal_type import LiteralType
+from ..types import LiteralType
 
 from .node import Node
 
