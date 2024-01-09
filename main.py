@@ -12,8 +12,11 @@ def main():
                            Literal(2, IntegralLiteralType())),
 
             BinaryOperator('=', WriteVariable('x'),
-                           BinaryOperator('+', Literal(5, IntegralLiteralType()), ReadVariable('x')))
+                           BinaryOperator('+', Literal(5, IntegralLiteralType()), ReadVariable('x'))),
+
+            Return(Literal(0, IntegralLiteralType()))
         )
+
     ], make_executable=False)
 
 
