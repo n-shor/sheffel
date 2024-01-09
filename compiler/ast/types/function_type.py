@@ -2,7 +2,9 @@ from typing import Callable
 
 from llvmlite import ir
 
-from . import UnqualifiedType, DirectUnqualifiedType, VariableType, ValueMemoryQualifier
+from .unqualified_type import UnqualifiedType, DirectUnqualifiedType
+from .variable_type import VariableType
+from .qualifiers import ValueMemoryQualifier
 
 
 class VoidType(VariableType):

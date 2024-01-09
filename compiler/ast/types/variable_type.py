@@ -2,7 +2,8 @@ from typing import Callable
 
 from llvmlite import ir
 
-from . import UnqualifiedType, BehaviorQualifier, MemoryQualifier
+from .unqualified_type import UnqualifiedType
+from .qualifiers import BehaviorQualifier, MemoryQualifier
 
 
 class VariableType(UnqualifiedType):
