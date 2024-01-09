@@ -13,11 +13,3 @@ class Return(FlowControl):
         super().__init__()
 
         self.returnee = returnee
-
-
-class Block(Node):
-    """Represents a block of code made of several lines."""
-    def __init__(self, *statements: Node):
-        super().__init__()
-
-        self.statements = statements
