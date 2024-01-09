@@ -1,7 +1,8 @@
 from llvmlite import ir
 
-import compiler.ast.nodes as nodes
-from ..ir_constants import ENTRY_LABEL_NAME, ENTRY_LABEL_FUNC_TYPE
+from ...ast import nodes
+from ...ast.types import FunctionType, VariableType, IntegralLiteralType, DirectUnqualifiedType, ValueMemoryQualifier
+from ..ir_constants import ENTRY_LABEL_NAME
 
 from .block import Block
 from .type_resolver import resolve as resolve_type
@@ -18,12 +19,12 @@ class Function:
         return Block(self.syntax.block, self.func).translate()
 
 
-class EntryFunction(Function):
-    def __init__(self, module: ir.Module):
-        super().__init__(ENTRY_LABEL_NAME, ENTRY_LABEL_FUNC_TYPE, module)
-    
-    def translate(self):
-        if not (block := Block(self.syntax.block, self.func)).translate():
-            block.builder.ret(self.func.function_type.return_type(0))
+def make_entry_function(module: ir.Module, statements: list[nodes.Node]):
 
-        return True
+    return_type = VariableType(DirectUnqualifiedType(ir.IntType(32)), ValueMemoryQualifier())
+    func_type = FunctionType(return_type=return_type)
+
+    return_statement = nodes.Return(nodes.Literal(0, IntegralLiteralType()))
+    func_body = nodes.Block(*statements, return_statement)
+
+    return Function(ENTRY_LABEL_NAME, nodes.Function(func_type, func_body), module)

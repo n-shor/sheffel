@@ -1,6 +1,6 @@
 from llvmlite import ir
 
-import compiler.ast.nodes as nodes
+from ...ast import nodes
 from ...ast.nodes import *
 from ...ast.types import *
 

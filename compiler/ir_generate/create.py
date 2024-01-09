@@ -4,17 +4,17 @@ from llvmlite import ir
 from .file_constants import *
 
 from ..ast.nodes import Node
-from .translator.function import EntryFunction
+from .translator.function import make_entry_function
 
 
-def create_ir(ast: list[Node]):
+def create_ir(statements: list[Node]):
     """Creates an IR file from the AST."""
 
     module = ir.Module()
 
-    func = EntryFunction(module)
+    func = make_entry_function(module, statements)
 
-    func.translate(ast)
+    func.translate()
 
     # mr = binding.parse_assembly(str(module))
 
