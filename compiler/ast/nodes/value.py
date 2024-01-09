@@ -1,7 +1,6 @@
 from ..types import VariableType, FunctionType, ConstBehaviorQualifier, ReferenceMemoryQualifier
 
-from .node import Node
-from .flow_control import Block
+from . import Node, Block
 
 
 class Value(Node):

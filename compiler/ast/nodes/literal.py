@@ -1,6 +1,6 @@
 from ..types import LiteralType
 
-from .node import Node
+from . import Node
 
 
 class Literal(Node):

@@ -1,6 +1,6 @@
 from ..types import VariableType
 
-from .node import Node
+from . import Node
 
 
 class Variable(Node):
