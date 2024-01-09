@@ -23,8 +23,6 @@ def make_entry_function(module: ir.Module, statements: list[nodes.Node]):
 
     return_type = VariableType(DirectUnqualifiedType(ir.IntType(32)), ValueMemoryQualifier())
     func_type = FunctionType(return_type=return_type)
+    func = nodes.Function(func_type, nodes.Block(*statements))
 
-    return_statement = nodes.Return(nodes.Literal(0, IntegralLiteralType()))
-    func_body = nodes.Block(*statements, return_statement)
-
-    return Function(ENTRY_LABEL_NAME, nodes.Function(func_type, func_body), module)
+    return Function(ENTRY_LABEL_NAME, func, module)
