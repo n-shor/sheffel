@@ -1,27 +1,26 @@
+from typing import Callable
+
 from llvmlite import ir
 
-from . import UnqualifiedType, DirectUnqualifiedType, VariableType
+from . import UnqualifiedType, DirectUnqualifiedType, VariableType, ValueMemoryQualifier
+
+
+class VoidType(VariableType):
+    """The information of a stateless type."""
+    def __init__(self):
+        super().__init__(DirectUnqualifiedType(ir.VoidType()), ValueMemoryQualifier())
 
 
 class FunctionType(UnqualifiedType):
     """The unqualified type information of a function as it is declared."""
-    def __init__(self, *, parameter_types: tuple[VariableType] = (), return_type: VariableType = None):
+    def __init__(self, *, parameter_types: tuple[VariableType, ...] = (), return_type: VariableType = VoidType()):
         super().__init__()
 
         self.parameter_types = parameter_types
         self.return_type = return_type
 
-    def get_direct_unqualified_type(self):
-        """Gets the direct unqualified type of this function (llvmlite.ir correspondant)
-        if all of its subtypes can be represented in the same way."""
-        subtypes = self.return_type, *self.parameter_types
-
-        if all(isinstance(vt.base_type, DirectUnqualifiedType) for vt in subtypes):
-            pass
-
-        return DirectUnqualifiedType(
-            ir.FunctionType(
-                self.return_type.base_type.type_,
-                (vt.base_type.type_ for vt in self.parameter_types)
-            )
+    def get_direct(self, resolver: Callable[[str], ir.Type]) -> ir.Type:
+        return ir.FunctionType(
+            self.return_type.get_direct(resolver),
+            (t.get_direct(resolver) for t in self.parameter_types)
         )

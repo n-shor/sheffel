@@ -14,7 +14,6 @@ class Block(Node):
 class Function(Value):
     """Represents a function creating statement."""
     def __init__(self, type_: FunctionType, *blocks: Block):
-        super().__init__(VariableType(type_.get_direct_unqualified_type(), ReferenceMemoryQualifier(), ConstBehaviorQualifier()))
+        super().__init__(VariableType(type_, ReferenceMemoryQualifier(), ConstBehaviorQualifier()))
 
-        self.type_ = type_
         self.blocks = blocks
