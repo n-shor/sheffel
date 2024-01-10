@@ -67,6 +67,8 @@ class GrammarASTBuilder(GrammarListener):
 
     def exitVar(self, ctx: GrammarParser.VarContext):
         print("variable")
+        #if ctx.parentCtx.get:
+        #discuss read/write var returning problems with eavri
         return Variable(ctx.getText())
 
     def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
@@ -96,6 +98,9 @@ class GrammarASTBuilder(GrammarListener):
             case 'nowrite':
                 return NoWriteBehaviorQualifier()
 
+            case 'empty':
+                return EmptyBehaviorQualifier()
+
             case _:
                 raise ValueError(f'Unknown signature: "{signature}".')
 
@@ -104,11 +109,15 @@ class GrammarASTBuilder(GrammarListener):
 
         *_, name = ctx.getChildren()
 
+        if ctx.getChild(0, GrammarParser.BehaviorQualifierContext) is None:
+            behavior_qualifier = "empty"  # Change this to whatever name you want @eavri
+        else:
+            behavior_qualifier = ctx.getChild(0, GrammarParser.BehaviorQualifierContext).getText()
+            
         type_ = VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()),
                              self.resolve_memory_qualifier(
                                  ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()),
-                             self.resolve_behavior_qualifier(
-                                 ctx.getChild(0, GrammarParser.BehaviorQualifierContext).getText()))
+                             self.resolve_behavior_qualifier(behavior_qualifier))
 
         return VariableDeclaration(name, type_)
 
