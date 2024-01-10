@@ -5,8 +5,8 @@ prog: stat+;
 // Parser rules
 
 stat:
-   OPT_S? '\n'                              # EmptyLine
-|  OPT_S expr OPT_S '\n'                         # ExpressionLine
+   '\n'                             # EmptyLine
+|  expr OPT_S '\n'                         # ExpressionLine
 ;
 
 memory_qualifier: '*' | '&';
