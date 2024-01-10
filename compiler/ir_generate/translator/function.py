@@ -10,19 +10,19 @@ from .type_resolver import resolve as resolve_type
 
 class Function:
     def __init__(self, name: str, syntax: nodes.Function, module: ir.Module):
-        self.syntax = syntax
+        self.body = syntax.body
         self.module = module
         self.func = ir.Function(module, resolve_type(syntax.type_), name)
 
     def translate(self):
         """Translates the function. Returns whether it is successfully terminated."""
-        return Block(self.syntax.block, self.func).translate()
+        return Block(self.body, self.func).translate()
 
 
-def make_entry_function(module: ir.Module, block: nodes.Block):
+def make_entry_function(module: ir.Module, body: nodes.Block):
 
     return_type = VariableType(DirectUnqualifiedType(ir.IntType(32)), ValueMemoryQualifier())
     func_type = FunctionType(return_type=return_type)
-    func = nodes.Function(func_type, block)
+    func = nodes.Function(func_type, body)
 
     return Function(ENTRY_LABEL_NAME, func, module)

@@ -5,10 +5,10 @@ from . import Node, Value, Block
 
 class Function(Value):
     """Represents a function creating statement. The function has a type and body."""
-    def __init__(self, type_: FunctionType, block: Block):
+    def __init__(self, type_: FunctionType, body: Block):
         super().__init__(VariableType(type_, ReferenceMemoryQualifier(), ConstBehaviorQualifier()))
 
-        self.block = block
+        self.body = body
 
 
 class Return(Node):

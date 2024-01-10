@@ -11,7 +11,7 @@ class Block:
     """A translation unit consisting of many uninterrupted lines."""
 
     def __init__(self, syntax: nodes.Block, func: ir.Function):
-        self.syntax = syntax
+        self.statements = syntax.statements
         self.func = func
         self.block = self.func.append_basic_block()
         self.builder = ir.IRBuilder(self.block)
@@ -76,7 +76,7 @@ class Block:
     def translate(self) -> bool:
         """Translates the entire block. Returns whether it is successfully terminated."""
 
-        for statement in self.syntax.statements:
+        for statement in self.statements:
 
             match self.add(statement):
                 case ir.Terminator():
