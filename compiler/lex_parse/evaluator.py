@@ -102,9 +102,7 @@ class GrammarASTBuilder(GrammarListener):
     def exitDeclaration(self, ctx: GrammarParser.DeclarationContext):
         print("declaration")
 
-        print(*(ctx.getChild(i).getText() for i in range(ctx.getChildCount())))
-
-        name = ctx.getChild(0, GrammarParser.VarContext).getText()
+        *_, name = ctx.getChildren()
 
         type_ = VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()),
                              self.resolve_memory_qualifier(
