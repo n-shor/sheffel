@@ -9,15 +9,15 @@ stat:
 |  SPACE? expr SPACE? '\n'                         # ExpressionLine
 ;
 
-memory_qualifier: '*' | '&';
+memoryQualifier: '*' | '&';
 type: 'Int' | 'Float';
-behavior_qualifier: 'noread' | 'nowrite';
+behaviorQualifier: 'noread' | 'nowrite';
 
 expr:
    expr SPACE? op=('*' | '/') SPACE? expr            # MulDiv
 |  expr SPACE? op=('+' | '-') SPACE? expr            # AddSub
 |  expr SPACE? op='=' SPACE? expr                    # Assignment
-|  (behavior_qualifier SPACE)? type memory_qualifier SPACE VAR               # Declaration
+|  (behaviorQualifier SPACE)? type memoryQualifier SPACE VAR               # Declaration
 |  VAR                                             # Var
 |  INT                                             # Int
 |  FLOAT                                           # Float

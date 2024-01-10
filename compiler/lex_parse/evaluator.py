@@ -1,9 +1,11 @@
 from antlr4 import CommonTokenStream, InputStream
-from ..ast.nodes import *
-from ..ast.types.literal_type import *
+
 from .GrammarLexer import GrammarLexer
 from .GrammarParser import GrammarParser
 from .GrammarListener import GrammarListener
+
+from ..ast.nodes import *
+from ..ast.types import *
 
 
 class GrammarASTBuilder(GrammarListener):
@@ -67,17 +69,50 @@ class GrammarASTBuilder(GrammarListener):
         print("variable")
         return Variable(ctx.getText())
 
-    # Not sure what to do here, this should be a binary operator probably, but what about the read and write variables? Should I use them here somehow?
     def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
         print("assignment")
         return BinaryOperator(ctx.op,
                               self.add(ctx.getChild(0, GrammarParser.ExprContext)),
                               self.add(ctx.getChild(1, GrammarParser.ExprContext)))
 
+    @staticmethod
+    def resolve_memory_qualifier(signature: str):
+        match signature:
+            case '&':
+                return ValueMemoryQualifier()
+
+            case '*':
+                return ReferenceMemoryQualifier()
+
+            case _:
+                raise ValueError(f'Unknown signature: "{signature}".')
+
+    @staticmethod
+    def resolve_behavior_qualifier(signature: str):
+        match signature:
+            case 'noread':
+                return NoReadBehaviorQualifier()
+
+            case 'nowrite':
+                return NoWriteBehaviorQualifier()
+
+            case _:
+                raise ValueError(f'Unknown signature: "{signature}".')
+
     def exitDeclaration(self, ctx: GrammarParser.DeclarationContext):
         print("declaration")
-        return VariableDeclaration(ctx.getChild(0, GrammarParser.VarContext).getText(),
-                                   ctx.getChild(0, GrammarParser.TypeContext).getText())
+
+        print(*(ctx.getChild(i).getText() for i in range(ctx.getChildCount())))
+
+        name = ctx.getChild(0, GrammarParser.VarContext).getText()
+
+        type_ = VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()),
+                             self.resolve_memory_qualifier(
+                                 ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()),
+                             self.resolve_behavior_qualifier(
+                                 ctx.getChild(0, GrammarParser.BehaviorQualifierContext).getText()))
+
+        return VariableDeclaration(name, type_)
 
     def exitEmptyLine(self, ctx: GrammarParser.EmptyLineContext):
         print("empty line")
