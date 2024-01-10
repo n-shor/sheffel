@@ -10,15 +10,14 @@ stat:
 ;
 
 memory_qualifier: '*' | '&';
-type_: 'Int' | 'Float';
+type: 'Int' | 'Float';
 behavior_qualifier: 'noread' | 'nowrite';
 
 expr:
    expr SPACE? op=('*' | '/') SPACE? expr            # MulDiv
 |  expr SPACE? op=('+' | '-') SPACE? expr            # AddSub
-|  expr SPACE? op=CUSTOM_OP SPACE? expr              # CustomOperator
 |  expr SPACE? op='=' SPACE? expr                    # Assignment
-|  (behavior_qualifier SPACE)? type_ SPACE? memory_qualifier VAR               # Declaration
+|  (behavior_qualifier SPACE)? type SPACE? memory_qualifier VAR               # Declaration
 |  VAR                                             # Var
 |  INT                                             # Int
 |  FLOAT                                           # Float

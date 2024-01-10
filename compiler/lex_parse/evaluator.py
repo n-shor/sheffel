@@ -70,13 +70,14 @@ class GrammarASTBuilder(GrammarListener):
     # Not sure what to do here, this should be a binary operator probably, but what about the read and write variables? Should I use them here somehow?
     def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
         print("assignment")
-        return BinaryOperator(ctx.op, self.add(ctx.getChild(0, GrammarParser.ExprContext)),
+        return BinaryOperator(ctx.op,
+                              self.add(ctx.getChild(0, GrammarParser.ExprContext)),
                               self.add(ctx.getChild(1, GrammarParser.ExprContext)))
 
     def exitDeclaration(self, ctx: GrammarParser.DeclarationContext):
         print("declaration")
         return VariableDeclaration(ctx.getChild(0, GrammarParser.VarContext).getText(),
-                                   ctx.getChild(0, GrammarParser.Type_Context).getText())
+                                   ctx.getChild(0, GrammarParser.TypeContext).getText())
 
     def exitEmptyLine(self, ctx: GrammarParser.EmptyLineContext):
         print("empty line")
