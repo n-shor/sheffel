@@ -1,90 +1,100 @@
-from antlr4 import *
-
+from antlr4 import CommonTokenStream, InputStream
+from ..ast.nodes import *
+from ..ast.types.literal_type import *
 from .GrammarLexer import GrammarLexer
 from .GrammarParser import GrammarParser
 from .GrammarListener import GrammarListener
 
 
-class GrammarEvaluator(GrammarListener):
-    def __init__(self):
-        self.variables = {}  # Store variables
-        self.list = []  # For expression evaluation
+class GrammarASTBuilder(GrammarListener):
+
+    def add(self, ctx):
+        match ctx:
+            case GrammarParser.IntContext():
+                return self.exitInt(ctx)
+
+            case GrammarParser.FloatContext():
+                return self.exitFloat(ctx)
+
+            case GrammarParser.AddSubContext():
+                return self.exitAddSub(ctx)
+
+            case GrammarParser.MulDivContext():
+                return self.exitMulDiv(ctx)
+
+            case GrammarParser.VarContext():
+                return self.exitVar(ctx)
+
+            case GrammarParser.AssignmentContext():
+                return self.exitAssignment(ctx)
+
+            case GrammarParser.DeclarationContext():
+                return self.exitDeclaration(ctx)
+
+            case GrammarParser.ProgContext():
+                return self.exitProg(ctx)
+
+            case GrammarParser.ExpressionLineContext():
+                return self.exitExpressionLine(ctx)
+
+            case _:
+                raise TypeError(f"No matching context was found. Current context: {repr(ctx)}")
 
     def exitInt(self, ctx: GrammarParser.IntContext):
-        self.list.append(int(ctx.getText()))
+        print("int")
+        return Literal(int(ctx.getText()), IntegralLiteralType())
 
     def exitFloat(self, ctx: GrammarParser.FloatContext):
-        self.list.append(float(ctx.getText()))
+        print("float")
+        return Literal(float(ctx.getText()), FloatingLiteralType())
 
     def exitAddSub(self, ctx: GrammarParser.AddSubContext):
-        # Handle expressions with '+' and '-' operators
-        for child in ctx.getChildren():
-            if isinstance(child, GrammarParser.MulDivContext):
-                # Extract and push term values onto the list
-                value = self.list.pop()
-                self.list.append(value)
-            elif isinstance(child, TerminalNode):
-                # Handle operators: +, -
-                op = child.getText()
-                right = self.list.pop()
-                left = self.list.pop()
-                if op == '+':
-                    self.list.append(left + right)
-                elif op == '-':
-                    self.list.append(left - right)
-
-        # Final value is at the top of the list
-        self.list.append(self.list.pop())
+        print("addsub")
+        return BinaryOperator(ctx.op, self.add(ctx.getChild(0, GrammarParser.ExprContext)),
+                              self.add(ctx.getChild(1, GrammarParser.ExprContext)))
 
     def exitMulDiv(self, ctx: GrammarParser.MulDivContext):
-        # Handle expressions with '*' and '/' operators
-        for child in ctx.getChildren():
-            if isinstance(child, GrammarParser.FactorContext):
-                # Extract and push factor values onto the list
-                value = self.list.pop()
-                self.list.append(value)
-            if isinstance(child, TerminalNode):
-                # Handle operators: *, /
-                op = child.getText()
-                right = self.list.pop()
-                left = self.list.pop()
-                if op == '*':
-                    self.list.append(left * right)
-                elif op == '/':
-                    self.list.append(left / right)
+        print("muldiv")
+        return BinaryOperator(ctx.op,
+                              self.add(ctx.getChild(0, GrammarParser.ExprContext)),
+                              self.add(ctx.getChild(1, GrammarParser.ExprContext)))
 
-        # Final value is at the top of the list
-        self.list.append(self.list.pop())
-
-    def exitFactor(self, ctx: GrammarParser.FactorContext):
-        if ctx.getChildCount() == 1:
-            self.list.append(float(ctx.getText()))
+    def exitFactor(self, ctx: GrammarParser.ParenthesizeContext):
+        print("factor")
+        return self.add(ctx.getChild(0, GrammarParser.ExprContext))
 
     def exitVar(self, ctx: GrammarParser.VarContext):
-        # Handle variable usage
-        var_name = ctx.getText()
-        value = self.variables.get(var_name)
-        self.list.append(value)
+        print("variable")
+        return Variable(ctx.getText())
 
-    def exitAssignmentLine(self, ctx: GrammarParser.AssignmentLineContext):
-        if ctx.dataType():  # Check if a type is specified
-            var_type = ctx.dataType().getText()
-        else:
-            var_type = None  # No type specified
-        var_name = ctx.VAR().getText()
-        value = self.list.pop()  # Get the expression's value
-        self.variables[var_name] = (var_type, value)  # Store type and value
+    # Not sure what to do here, this should be a binary operator probably, but what about the read and write variables? Should I use them here somehow?
+    def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
+        print("assignment")
+        return BinaryOperator(ctx.op,
+                              self.add(ctx.getChild(0, GrammarParser.ExprContext)),
+                              self.add(ctx.getChild(1, GrammarParser.ExprContext)))
 
-    def exitDeclarationLine(self, ctx: GrammarParser.DeclarationLineContext):
-        if ctx.dataType():  # Check if a type is specified
-            var_type = ctx.dataType().getText()
-        else:
-            var_type = None  # No type specified
-        var_name = ctx.VAR().getText()
-        self.variables[var_name] = (var_type, None)  # Store type, value is None
+    def exitDeclaration(self, ctx: GrammarParser.DeclarationContext):
+        print("declaration")
+        return VariableDeclaration(ctx.getChild(0, GrammarParser.VarContext).getText(),
+                                   ctx.getChild(0, GrammarParser.TypeContext).getText())
 
     def exitEmptyLine(self, ctx: GrammarParser.EmptyLineContext):
-        return
+        print("empty line")
+        return None  # No AST node for empty lines
 
     def exitExpressionLine(self, ctx: GrammarParser.ExpressionLineContext):
-        expr_value = self.list.pop()  # Evaluate the expression
+        print("expression line")
+        return self.add(ctx.getChild(0, GrammarParser.ExprContext))  # Build AST for the expression
+
+    def exitProg(self, ctx: GrammarParser.ProgContext):
+        print("prog")
+        return Block(*(self.add(c) for c in ctx.getChildren() if not isinstance(c, GrammarParser.EmptyLineContext)))
+
+    def build_ast(self, input_string):
+        lexer = GrammarLexer(InputStream(input_string))
+        stream = CommonTokenStream(lexer)
+        parser = GrammarParser(stream)
+        tree = parser.prog()
+        print("start2")
+        return self.add(tree)
