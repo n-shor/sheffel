@@ -17,7 +17,7 @@ expr:
    expr SPACE? op=('*' | '/') SPACE? expr            # MulDiv
 |  expr SPACE? op=('+' | '-') SPACE? expr            # AddSub
 |  expr SPACE? op='=' SPACE? expr                    # Assignment
-|  (behavior_qualifier SPACE)? type SPACE? memory_qualifier VAR               # Declaration
+|  (behavior_qualifier SPACE)? type memory_qualifier SPACE VAR               # Declaration
 |  VAR                                             # Var
 |  INT                                             # Int
 |  FLOAT                                           # Float
