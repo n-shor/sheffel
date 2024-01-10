@@ -5,8 +5,8 @@ from compiler.compile import compile_file
 
 
 code = """
-noread Int& y
-noread Int& x = 5
+Int& y
+Int& x = 5
 x = x + 5
 """
 
