@@ -19,10 +19,10 @@ class Function:
         return Block(self.syntax.block, self.func).translate()
 
 
-def make_entry_function(module: ir.Module, statements: list[nodes.Node]):
+def make_entry_function(module: ir.Module, block: nodes.Block):
 
     return_type = VariableType(DirectUnqualifiedType(ir.IntType(32)), ValueMemoryQualifier())
     func_type = FunctionType(return_type=return_type)
-    func = nodes.Function(func_type, nodes.Block(*statements))
+    func = nodes.Function(func_type, block)
 
     return Function(ENTRY_LABEL_NAME, func, module)

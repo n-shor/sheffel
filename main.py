@@ -4,15 +4,10 @@ from compiler.ast.types import *
 from compiler.compile import compile_file
 
 
-code = """
-Int& y
-Int& x = 5
-x = x + 5
-"""
-
-
 def main():
-    compile_file('./code.shf', alternative_code=code, run_ir_generator=False, make_executable=False)
+    compile_file('', alternative_code='', alternative_ast=Block(
+        Return(Literal(0, IntegralLiteralType()))
+    ), run_ir_generator=True, make_executable=False)
 
 
 if __name__ == "__main__":
