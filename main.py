@@ -5,7 +5,7 @@ from compiler.compile import compile_file
 
 
 code = """
-Int& y
+Int* y
 Int& x = 5
 x = x + 5
 """
