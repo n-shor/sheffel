@@ -1,14 +1,17 @@
 from llvmlite import ir
 
+from ...ast import nodes
 from ...ast.nodes import *
-from ...ast.types.literal_type import NumericLiteralType
-from ...ast.types.unqualified_type import UnqualifiedType, NamedUnqualifiedType, DirectUnqualifiedType
+from ...ast.types import *
+
+from .type_resolver import resolve as resolve_type
 
 
 class Block:
     """A translation unit consisting of many uninterrupted lines."""
 
-    def __init__(self, func: ir.Function):
+    def __init__(self, syntax: nodes.Block, func: ir.Function):
+        self.syntax = syntax
         self.func = func
         self.block = self.func.append_basic_block()
         self.builder = ir.IRBuilder(self.block)
@@ -21,40 +24,28 @@ class Block:
 
         self._stack_variables: dict[str, ir.AllocaInstr] = {}
 
-        self._types: dict[str, ir.Type] = {
-            'Int': ir.IntType(32),
-            'Float': ir.FloatType()
-        }
+    def add(self, statement: Node) -> ir.Value | ir.Instruction:
+        """Adds a statement to the block."""
 
-    def resolve_type(self, type_: UnqualifiedType):
-        """Resolves an unqualified ast type into a valid IR type."""
-        match type_:
-            case NamedUnqualifiedType(name=name):
-                return self._types[name]
+        match statement:
 
-            case DirectUnqualifiedType(type_=type_):
-                return type_
+            case nodes.Block() as block:
+                next_ = Block(block, self.func)
+                next_.translate()
+                return self.builder.branch(next_.block)
 
-            case UnqualifiedType():
-                raise TypeError(f'{type_} is of a primitive or unknown qualified-type type.')
-
-            case _:
-                raise TypeError(f'{type_} is not a qualified-type type.')
-
-    def add(self, line: Node):
-        match line:
             case Return(returnee=returnee):
                 return self.builder.ret(self.add(returnee))
 
-            case Literal(value=value, type_=LiteralType(type_=type_)):
-                return ir.Constant(type_, value)
+            case Literal(value=value, type_=LiteralType() as type_):
+                return ir.Constant(resolve_type(type_), value)
 
             # negative literals
-            case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType(type_=type_)), )):
-                return ir.Constant(type_, -value)
+            case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
+                return ir.Constant(resolve_type(type_), -value)
 
-            case VariableDeclaration(name=name, type_=VariableType(base_type=type_, memory=ValueMemoryQualifier())):
-                allocated = self.builder.alloca(self.resolve_type(type_))
+            case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
+                allocated = self.builder.alloca(resolve_type(type_))
                 self._stack_variables[name] = allocated
                 return allocated
 
@@ -77,13 +68,18 @@ class Block:
                 raise ValueError(f'{signature} is an unknown operation.')
 
             case Node():
-                raise TypeError(f'{line} is of a primitive or unknown node type.')
+                raise TypeError(f'{statement} is of a primitive or unknown node type.')
 
             case _:
-                raise TypeError(f'{line} is not a node type.')
+                raise TypeError(f'{statement} is not a node type.')
 
-    def translate(self, code: list[Node]):
-        for line in code:
-            self.add(line)
+    def translate(self) -> bool:
+        """Translates the entire block. Returns whether it is successfully terminated."""
 
-        # print("Warning: missing terminator.")
+        for statement in self.syntax.statements:
+
+            match self.add(statement):
+                case ir.Terminator():
+                    return True
+
+        return False

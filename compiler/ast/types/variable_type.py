@@ -1,11 +1,19 @@
-from .behavior_qualifiers import BehaviorQualifier
-from .memory_qualifiers import MemoryQualifier
+from typing import Callable
+
+from llvmlite import ir
+
 from .unqualified_type import UnqualifiedType
+from .qualifiers import BehaviorQualifier, MemoryQualifier
 
 
-class VariableType:
+class VariableType(UnqualifiedType):
     """The qualified type information of a variable."""
     def __init__(self, base_type: UnqualifiedType, memory: MemoryQualifier, *behavior: BehaviorQualifier):
-        self.base_type = base_type
+        super().__init__()
+
+        self._type = base_type
         self.memory = memory
         self.behavior = behavior
+
+    def get_direct(self, resolver: Callable[[str], ir.Type]) -> ir.Type:
+        return self._type.get_direct(resolver)

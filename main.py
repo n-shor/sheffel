@@ -1,6 +1,5 @@
 from compiler.ast.nodes import *
-from compiler.ast.types.unqualified_type import NamedUnqualifiedType
-from compiler.ast.types.literal_type import IntegralLiteralType
+from compiler.ast.types import *
 
 from compiler.compile import compile_file
 
