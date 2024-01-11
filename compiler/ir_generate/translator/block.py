@@ -29,6 +29,9 @@ class Block:
 
         match statement:
 
+            case Literal(value=value, type_=LiteralType() as type_):
+                return ir.Constant(resolve_type(type_), value)
+
             case nodes.Block() as block:
                 next_ = Block(block, self.func)
                 next_.translate()
@@ -37,12 +40,11 @@ class Block:
             case Return(returnee=returnee):
                 return self.builder.ret(self.add(returnee))
 
-            case Literal(value=value, type_=LiteralType() as type_):
-                return ir.Constant(resolve_type(type_), value)
-
-            # negative literals
-            case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
-                return ir.Constant(resolve_type(type_), -value)
+            case nodes.Function() as syntax:
+                created = Function(syntax, self.func.module)
+                created.translate()
+                return created.func
+                # should allocate a function pointer type
 
             case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
                 allocated = self.builder.alloca(resolve_type(type_))
@@ -54,6 +56,10 @@ class Block:
 
             case ReadVariable(name=name):
                 return self.builder.load(self._stack_variables[name])
+
+            # negative literal
+            case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
+                return ir.Constant(resolve_type(type_), -value)
 
             case BinaryOperator(signature='=', operands=(assigned, assignee)):
                 return self.builder.store(
@@ -83,3 +89,6 @@ class Block:
                     return True
 
         return False
+
+
+from .function import Function
