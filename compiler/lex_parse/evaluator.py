@@ -39,6 +39,9 @@ class GrammarASTBuilder(GrammarListener):
             case GrammarParser.ExpressionLineContext():
                 return self.exitExpressionLine(ctx)
 
+            case GrammarParser.ParenthesizeContext():
+                return self.exitParenthesize(ctx)
+
             case _:
                 raise TypeError(f"No matching context was found. Current context: {repr(ctx)}")
 
@@ -123,6 +126,10 @@ class GrammarASTBuilder(GrammarListener):
     def exitExpressionLine(self, ctx: GrammarParser.ExpressionLineContext):
         print("expression line")
         return self.add(ctx.getChild(0, GrammarParser.ExprContext))  # Build AST for the expression
+
+    def exitParenthesize(self, ctx: GrammarParser.ParenthesizeContext):
+        print("parenthesize")
+        return self.add(ctx.getChild(1))
 
     def exitProg(self, ctx: GrammarParser.ProgContext):
         print("prog")
