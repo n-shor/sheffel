@@ -46,7 +46,7 @@ class Block:
                 return created.func
                 # should allocate a function pointer type
 
-            case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
+            case VariableDeclaration(name=name, type_=type_):
                 allocated = self.builder.alloca(resolve_type(type_))
                 self._stack_variables[name] = allocated
                 return allocated

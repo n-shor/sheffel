@@ -13,7 +13,7 @@ class Function:
     def __init__(self, syntax: nodes.Function, module: ir.Module, symbol: str = ''):
         self.body = syntax.body
         self.module = module
-        self.func = ir.Function(module, resolve_type(syntax.type_), symbol or self._get_unique_symbol())
+        self.func = ir.Function(module, resolve_type(syntax.type_.base_type), symbol or self._get_unique_symbol())
 
     @classmethod
     def _get_unique_symbol(cls):

@@ -11,9 +11,9 @@ class VariableType(UnqualifiedType):
     def __init__(self, base_type: UnqualifiedType, memory: MemoryQualifier, *behavior: BehaviorQualifier):
         super().__init__()
 
-        self._type = base_type
+        self.base_type = base_type
         self.memory = memory
         self.behavior = behavior
 
     def get_direct(self, resolver: Callable[[str], ir.Type]) -> ir.Type:
-        return self._type.get_direct(resolver)
+        return self.base_type.get_direct(resolver)
