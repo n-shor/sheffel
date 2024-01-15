@@ -41,9 +41,9 @@ class Block:
                 return self.builder.ret(self.add(returnee))
 
             case nodes.Function() as syntax:
-                created = function.Function(syntax, self.func.module)
-                created.translate()
-                return created.func
+                func_builder = function.Function(syntax, self.func.module)
+                func_builder.translate()
+                return func_builder.func
                 # should allocate a function pointer type
 
             case VariableDeclaration(name=name, type_=type_):
