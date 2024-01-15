@@ -42,6 +42,9 @@ class GrammarASTBuilder(GrammarListener):
             case GrammarParser.ParenthesizeContext():
                 return self.exitParenthesize(ctx)
 
+            case GrammarParser.BlockContext():
+                return self.exitBlock(ctx)
+
             case _:
                 raise TypeError(f"No matching context was found. Current context: {repr(ctx)}")
 
@@ -131,9 +134,13 @@ class GrammarASTBuilder(GrammarListener):
         print("parenthesize")
         return self.add(ctx.getChild(1))
 
+    def exitBlock(self, ctx: GrammarParser.BlockContext):
+        print("block")
+        return Block(*(self.add(c) for c in ctx.getChildren() if not isinstance(c, GrammarParser.EmptyLineContext)))
+
     def exitProg(self, ctx: GrammarParser.ProgContext):
         print("prog")
-        return Block(*(self.add(c) for c in ctx.getChildren() if not isinstance(c, GrammarParser.EmptyLineContext)))
+        return self.exitBlock(ctx)
 
     def build_ast(self, input_string):
         lexer = GrammarLexer(InputStream(input_string))

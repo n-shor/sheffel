@@ -1,6 +1,8 @@
 grammar Grammar;
 
-prog: stat+;
+prog: (block | stat)* EOF;
+
+block: '{' (block | stat)* '}';
 
 // Parser rules
 
@@ -10,18 +12,19 @@ stat:
 ;
 
 memoryQualifier: '*' | '&';
-type: 'Int' | 'Float';
+type: 'Int' | 'Float' | 'Func';
 behaviorQualifier: 'noread' | 'nowrite';
 
 expr:
-   expr SPACE? op=('*' | '/') SPACE? expr            # MulDiv
-|  expr SPACE? op=('+' | '-') SPACE? expr            # AddSub
-|  expr SPACE? op='=' SPACE? expr                    # Assignment
+   expr SPACE* op=('*' | '/') SPACE* expr            # MulDiv
+|  expr SPACE* op=('+' | '-') SPACE* expr            # AddSub
+|  expr SPACE* op='=' SPACE* expr                    # Assignment
 |  (behaviorQualifier SPACE)? type memoryQualifier SPACE VAR               # Declaration
 |  VAR                                             # Var
+//|                                                  # FuncValue
 |  INT                                             # Int
 |  FLOAT                                           # Float
-|  LPAREN SPACE? expr SPACE? RPAREN                  # Parenthesize
+|  LPAREN SPACE* expr SPACE* RPAREN                  # Parenthesize
 ;
 
 // Lexer rules

@@ -6,6 +6,7 @@ from compiler.compile import compile_file
 
 code = """
 Int& y
+{}
 Float* x = 5
 Float& z=6.0
 x = x+ 5
