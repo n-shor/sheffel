@@ -32,8 +32,8 @@ class Block:
             case Literal(value=value, type_=LiteralType() as type_):
                 return ir.Constant(resolve_type(type_), value)
 
-            case nodes.Block() as block:
-                next_ = Block(block, self.func)
+            case nodes.Block() as syntax:
+                next_ = Block(syntax, self.func)
                 next_.translate()
                 return self.builder.branch(next_.block)
 
@@ -41,7 +41,7 @@ class Block:
                 return self.builder.ret(self.add(returnee))
 
             case nodes.Function() as syntax:
-                created = Function(syntax, self.func.module)
+                created = function.Function(syntax, self.func.module)
                 created.translate()
                 return created.func
                 # should allocate a function pointer type
@@ -91,4 +91,4 @@ class Block:
         return False
 
 
-from .function import Function
+from . import function
