@@ -1,14 +1,14 @@
 grammar Grammar;
 
-prog: (block | stat)* EOF;
+prog: SPACE* (block | stat)* SPACE* EOF;
 
-block: '{' (block | stat)* '}';
+block: '{' SPACE* (block | stat)* SPACE* '}';
 
 // Parser rules
 
 stat:
-   SPACE? '\n'                             # EmptyLine
-|  SPACE? expr SPACE? '\n'                         # ExpressionLine
+   SPACE* '\n'                             # EmptyLine
+|  SPACE* expr SPACE* '\n'                         # ExpressionLine
 ;
 
 memoryQualifier: '*' | '&';
