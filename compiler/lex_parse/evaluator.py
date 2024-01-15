@@ -1,3 +1,4 @@
+import antlr4.tree.Tree
 from antlr4 import CommonTokenStream, InputStream
 
 from .GrammarLexer import GrammarLexer
@@ -136,7 +137,8 @@ class GrammarASTBuilder(GrammarListener):
 
     def exitBlock(self, ctx: GrammarParser.BlockContext):
         print("block")
-        return Block(*(self.add(c) for c in ctx.getChildren() if not isinstance(c, GrammarParser.EmptyLineContext)))
+        return Block(*(self.add(c) for c in ctx.getChildren() if not isinstance(c, GrammarParser.EmptyLineContext)
+                       and not isinstance(c, antlr4.tree.Tree.TerminalNodeImpl)))
 
     def exitProg(self, ctx: GrammarParser.ProgContext):
         print("prog")

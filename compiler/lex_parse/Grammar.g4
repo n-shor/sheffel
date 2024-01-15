@@ -1,14 +1,14 @@
 grammar Grammar;
 
-prog: (block | stat)* EOF;
+prog: SPACE* (block | stat)* SPACE* EOF;
 
-block: '{' (block | stat)* '}';
+block: SPACE* '{' SPACE* (block | stat)* SPACE* '}' SPACE*;
 
 // Parser rules
 
 stat:
-   SPACE? '\n'                             # EmptyLine
-|  SPACE? expr SPACE? '\n'                         # ExpressionLine
+   SPACE* '\n'                             # EmptyLine
+|  SPACE* expr SPACE* '\n'                         # ExpressionLine
 ;
 
 memoryQualifier: '*' | '&';
@@ -19,11 +19,11 @@ expr:
    expr SPACE* op=('*' | '/') SPACE* expr            # MulDiv
 |  expr SPACE* op=('+' | '-') SPACE* expr            # AddSub
 |  expr SPACE* op='=' SPACE* expr                    # Assignment
-|  (behaviorQualifier SPACE)? type memoryQualifier SPACE VAR               # Declaration
-|  VAR                                             # Var
+|  (behaviorQualifier SPACE)? type memoryQualifier SPACE+ VAR               # Declaration
+|  VAR                                               # Var
 //|                                                  # FuncValue
-|  INT                                             # Int
-|  FLOAT                                           # Float
+|  INT                                               # Int
+|  FLOAT                                             # Float
 |  LPAREN SPACE* expr SPACE* RPAREN                  # Parenthesize
 ;
 
