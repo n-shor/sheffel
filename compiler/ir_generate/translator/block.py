@@ -5,12 +5,13 @@ from ...ast.nodes import *
 from ...ast.types import *
 
 from .type_resolver import resolve as resolve_type
+from .variable_scope import VariableScope
 
 
-class Block:
+class Block(VariableScope):
     """A translation unit consisting of many uninterrupted lines."""
 
-    def __init__(self, syntax: nodes.Block, func: ir.Function):
+    def __init__(self, syntax: nodes.Block, func: ir.Function, parent: VariableScope):
         self.statements = syntax.statements
         self.func = func
         self.block = self.func.append_basic_block()
@@ -22,7 +23,7 @@ class Block:
             '*': self.builder.mul,
         }
 
-        self._stack_variables: dict[str, ir.AllocaInstr] = {}
+        super().__init__(parent, {})
 
     def add(self, statement: Node) -> ir.Value | ir.Instruction:
         """Adds a statement to the block."""
@@ -33,7 +34,7 @@ class Block:
                 return ir.Constant(resolve_type(type_), value)
 
             case nodes.Block() as syntax:
-                next_ = Block(syntax, self.func)
+                next_ = Block(syntax, self.func, self)
                 next_.translate()
                 return self.builder.branch(next_.block)
 
@@ -47,15 +48,13 @@ class Block:
                 # should allocate a function pointer type
 
             case VariableDeclaration(name=name, type_=type_):
-                allocated = self.builder.alloca(resolve_type(type_))
-                self._stack_variables[name] = allocated
-                return allocated
+                return self.add_named_allocation(name, self.builder.alloca(resolve_type(type_)))
 
             case WriteVariable(name=name):
-                return self._stack_variables[name]
+                return self.get_named_allocation(name)
 
             case ReadVariable(name=name):
-                return self.builder.load(self._stack_variables[name])
+                return self.load_any(name, self.builder)
 
             # negative literal
             case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
