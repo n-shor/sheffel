@@ -20,17 +20,19 @@ expr:
 |  expr SPACE* op=('+' | '-') SPACE* expr            # AddSub
 |  expr SPACE* op='=' SPACE* expr                    # Assignment
 |  (behaviorQualifier SPACE+)? type memoryQualifier SPACE+ VAR               # Declaration
+|  (behaviorQualifier SPACE+)? type memoryQualifier SPACE*
+       '(' (SPACE* (behaviorQualifier SPACE+)? type memoryQualifier SPACE+ VAR SPACE* ',')*
+       SPACE* (behaviorQualifier SPACE+)? type memoryQualifier SPACE+ VAR SPACE* ')'  # FuncLiteral
+       // Sadly this cannot be simplified
+|  VAR SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'           # FuncCall
 |  VAR                                               # Var
-//|                                                  # FuncValue
 |  INT                                               # Int
 |  FLOAT                                             # Float
-|  LPAREN SPACE* expr SPACE* RPAREN                  # Parenthesize
+|  '(' SPACE* expr SPACE* ')'                  # Parenthesize
 ;
 
 // Lexer rules
-LPAREN : '(' ;
-RPAREN : ')' ;
-CUSTOM_OP: [!#$%&*+-/:;<=>?@^|~]+ ;
+CUSTOM_OP: [!#$%&*+-/:;<=>?@^|~]+ ; //problematic, might match default operators
 INT: [0-9]+ ;
 FLOAT: [0-9]* '.' [0-9]+ ;
 VAR: [a-zA-Z_][a-zA-Z_0-9]* ;

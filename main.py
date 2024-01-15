@@ -8,7 +8,8 @@ code = """
 Int& y
 {}
 {  }
-{Int* x = 5}
+{Int* x = 5
+}
 Float* x = 5
 Float& z=6.0
 x = x+ 5
