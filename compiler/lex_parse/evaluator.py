@@ -12,42 +12,15 @@ from ..ast.types import *
 class GrammarASTBuilder(GrammarListener):
 
     def add(self, ctx):
-        match ctx:
-            case GrammarParser.IntContext():
-                return self.exitInt(ctx)
+        class_str = str(type(ctx))
+        class_name = class_str.split('.')[-1][:-9]  # Maybe change this later on
+        exit_method = getattr(self, 'exit' + class_name, self.default_exit)
+        return exit_method(ctx)
 
-            case GrammarParser.FloatContext():
-                return self.exitFloat(ctx)
-
-            case GrammarParser.AddSubContext():
-                return self.exitAddSub(ctx)
-
-            case GrammarParser.MulDivContext():
-                return self.exitMulDiv(ctx)
-
-            case GrammarParser.VarContext():
-                return self.exitVar(ctx)
-
-            case GrammarParser.AssignmentContext():
-                return self.exitAssignment(ctx)
-
-            case GrammarParser.DeclarationContext():
-                return self.exitDeclaration(ctx)
-
-            case GrammarParser.ProgContext():
-                return self.exitProg(ctx)
-
-            case GrammarParser.ExpressionLineContext():
-                return self.exitExpressionLine(ctx)
-
-            case GrammarParser.ParenthesizeContext():
-                return self.exitParenthesize(ctx)
-
-            case GrammarParser.BlockContext():
-                return self.exitBlock(ctx)
-
-            case _:
-                raise TypeError(f"No matching context was found. Current context: {repr(ctx)}")
+    def default_exit(self, ctx):
+        print(f"Unknown node type: {type(ctx)}")
+        # Handle unknown node types or raise an exception as needed
+        return None
 
     def exitInt(self, ctx: GrammarParser.IntContext):
         print("int")
