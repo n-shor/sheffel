@@ -60,14 +60,17 @@ class Block(VariableScope):
             case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
                 return ir.Constant(resolve_type(type_), -value)
 
+            case BinaryOperator(signature=signature, operands=(left, right)) if signature in self._binary_operators:
+                return self._binary_operators[signature](self.add(left), self.add(right))
+
+            case Operator(signature='()', operands=(callee, *parameters)):
+                return self.builder.call(self.add(callee), (self.add(param) for param in parameters))
+
             case BinaryOperator(signature='=', operands=(assigned, assignee)):
                 return self.builder.store(
                     self.add(assignee),
                     self.add(assigned)
                 )
-
-            case BinaryOperator(signature=signature, operands=(left, right)) if signature in self._binary_operators:
-                return self._binary_operators[signature](self.add(left), self.add(right))
 
             case Operator(signature=signature):
                 raise ValueError(f'{signature} is an unknown operation.')
