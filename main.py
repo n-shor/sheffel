@@ -4,6 +4,29 @@ from compiler.ast.types import *
 from compiler.compile import compile_file
 
 
+code = """
+Int& y
+{}
+{  }
+{Int* x = 5
+}
+Float* x = 5
+Float& z=6.0
+x = x+ 5
+x= x /y
+x
+5
+x = 6 * (x + y)
+y = 5 - (7-9)
+
+7
+6.0
+z
+ 
+
+"""
+
+
 def main():
 
     value_int_t = VariableType(NamedUnqualifiedType('Int'), ValueMemoryQualifier())
