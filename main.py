@@ -38,13 +38,7 @@ def main():
         )
     )
 
-    compile_file('', alternative_code='', alternative_ast=Block(
-        BinaryOperator('=',
-                       VariableDeclaration('func', function_value.type_),
-                       function_value
-                       ),
-        Return(Literal(0, IntegralLiteralType()))
-    ), run_ir_generator=True, make_executable=False)
+    compile_file('', alternative_code=code, run_ir_generator=False, make_executable=False)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from .ast.nodes import Block
+from .ast.nodes import Block, Node
 
 
 def compile_file(input_file_path: str, *,
