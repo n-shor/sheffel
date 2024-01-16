@@ -15,7 +15,7 @@ class VoidType(VariableType):
 
 class FunctionType(UnqualifiedType):
     """The unqualified type information of a function as it is declared."""
-    def __init__(self, *, parameter_types: tuple[VariableType, ...] = (), return_type: VariableType = VoidType()):
+    def __init__(self, return_type: VariableType = VoidType(), parameter_types: tuple[VariableType, ...] = ()):
         super().__init__()
 
         self.parameter_types = parameter_types

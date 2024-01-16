@@ -1,6 +1,6 @@
 from llvmlite import ir
 
-from ...ast.types import UnqualifiedType
+from ...ast.types import UnqualifiedType, VariableType, ValueMemoryQualifier, ReferenceMemoryQualifier
 
 
 _types: dict[str, ir.Type] = {
@@ -16,5 +16,19 @@ def resolver(name: str) -> ir.Type:
     return result
 
 
-def resolve(type_: UnqualifiedType) -> ir.Type:
-    return type_.get_direct(resolver)
+def resolve(type_: UnqualifiedType | VariableType) -> ir.Type:
+
+    unqualified = type_.get_direct(resolver)
+
+    match type_:
+        case VariableType(memory=ValueMemoryQualifier()):
+            return unqualified
+
+        case VariableType(memory=ReferenceMemoryQualifier()):
+            return unqualified.as_pointer()
+
+        case UnqualifiedType():
+            return unqualified
+
+        case _:
+            raise TypeError(f'{type(type_)} is not a recognised type type.')

@@ -1,8 +1,8 @@
-from .ast.nodes import *
+from .ast.nodes import Block
 
 
 def compile_file(input_file_path: str, *,
-                 alternative_code: str = None, alternative_ast: list[Node] = None,
+                 alternative_code: str = None, alternative_ast: Block = None,
                  run_ir_generator: bool = True, make_executable: bool = True):
     """Compiles the given input file. May also replace certain compilation steps with given inputs."""
 
