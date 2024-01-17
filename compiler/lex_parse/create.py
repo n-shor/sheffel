@@ -19,6 +19,5 @@ def build_expression(tree: GrammarParser.ProgContext, rule_names: list[str]):
 
 def create_ast(code: str):
     """Creates an AST from given code."""
-    print("start")
     builder = GrammarASTBuilder()
     return builder.build_ast(code)

@@ -27,7 +27,7 @@ def main():
     7
     6.0
     z
-    Func* func = Int*(Int& x) { Int& a = 6 }
+    Func* func = Int&(Int& x) { Int& a = 6 }
 
 
     """

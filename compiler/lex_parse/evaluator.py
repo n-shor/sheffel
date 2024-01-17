@@ -29,13 +29,14 @@ class GrammarASTBuilder(GrammarListener):
         return Literal(float(ctx.getText()), FloatingLiteralType())
 
     def exitAddSub(self, ctx: GrammarParser.AddSubContext):
-        return BinaryOperator(ctx.op, self.add(ctx.getChild(0, GrammarParser.ExprContext)),
-                              self.add(ctx.getChild(1, GrammarParser.ExprContext)))
+        return Operator(ctx.op,
+                        (self.add(ctx.getChild(0, GrammarParser.ExprContext)),
+                         self.add(ctx.getChild(1, GrammarParser.ExprContext))))
 
     def exitMulDiv(self, ctx: GrammarParser.MulDivContext):
-        return BinaryOperator(ctx.op,
-                              self.add(ctx.getChild(0, GrammarParser.ExprContext)),
-                              self.add(ctx.getChild(1, GrammarParser.ExprContext)))
+        return Operator(ctx.op,
+                        (self.add(ctx.getChild(0, GrammarParser.ExprContext)),
+                         self.add(ctx.getChild(1, GrammarParser.ExprContext))))
 
     def exitFactor(self, ctx: GrammarParser.ParenthesizeContext):
         return self.add(ctx.getChild(0, GrammarParser.ExprContext))
@@ -44,9 +45,9 @@ class GrammarASTBuilder(GrammarListener):
         return Variable(ctx.getText())
 
     def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
-        return BinaryOperator(ctx.op,
-                              self.add(ctx.getChild(0, GrammarParser.ExprContext)),
-                              self.add(ctx.getChild(1, GrammarParser.ExprContext)))
+        return Operator(ctx.op,
+                        (self.add(ctx.getChild(0, GrammarParser.ExprContext)),
+                         self.add(ctx.getChild(1, GrammarParser.ExprContext))))
 
     @staticmethod
     def resolve_memory_qualifier(signature: str):
@@ -83,7 +84,7 @@ class GrammarASTBuilder(GrammarListener):
         type_ = VariableType(
             NamedUnqualifiedType(unqualified_type_name),
             self.resolve_memory_qualifier(memory_qualifier_name),
-            *(self.resolve_behavior_qualifier(name) for name in behavior_qualifier_names)
+            tuple(self.resolve_behavior_qualifier(name) for name in behavior_qualifier_names)
         )
 
         return VariableDeclaration(name, type_)
@@ -99,43 +100,53 @@ class GrammarASTBuilder(GrammarListener):
 
     def exitFuncLiteral(self, ctx: GrammarParser.FuncLiteralContext):
         parameters = []
-        #combine the 3 loops into one, it's not hard
-        if isinstance(ctx.getChild(0), GrammarParser.TypeContext):
+
+        # combine the 3 loops into one, it's not hard
+        if isinstance(ctx.getChild(0), GrammarParser.TypeContext):  # No behavior
             for i, child in enumerate(ctx.getChildren(GrammarParser.ExprContext)):
-                if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and not isinstance(child, GrammarParser.BlockContext) and i > 2:
+                if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and not isinstance(child,
+                                                                                               GrammarParser.BlockContext) and i > 2:
                     if not isinstance(child, GrammarParser.DeclarationContext):
                         raise TypeError("Parsing error: Unfitting expression when trying to parse a function parameter")
                     parameters.append(self.add(child))
 
-            return Function(VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()), ctx.getChild(0, GrammarParser.MemoryQualifierContext)),
-                            parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
+            return Function.make(
+                VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()),
+                             self.resolve_memory_qualifier(ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()), ()),
+                parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
 
-        elif isinstance(ctx.getChild(1), GrammarParser.TypeContext):
+        elif isinstance(ctx.getChild(1), GrammarParser.TypeContext):  # Yes behavior
             for i, child in enumerate(ctx.getChildren(GrammarParser.ExprContext)):
-                if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and not isinstance(child, GrammarParser.BlockContext) and i > 3:
+                if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and not isinstance(child,
+                                                                                               GrammarParser.BlockContext) and i > 3:
                     if not isinstance(child, GrammarParser.DeclarationContext):
                         raise TypeError("Parsing error: Unfitting expression when trying to parse a function parameter")
                     parameters.append(self.add(child))
 
-            return Function(VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()), ctx.getChild(0, GrammarParser.MemoryQualifierContext)),
-                            parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
+            return Function.make(
+                VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()),
+                             self.resolve_memory_qualifier(ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()), ()),  # add behavior qualifier here
+                parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
 
         for i, child in enumerate(ctx.getChildren(GrammarParser.ExprContext)):
-            if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and not isinstance(child, GrammarParser.BlockContext):
+            if not isinstance(child, antlr4.tree.Tree.TerminalNodeImpl) and not isinstance(child,
+                                                                                           GrammarParser.BlockContext):
                 if not isinstance(child, GrammarParser.DeclarationContext):
                     raise TypeError("Parsing error: Unfitting expression when trying to parse a function parameter")
                 parameters.append(self.add(child))
 
-        return Function(VoidType(), parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
+        return Function.make(VoidType(), parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
 
     def exitFuncCall(self, ctx: GrammarParser.FuncCallContext):
         return Operator('()',
-                        *(self.add(c) for c in ctx.getChildren() if not isinstance(c, GrammarParser.EmptyLineContext)
-                          and not isinstance(c, antlr4.tree.Tree.TerminalNodeImpl)))
+                        tuple(self.add(c) for c in ctx.getChildren() if
+                              not isinstance(c, GrammarParser.EmptyLineContext) and not isinstance(c,
+                                                                                                   antlr4.tree.Tree.TerminalNodeImpl)))
 
     def exitBlock(self, ctx: GrammarParser.BlockContext):
-        return Block(*(self.add(c) for c in ctx.getChildren() if not isinstance(c, GrammarParser.EmptyLineContext)
-                       and not isinstance(c, antlr4.tree.Tree.TerminalNodeImpl)))
+        return Block(tuple(self.add(c) for c in ctx.getChildren() if
+                           not isinstance(c, GrammarParser.EmptyLineContext) and not isinstance(c,
+                                                                                                antlr4.tree.Tree.TerminalNodeImpl)))
 
     def exitProg(self, ctx: GrammarParser.ProgContext):
         return self.exitBlock(ctx)
@@ -145,5 +156,4 @@ class GrammarASTBuilder(GrammarListener):
         stream = CommonTokenStream(lexer)
         parser = GrammarParser(stream)
         tree = parser.prog()
-        print("start2")
         return self.add(tree)
