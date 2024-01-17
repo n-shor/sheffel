@@ -57,16 +57,16 @@ class Block(VariableScope):
                 return self.load_any(name, self.builder)
 
             # negative literal
-            case UnaryOperator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
+            case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
                 return ir.Constant(resolve_type(type_), -value)
 
-            case BinaryOperator(signature=signature, operands=(left, right)) if signature in self._binary_operators:
+            case Operator(signature=signature, operands=(left, right)) if signature in self._binary_operators:
                 return self._binary_operators[signature](self.add(left), self.add(right))
 
             case Operator(signature='()', operands=(callee, *parameters)):
                 return self.builder.call(self.add(callee), (self.add(param) for param in parameters))
 
-            case BinaryOperator(signature='=', operands=(assigned, assignee)):
+            case Operator(signature='=', operands=(assigned, assignee)):
                 return self.builder.store(
                     self.add(assignee),
                     self.add(assigned)

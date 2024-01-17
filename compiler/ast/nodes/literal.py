@@ -1,12 +1,15 @@
+from dataclasses import dataclass
+
+from typing import Any
+
 from ..types import LiteralType
 
 from . import Node
 
 
+@dataclass
 class Literal(Node):
     """Represents a literal value."""
-    def __init__(self, value, type_: LiteralType):
-        super().__init__()
 
-        self.value = value
-        self.type_ = type_
+    value: Any
+    type_: LiteralType

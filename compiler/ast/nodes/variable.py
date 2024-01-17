@@ -1,31 +1,28 @@
+from dataclasses import dataclass
+
 from ..types import VariableType
 
 from . import Node
 
 
+@dataclass
 class Variable(Node):
     """Represents any reference to a variable name."""
-    def __init__(self, name: str):
-        super().__init__()
 
-        self.name = name
+    name: str
 
 
+@dataclass
 class ReadVariable(Variable):
     """Represents any read from a variable name."""
-    def __init__(self, name: str):
-        super().__init__(name)
 
 
+@dataclass
 class WriteVariable(Variable):
     """Represents any write to a variable name."""
-    def __init__(self, name: str):
-        super().__init__(name)
 
 
+@dataclass
 class VariableDeclaration(WriteVariable):
     """Represents a declaration of a variable."""
-    def __init__(self, name: str, type_: VariableType):
-        super().__init__(name)
-
-        self.type_ = type_
+    type_: VariableType
