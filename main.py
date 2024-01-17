@@ -1,5 +1,4 @@
-from compiler.ast.nodes import *
-from compiler.ast.types import *
+from compiler.ast import *
 
 from compiler.compile import compile_file
 
@@ -15,10 +14,12 @@ def main():
         )
     )
 
-    compile_file('', alternative_code='', alternative_ast=Block((
+    program = Block((
         Operator('=', (VariableDeclaration('x', function_value.type_), function_value)),
-    )),
-                 run_ir_generator=True, make_executable=False)
+    ))
+
+    print_ast(program)
+    compile_file('', alternative_code='', alternative_ast=program, run_ir_generator=True, make_executable=False)
 
 
 if __name__ == "__main__":
