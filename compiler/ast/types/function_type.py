@@ -1,25 +1,18 @@
+from dataclasses import dataclass
 from typing import Callable
 
 from llvmlite import ir
 
-from .unqualified_type import UnqualifiedType, DirectUnqualifiedType
+from .unqualified_type import UnqualifiedType
 from .variable_type import VariableType
-from .qualifiers import ValueMemoryQualifier
 
 
-class VoidType(VariableType):
-    """The information of a stateless type."""
-    def __init__(self):
-        super().__init__(DirectUnqualifiedType(ir.VoidType()), ValueMemoryQualifier())
-
-
+@dataclass
 class FunctionType(UnqualifiedType):
     """The unqualified type information of a function as it is declared."""
-    def __init__(self, return_type: VariableType = VoidType(), parameter_types: tuple[VariableType, ...] = ()):
-        super().__init__()
 
-        self.parameter_types = parameter_types
-        self.return_type = return_type
+    return_type: VariableType
+    parameter_types: tuple[VariableType, ...]
 
     def get_direct(self, resolver: Callable[[str], ir.Type]) -> ir.Type:
         return ir.FunctionType(

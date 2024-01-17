@@ -8,6 +8,9 @@ class LiteralType(DirectUnqualifiedType):
     def __init__(self, type_: ir.Type):
         super().__init__(type_)
 
+    def __repr__(self):
+        return type(self).__name__
+
 
 class NumericLiteralType(LiteralType):
     """The type information of a numeric literal value."""

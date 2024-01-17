@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Callable
 
 from llvmlite import ir
 
 
+@dataclass
 class UnqualifiedType(ABC):
     """The base for unqualified type information."""
 
@@ -13,23 +15,21 @@ class UnqualifiedType(ABC):
         ...
 
 
+@dataclass
 class NamedUnqualifiedType(UnqualifiedType):
     """An unqualified type represented by a string of its name."""
-    def __init__(self, name: str):
-        super().__init__()
 
-        self.name = name
+    name: str
 
-    def get_direct(self, resolver: Callable[[str], ir.Type]) -> ir.Type:
+    def get_direct(self, resolver: Callable[[str], ir.Type]):
         return resolver(self.name)
 
 
+@dataclass
 class DirectUnqualifiedType(UnqualifiedType):
     """An unqualified type represented by its llvmlite.ir correspondent."""
-    def __init__(self, type_: ir.Type):
-        super().__init__()
 
-        self.type_ = type_
+    type_: ir.Type
 
-    def get_direct(self, resolver: Callable[[str], ir.Type]) -> ir.Type:
+    def get_direct(self, resolver: Callable[[str], ir.Type]):
         return self.type_

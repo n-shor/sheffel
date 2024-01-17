@@ -1,5 +1,4 @@
-from compiler.ast.nodes import *
-from compiler.ast.types import *
+from compiler.ast import *
 
 from compiler.compile import compile_file
 
