@@ -17,7 +17,8 @@ class Function(Value):
         return cls(
             VariableType(
                 FunctionType(return_type, tuple(p.type_ for p in parameters)),
-                ReferenceMemoryQualifier()
+                ReferenceMemoryQualifier(),
+                ()
             ),
             parameters,
             body

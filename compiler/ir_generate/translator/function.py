@@ -30,7 +30,7 @@ class Function(VariableScope):
 
 def make_entry_function(module: ir.Module, body: nodes.Block):
 
-    return_type = VariableType(DirectUnqualifiedType(ir.IntType(32)), ValueMemoryQualifier())
+    return_type = VariableType(DirectUnqualifiedType(ir.IntType(32)), ValueMemoryQualifier(), ())
     func = nodes.Function.make(return_type, (), body)
 
     return Function(func, module, 'main')

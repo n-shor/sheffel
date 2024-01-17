@@ -6,7 +6,7 @@ from compiler.compile import compile_file
 
 def main():
 
-    value_int_t = VariableType(NamedUnqualifiedType('Int'), ValueMemoryQualifier())
+    value_int_t = VariableType(NamedUnqualifiedType('Int'), ValueMemoryQualifier(), ())
     function_value = Function.make(
         value_int_t,
         (VariableDeclaration('x', value_int_t), ),
