@@ -1,3 +1,5 @@
+from enum import Enum, auto
+
 from llvmlite import ir
 
 from ...ast import nodes
@@ -17,15 +19,14 @@ class Block(VariableScope):
         self.block = self.func.append_basic_block()
         self.builder = ir.IRBuilder(self.block)
 
-        self._binary_operators = {
-            '+': self.builder.add,
-            '-': self.builder.sub,
-            '*': self.builder.mul,
-        }
-
         super().__init__(parent, {})
 
-    def add(self, statement: Node) -> ir.Value | ir.Instruction:
+    class Mode(Enum):
+        """The state of the current translation."""
+        READ = auto()
+        WRITE = auto()
+
+    def add(self, statement: Node, mode: Mode = Mode.READ) -> ir.Value | ir.Instruction:
         """Adds a statement to the block."""
 
         match statement:
@@ -39,37 +40,39 @@ class Block(VariableScope):
                 return self.builder.branch(next_.block)
 
             case Return(returnee=returnee):
-                return self.builder.ret(self.add(returnee))
+                return self.builder.ret(self.add(returnee, mode))
 
             case nodes.Function() as syntax:
                 func_builder = function.Function(syntax, self.func.module)
                 func_builder.translate()
                 return func_builder.func
-                # should allocate a function pointer type
 
             case VariableDeclaration(name=name, type_=type_):
                 return self.add_named_allocation(name, self.builder.alloca(resolve_type(type_)))
 
-            case WriteVariable(name=name):
-                return self.get_named_allocation(name)
-
-            case ReadVariable(name=name):
-                return self.load_any(name, self.builder)
+            case Variable(name=name):
+                return self.get_named_allocation(name) if mode is self.Mode.WRITE else self.load_any(name, self.builder)
 
             # negative literal
-            case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
+            case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
                 return ir.Constant(resolve_type(type_), -value)
 
-            case Operator(signature=signature, operands=(left, right)) if signature in self._binary_operators:
-                return self._binary_operators[signature](self.add(left), self.add(right))
+            case Operator(signature='+', operands=(left, right)):
+                return self.builder.add(self.add(left), self.add(right))
+
+            case Operator(signature='-', operands=(left, right)):
+                return self.builder.sub(self.add(left), self.add(right))
+
+            case Operator(signature='*', operands=(left, right)):
+                return self.builder.mul(self.add(left), self.add(right))
 
             case Operator(signature='()', operands=(callee, *parameters)):
                 return self.builder.call(self.add(callee), (self.add(param) for param in parameters))
 
             case Operator(signature='=', operands=(assigned, assignee)):
                 return self.builder.store(
-                    self.add(assignee),
-                    self.add(assigned)
+                    self.add(assignee, self.Mode.READ),
+                    self.add(assigned, self.Mode.WRITE)
                 )
 
             case Operator(signature=signature):

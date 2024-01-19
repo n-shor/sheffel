@@ -13,16 +13,6 @@ class Variable(Node):
 
 
 @dataclass
-class ReadVariable(Variable):
-    """Represents any read from a variable name."""
-
-
-@dataclass
-class WriteVariable(Variable):
-    """Represents any write to a variable name."""
-
-
-@dataclass
-class VariableDeclaration(WriteVariable):
+class VariableDeclaration(Variable):
     """Represents a declaration of a variable."""
     type_: VariableType
