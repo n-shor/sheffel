@@ -42,6 +42,16 @@ class Block(Scope):
                 func_builder.translate()
                 return func_builder.func
 
+            case VariableDeclaration(name=name, type_=VariableType(base_type=UnknownUnqualifiedType()) as type_):
+                type_hint: UnqualifiedType = kwargs['type_hint']
+                type_ = VariableType(type_hint, type_.memory, type_.behavior)
+                return self.allocate(name, resolve_type(type_), self.builder)
+
+            case VariableDeclaration(name=name, type_=VariableType(base_type=NamedUnqualifiedType(name='Function')) as type_):
+                type_hint: UnqualifiedType = kwargs['type_hint']
+                type_ = VariableType(type_hint, type_.memory, type_.behavior)
+                return self.allocate(name, resolve_type(type_), self.builder)
+
             case VariableDeclaration(name=name, type_=type_):
                 return self.allocate(name, resolve_type(type_), self.builder)
 
@@ -63,6 +73,12 @@ class Block(Scope):
 
             case Operator(signature='()', operands=(callee, *parameters)):
                 return self.builder.call(self.add(callee, **kwargs), (self.add(param, **kwargs) for param in parameters))
+
+            case Operator(signature='=', operands=(assigned, Value(type_=VariableType(base_type=type_hint)) | Literal(type_=type_hint) as assignee)):
+                return self.builder.store(
+                    self.add(assignee, **kwargs),
+                    self.add(assigned, write=True, type_hint=type_hint, **kwargs)
+                )
 
             case Operator(signature='=', operands=(assigned, assignee)):
                 return self.builder.store(
