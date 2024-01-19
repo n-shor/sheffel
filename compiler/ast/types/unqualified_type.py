@@ -33,3 +33,11 @@ class DirectUnqualifiedType(UnqualifiedType):
 
     def get_direct(self, resolver: Callable[[str], ir.Type]):
         return self.type_
+
+
+@dataclass
+class UnknownUnqualifiedType(UnqualifiedType):
+    """An unqualified type with an unknown value. Its value is decided in a later compilation step."""
+
+    def get_direct(self, resolver: Callable[[str], ir.Type]) -> ir.Type:
+        raise TypeError(f'{type(self)} cannot be viewed directly.')
