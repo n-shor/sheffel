@@ -76,6 +76,8 @@ class GrammarASTBuilder(GrammarListener):
     def exitDeclaration(self, ctx: GrammarParser.DeclarationContext):
 
         *_, name = ctx.getChildren()
+        name = name.getText()
+
         unqualified_type_name = ctx.getChild(0, GrammarParser.TypeContext).getText()
         memory_qualifier_name = ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()
         behavior_qualifier_names = (child.getText() for child in ctx.getChildren() if
