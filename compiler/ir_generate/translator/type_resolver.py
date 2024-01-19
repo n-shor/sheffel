@@ -5,10 +5,10 @@ from ...ast.types.literal_type import constant_types
 
 
 def resolver(name: str) -> ir.Type:
-    if (result := constant_types.get(name)) is None:
-        raise ValueError(f'"{name}" is an unknown type.')
+    if (result := constant_types.get(name)) is not None:
+        return result
 
-    return result
+    raise ValueError(f'"{name}" is an unknown type.')
 
 
 def resolve(type_: UnqualifiedType | VariableType) -> ir.Type:
