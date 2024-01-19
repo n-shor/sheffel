@@ -23,7 +23,7 @@ expr:
 |  (behaviorQualifier SPACE+)? (type memoryQualifier)? SPACE*
        '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')' (SPACE | '\n')* block    # FuncLiteral
 
-|  VAR SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'           # FuncCall
+|  expr SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'           # FuncCall
 |  VAR                                               # Var
 |  INT                                               # Int
 |  DOUBLE                                            # Double
