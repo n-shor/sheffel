@@ -21,12 +21,7 @@ class Block(Scope):
 
         super().__init__(parent, {})
 
-    class Mode(Enum):
-        """The state of the current translation."""
-        READ = auto()
-        WRITE = auto()
-
-    def add(self, statement: Node, mode: Mode = Mode.READ) -> ir.Value | ir.Instruction:
+    def add(self, statement: Node, **kwargs) -> ir.Value | ir.Instruction:
         """Adds a statement to the block."""
 
         match statement:
@@ -40,7 +35,7 @@ class Block(Scope):
                 return self.builder.branch(next_.block)
 
             case Return(returnee=returnee):
-                return self.builder.ret(self.add(returnee, mode))
+                return self.builder.ret(self.add(returnee, **kwargs))
 
             case nodes.Function() as syntax:
                 func_builder = function.Function(syntax, self.func.module)
@@ -51,28 +46,28 @@ class Block(Scope):
                 return self.allocate(name, resolve_type(type_), self.builder)
 
             case Variable(name=name):
-                return (self.write if mode is self.Mode.WRITE else self.read)(name, self.builder)
+                return (self.write if 'write' in kwargs else self.read)(name, self.builder)
 
             # negative literal
             case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
                 return ir.Constant(resolve_type(type_), -value)
 
             case Operator(signature='+', operands=(left, right)):
-                return self.builder.add(self.add(left), self.add(right))
+                return self.builder.add(self.add(left, **kwargs), self.add(right, **kwargs))
 
             case Operator(signature='-', operands=(left, right)):
-                return self.builder.sub(self.add(left), self.add(right))
+                return self.builder.sub(self.add(left, **kwargs), self.add(right, **kwargs))
 
             case Operator(signature='*', operands=(left, right)):
-                return self.builder.mul(self.add(left), self.add(right))
+                return self.builder.mul(self.add(left, **kwargs), self.add(right, **kwargs))
 
             case Operator(signature='()', operands=(callee, *parameters)):
-                return self.builder.call(self.add(callee), (self.add(param) for param in parameters))
+                return self.builder.call(self.add(callee, **kwargs), (self.add(param, **kwargs) for param in parameters))
 
             case Operator(signature='=', operands=(assigned, assignee)):
                 return self.builder.store(
-                    self.add(assignee, self.Mode.READ),
-                    self.add(assigned, self.Mode.WRITE)
+                    self.add(assignee, **kwargs),
+                    self.add(assigned, write=True, **kwargs)
                 )
 
             case Operator(signature=signature):
