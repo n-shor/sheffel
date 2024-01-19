@@ -3,6 +3,15 @@ from llvmlite import ir
 from .unqualified_type import DirectUnqualifiedType
 
 
+constant_types: dict[str, ir.Type] = {
+    'Int': ir.IntType(32),
+    'Long': ir.IntType(64),
+    'Float': ir.FloatType(),
+    'Double': ir.DoubleType(),
+    'String': ir.IntType(8).as_pointer()  # change to a struct of char ptr and int
+}
+
+
 class LiteralType(DirectUnqualifiedType):
     """The type information of a literal value."""
     def __init__(self, type_: ir.Type):
@@ -14,24 +23,41 @@ class LiteralType(DirectUnqualifiedType):
 
 class NumericLiteralType(LiteralType):
     """The type information of a numeric literal value."""
-    def __init__(self, type_: ir.Type):
-        super().__init__(type_)
 
 
 class IntegralLiteralType(NumericLiteralType):
     """The type information of a literal negative or positive integer value."""
+
+
+class IntLiteralType(IntegralLiteralType):
+    """The type information of the default literal negative or positive integer value."""
     def __init__(self):
-        super().__init__(ir.IntType(32))
+        super().__init__(constant_types['Int'])
 
 
-class FloatingLiteralType(NumericLiteralType):
+class LongLiteralType(IntegralLiteralType):
+    """The type information of a long (8 byte) literal negative or positive integer value."""
+    def __init__(self):
+        super().__init__(constant_types['Long'])
+
+
+class FloatingPointLiteralType(NumericLiteralType):
     """The type information of a literal floating-point value."""
+
+
+class FloatLiteralType(FloatingPointLiteralType):
+    """The type information of a literal float (4 byte) value."""
     def __init__(self):
-        super().__init__(ir.DoubleType())
+        super().__init__(constant_types['Float'])
+
+
+class DoubleLiteralType(FloatingPointLiteralType):
+    """The type information of a literal double (8 byte) value."""
+    def __init__(self):
+        super().__init__(constant_types['Double'])
 
 
 class StringLiteralType(LiteralType):
     """The type information of a string literal."""
     def __init__(self):
-        super().__init__(ir.IntType(8).as_pointer())
-        # make type a struct of char ptr and int
+        super().__init__(constant_types['String'])

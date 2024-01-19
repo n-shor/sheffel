@@ -12,7 +12,7 @@ stat:
 ;
 
 memoryQualifier: '*' | '&';
-type: 'Int' | 'Float' | 'Func';
+type: 'Int' | 'Long' | 'Float' | 'Double' | 'Function';
 behaviorQualifier: 'noread' | 'nowrite';
 
 expr:
@@ -26,14 +26,14 @@ expr:
 |  VAR SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'           # FuncCall
 |  VAR                                               # Var
 |  INT                                               # Int
-|  FLOAT                                             # Float
+|  DOUBLE                                            # Double
 |  '(' SPACE* expr SPACE* ')'                  # Parenthesize
 ;
 
 // Lexer rules
 CUSTOM_OP: [!#$%&*+-/:;<=>?@^|~]+ ; //problematic, might match default operators
 INT: [0-9]+ ;
-FLOAT: [0-9]* '.' [0-9]+ ;
+DOUBLE: [0-9]* '.' [0-9]+ ;
 VAR: [a-zA-Z_][a-zA-Z_0-9]* ;
 SPACE: [ \t] ;
 FULL_SKIP: [\r]+ -> skip ;  // Skips carriage returns

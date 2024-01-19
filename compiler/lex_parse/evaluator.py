@@ -12,21 +12,21 @@ from ..ast.types import *
 class GrammarASTBuilder(GrammarListener):
 
     def add(self, ctx):
-        class_str = str(type(ctx))
-        class_name = class_str.split('.')[-1][:-9]  # Maybe change this later on
-        exit_method = getattr(self, 'exit' + class_name, self.default_exit)
+        qualified_class_name = str(type(ctx))
+        unqualified_class_name = qualified_class_name.split('.')[-1]
+        ctx_type = unqualified_class_name[:-9]  # removes the word 'Context'
+
+        exit_method = getattr(self, 'exit' + ctx_type, self.default_exit)
         return exit_method(ctx)
 
     def default_exit(self, ctx):
-        print(f"Unknown node type: {type(ctx)}")
-        # Handle unknown node types or raise an exception as needed
-        return None
+        raise TypeError(f"Unknown node type: {type(ctx)}")
 
     def exitInt(self, ctx: GrammarParser.IntContext):
-        return Literal(int(ctx.getText()), IntegralLiteralType())
+        return Literal(int(ctx.getText()), IntLiteralType())
 
-    def exitFloat(self, ctx: GrammarParser.FloatContext):
-        return Literal(float(ctx.getText()), FloatingLiteralType())
+    def exitDouble(self, ctx: GrammarParser.DoubleContext):
+        return Literal(float(ctx.getText()), DoubleLiteralType())
 
     def exitAddSub(self, ctx: GrammarParser.AddSubContext):
         return Operator(ctx.op,

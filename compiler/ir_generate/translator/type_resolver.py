@@ -1,16 +1,11 @@
 from llvmlite import ir
 
 from ...ast.types import UnqualifiedType, VariableType, ValueMemoryQualifier, ReferenceMemoryQualifier
-
-
-_types: dict[str, ir.Type] = {
-    'Int': ir.IntType(32),
-    'Float': ir.FloatType()
-}
+from ...ast.types.literal_type import constant_types
 
 
 def resolver(name: str) -> ir.Type:
-    if (result := _types.get(name)) is None:
+    if (result := constant_types.get(name)) is None:
         raise ValueError(f'"{name}" is an unknown type.')
 
     return result
