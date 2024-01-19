@@ -29,12 +29,12 @@ class GrammarASTBuilder(GrammarListener):
         return Literal(float(ctx.getText()), DoubleLiteralType())
 
     def exitAddSub(self, ctx: GrammarParser.AddSubContext):
-        return Operator(ctx.op,
+        return Operator(ctx.op.text,
                         (self.add(ctx.getChild(0, GrammarParser.ExprContext)),
                          self.add(ctx.getChild(1, GrammarParser.ExprContext))))
 
     def exitMulDiv(self, ctx: GrammarParser.MulDivContext):
-        return Operator(ctx.op,
+        return Operator(ctx.op.text,
                         (self.add(ctx.getChild(0, GrammarParser.ExprContext)),
                          self.add(ctx.getChild(1, GrammarParser.ExprContext))))
 
@@ -45,7 +45,7 @@ class GrammarASTBuilder(GrammarListener):
         return Variable(ctx.getText())
 
     def exitAssignment(self, ctx: GrammarParser.AssignmentContext):
-        return Operator(ctx.op,
+        return Operator(ctx.op.text,
                         (self.add(ctx.getChild(0, GrammarParser.ExprContext)),
                          self.add(ctx.getChild(1, GrammarParser.ExprContext))))
 
