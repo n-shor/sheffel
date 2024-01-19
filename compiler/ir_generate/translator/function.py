@@ -4,10 +4,10 @@ from ...ast import nodes
 from ...ast.types import VariableType, DirectUnqualifiedType, ValueMemoryQualifier
 
 from .type_resolver import resolve as resolve_type
-from .variable_scope import VariableScope
+from .scope import Scope
 
 
-class Function(VariableScope):
+class Function(Scope):
 
     _symbol_id = 0
 

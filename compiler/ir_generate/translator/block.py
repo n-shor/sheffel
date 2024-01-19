@@ -7,13 +7,13 @@ from ...ast.nodes import *
 from ...ast.types import *
 
 from .type_resolver import resolve as resolve_type
-from .variable_scope import VariableScope
+from .scope import Scope
 
 
-class Block(VariableScope):
+class Block(Scope):
     """A translation unit consisting of many uninterrupted lines."""
 
-    def __init__(self, syntax: nodes.Block, func: ir.Function, parent: VariableScope):
+    def __init__(self, syntax: nodes.Block, func: ir.Function, parent: Scope):
         self.statements = syntax.statements
         self.func = func
         self.block = self.func.append_basic_block()
@@ -48,10 +48,10 @@ class Block(VariableScope):
                 return func_builder.func
 
             case VariableDeclaration(name=name, type_=type_):
-                return self.add_named_allocation(name, self.builder.alloca(resolve_type(type_)))
+                return self.allocate(name, resolve_type(type_), self.builder)
 
             case Variable(name=name):
-                return self.get_named_allocation(name) if mode is self.Mode.WRITE else self.load_any(name, self.builder)
+                return (self.write if mode is self.Mode.WRITE else self.read)(name, self.builder)
 
             # negative literal
             case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
