@@ -8,7 +8,7 @@ from .translator.function import make_entry_function
 
 
 def create_ir(program: Block):
-    """Creates an IR file from the AST."""
+    """Creates an IR module from the AST."""
 
     module = ir.Module()
 
@@ -22,9 +22,4 @@ def create_ir(program: Block):
     # print(mr.name)
     # print(mr.source_file)
 
-    with open(f'{BUILD_PATH}/{IR_FILE}', 'w') as f:
-        f.write(str(module))
-
-
-if not os.path.isdir(BUILD_PATH):
-    os.makedirs(BUILD_PATH)
+    return module
