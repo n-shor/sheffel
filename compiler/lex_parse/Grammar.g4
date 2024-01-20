@@ -2,7 +2,7 @@ grammar Grammar;
 
 prog: SPACE* (block | stat)* SPACE* EOF;
 
-block: SPACE* '{' ('\n' | SPACE)* (stat | block)* expr* (SPACE | '\n')* '}' (SPACE | '\n')*;
+block: SPACE* '{' ('\n' | SPACE)* (stat | block)* ('\n' | SPACE)* '}' (SPACE | '\n')*;
 
 // Parser rules
 
@@ -28,6 +28,7 @@ expr:
 |  INT                                               # Int
 |  DOUBLE                                            # Double
 |  '(' SPACE* expr SPACE* ')'                  # Parenthesize
+|  'return' SPACE* expr                        # Return
 ;
 
 // Lexer rules
