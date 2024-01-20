@@ -2,7 +2,7 @@ grammar Grammar;
 
 prog: SPACE* (block | stat)* SPACE* EOF;
 
-block: SPACE* '{' ('\n' | SPACE)* (stat | block)* ('\n' | SPACE)* '}' (SPACE | '\n')*;
+block: SPACE* '{' '\n' ('\n' | SPACE)* (stat | block)* ('\n' | SPACE)* '}' (SPACE | '\n')*;
 
 // Parser rules
 
@@ -22,8 +22,7 @@ expr:
 |  (behaviorQualifier SPACE+)? type memoryQualifier SPACE+ VAR               # Declaration
 |  (behaviorQualifier SPACE+)? (type memoryQualifier)? SPACE*
        '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')' (SPACE | '\n')* block    # FuncLiteral
-
-|  expr SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'           # FuncCall
+|  VAR SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'           # FuncCall
 |  VAR                                               # Var
 |  INT                                               # Int
 |  DOUBLE                                            # Double

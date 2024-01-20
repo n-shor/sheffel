@@ -8,7 +8,12 @@ def main():
 
 
 
-    code = """return a
+    code = """Function* func = Int&(Int& x)
+    {
+        return x + 3
+    }
+    
+    Int& y = func(3)
     """
 
     compile_file('', alternative_code=code, run_ir_generator=False, make_executable=False, print_generated_ast=True)

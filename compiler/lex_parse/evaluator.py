@@ -143,10 +143,10 @@ class GrammarASTBuilder(GrammarListener):
         return Function.make(VoidType(), parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
 
     def exitFuncCall(self, ctx: GrammarParser.FuncCallContext):
-        children = tuple(self.add(c) for c in ctx.getChildren() if not isinstance(c, (GrammarParser.EmptyLineContext, antlr4.tree.Tree.TerminalNodeImpl)))
-
+        children = list(self.add(c) for c in ctx.getChildren() if not isinstance(c, (GrammarParser.EmptyLineContext, antlr4.tree.Tree.TerminalNodeImpl)))
+        children.insert(0, Variable(ctx.getChild(0).getText()))
         if not isinstance(children[0], Variable):
-            raise TypeError("Parsing error: calling a non-variable.")
+            raise TypeError(f"Parsing error: calling a non-variable ({children[0]}).")
 
         return Operator(
             '()',
