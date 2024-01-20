@@ -100,6 +100,9 @@ class GrammarASTBuilder(GrammarListener):
     def exitParenthesize(self, ctx: GrammarParser.ParenthesizeContext):
         return self.add(ctx.getChild(1))
 
+    def exitReturn(self, ctx: GrammarParser.ReturnContext):
+        return Return(self.add(ctx.getChild(0, GrammarParser.ExprContext)))
+
     def exitFuncLiteral(self, ctx: GrammarParser.FuncLiteralContext):
         parameters = []
 
