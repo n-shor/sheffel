@@ -1,9 +1,9 @@
 import antlr4.tree.Tree
 from antlr4 import CommonTokenStream, InputStream
 
-from .grammar.GrammarLexer import GrammarLexer
-from .grammar.GrammarParser import GrammarParser
-from .grammar.GrammarListener import GrammarListener
+from .grammar import GrammarLexer
+from .grammar import GrammarParser
+from .grammar import GrammarListener
 
 from ..ast.nodes import *
 from ..ast.types import *
