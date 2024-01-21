@@ -1,5 +1,3 @@
-from compiler.ast import *
-
 from compiler.compile import compile_from_code
 
 

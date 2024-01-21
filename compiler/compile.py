@@ -36,7 +36,10 @@ def compile_from_code(code: str, *,
         return code
 
     if regenerate_grammar:
-        subprocess.run("java -jar '.\\compiler\\lex_parse\\antlr-4.13.1-complete.jar' -Dlanguage=Python3 '.\\compiler\\lex_parse\\Grammar.g4'")
+        subprocess.call(['java',
+                         '-jar', './compiler/lex_parse/antlr-4.13.1-complete.jar',
+                         '-Dlanguage=Python3', './compiler/lex_parse/Grammar.g4',
+                         '-o', './compiler/lex_parse/grammar'])
     else:
         print('Warning: recompiling without regenerating grammar.')
 

@@ -1,10 +1,10 @@
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from antlr4.tree.Trees import Trees, escapeWhitespace
 
-#from ..ast.nodes import
+# from ..ast.nodes import
 
-from .GrammarLexer import GrammarLexer
-from .GrammarParser import GrammarParser
+from .grammar.GrammarLexer import GrammarLexer
+from .grammar.GrammarParser import GrammarParser
 from .evaluator import GrammarASTBuilder
 
 
