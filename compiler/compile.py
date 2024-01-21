@@ -1,35 +1,62 @@
-from .ast import Block, print_ast
-from .lex_parse.create import create_ast
-from .ir_generate.create import create_ir
-from .bind.make import make_executable
+import subprocess
+
+from .ast import Block
+from llvmlite.ir import Module
 
 
-def compile_file(input_file_path: str, *,
-                 alternative_code: str = None,
-                 print_generated_ast: bool = False,
-                 alternative_ast: Block = None,
-                 run_ir_generator: bool = True,
-                 make_exe: bool = True):
-    """Compiles the given input file. May also replace certain compilation steps with given inputs."""
+def compile_from_ir(ir: Module, *,
+                    exe: bool = True,
+                    **kwargs):
+    if not exe:
+        return ir
 
-    if alternative_code is None:
-        with open(input_file_path, 'r') as f:
-            code = f.read()
+    from .bind.make import make_executable
+    result = make_executable(ir)
+
+    return result
+
+
+def compile_from_ast(ast: Block, *,
+                     ir: bool = True,
+                     **kwargs):
+    if not ir:
+        return ast
+
+    from .ir_generate.create import create_ir
+    result = create_ir(ast)
+
+    return compile_from_ir(result, **kwargs)
+
+
+def compile_from_code(code: str, *,
+                      ast: bool = True,
+                      regenerate_grammar: bool = False, print_ast: bool = False,
+                      **kwargs):
+    if not ast:
+        return code
+
+    if regenerate_grammar:
+        subprocess.run("java -jar '.\\compiler\\lex_parse\\antlr-4.13.1-complete.jar' -Dlanguage=Python3 '.\\compiler\\lex_parse\\Grammar.g4'")
     else:
-        code = alternative_code
+        print('Warning: recompiling without regenerating grammar.')
 
-    if alternative_ast is None:
-        tree = create_ast(code)
+    from .lex_parse.create import create_ast
+    result = create_ast(code)
 
-        if print_generated_ast:
-            print_ast(tree)
-    else:
-        tree = alternative_ast
+    if print_ast:
+        from .ast import print_ast as print_
+        print_(result)
 
-    if make_exe and not run_ir_generator:
-        print('Warning: remaking without regenerating IR. This will result in no compilation.')
+    return compile_from_ast(result, **kwargs)
 
-    if run_ir_generator:
-        module = create_ir(tree)
-        if make_exe:
-            make_executable(module)
+
+def compile_from_file(input_path: str, *,
+                      code: bool = True,
+                      **kwargs):
+    if not code:
+        return input_path
+
+    with open(input_path, 'r') as f:
+        result = f.read()
+
+    return compile_from_code(result, **kwargs)

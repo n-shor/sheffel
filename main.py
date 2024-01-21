@@ -1,12 +1,9 @@
 from compiler.ast import *
 
-from compiler.compile import compile_file
+from compiler.compile import compile_from_code
 
 
 def main():
-
-
-
 
     code = """Function* func = Int&(Int& x)
     {
@@ -16,7 +13,7 @@ def main():
     Int& y = func(3)
     """
 
-    compile_file('', alternative_code=code, run_ir_generator=False, make_executable=False, print_generated_ast=True)
+    compile_from_code(code, regenerate_grammar=True, print_ast=True, ir=False, exe=False)
 
 
 if __name__ == "__main__":
