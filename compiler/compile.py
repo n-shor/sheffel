@@ -18,12 +18,16 @@ def compile_from_ir(ir: Module, *,
 
 def compile_from_ast(ast: Block, *,
                      ir: bool = True,
+                     print_ir: bool = False,
                      **kwargs):
     if not ir:
         return ast
 
     from .ir_generate.create import create_ir
     result = create_ir(ast)
+
+    if print_ir:
+        print(str(result))
 
     return compile_from_ir(result, **kwargs)
 
