@@ -28,6 +28,7 @@ expr:
 |  DOUBLE                                            # Double
 |  '(' SPACE* expr SPACE* ')'                  # Parenthesize
 |  'return' SPACE* expr                        # Return
+|  'return'                                    # EmptyReturn
 ;
 
 // Lexer rules

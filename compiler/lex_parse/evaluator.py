@@ -103,6 +103,9 @@ class GrammarASTBuilder(GrammarListener):
     def exitReturn(self, ctx: GrammarParser.ReturnContext):
         return Return(self.add(ctx.getChild(0, GrammarParser.ExprContext)))
 
+    def exitEmptyReturn(self, ctx:GrammarParser.EmptyReturnContext):
+        return ReturnVoid()
+
     def exitFuncLiteral(self, ctx: GrammarParser.FuncLiteralContext):
         parameters = []
 

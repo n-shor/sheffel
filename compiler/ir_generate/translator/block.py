@@ -58,6 +58,9 @@ class Block(Scope):
             case Return(returnee=returnee):
                 return self.builder.ret(self.add(returnee, **kwargs))
 
+            case ReturnVoid():
+                return self.builder.ret_void()
+
             case nodes.Function() as syntax:
                 func_builder = function.Function(syntax, self.func.module)
                 func_builder.translate()
