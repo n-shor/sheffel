@@ -6,7 +6,7 @@ from ctypes import CFUNCTYPE, c_int32
 from .make import compile_ir, create_execution_engine
 
 
-def run(ir: Module):
+def run(ir: Module) -> int:
     """Runs an ir module and returns its main function's output."""
 
     # All these initializations are required for code generation!

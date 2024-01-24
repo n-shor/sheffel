@@ -14,14 +14,16 @@ def main():
     Function* internal_add = (Double& a, Double& b)
     {
         Double& result = a + b
+        return
     }
     
     internal_add(1.0, 2.0)
     
-    return 0
+    return y
     """
 
-    compile_from_code(code, regenerate_grammar=True, print_ir=True, ir=True, exe=False)
+    result = compile_from_code(code, regenerate_grammar=True, print_ir=False, ir=True, exe=True)
+    print(f'{result = }')
 
 
 if __name__ == "__main__":
