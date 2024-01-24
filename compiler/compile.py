@@ -10,8 +10,8 @@ def compile_from_ir(ir: Module, *,
     if not exe:
         return ir
 
-    from .bind.make import make_executable
-    result = make_executable(ir)
+    from .bind.run import run
+    result = run(ir)
 
     return result
 
