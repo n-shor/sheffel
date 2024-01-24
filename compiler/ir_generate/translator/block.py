@@ -21,6 +21,27 @@ class Block(Scope):
 
         super().__init__(parent, {})
 
+    def _arithmetic_operator(self, signature: str, left: Node, right: Node):
+        """Adds the relevant arithmetic instruction between left and right."""
+
+        instructions = self.add(left), self.add(right)
+
+        if any(isinstance(i.type, (ir.FloatType, ir.DoubleType)) for i in instructions):
+            op = {
+                '+': self.builder.fadd,
+                '-': self.builder.fsub,
+                '*': self.builder.fmul
+            }[signature]
+
+        else:
+            op = {
+                '+': self.builder.add,
+                '-': self.builder.sub,
+                '*': self.builder.mul
+            }[signature]
+
+        return op(*instructions)
+
     def add(self, statement: Node, **kwargs) -> ir.Value | ir.Instruction:
         """Adds a statement to the block."""
 
@@ -62,14 +83,8 @@ class Block(Scope):
             case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
                 return ir.Constant(resolve_type(type_), -value)
 
-            case Operator(signature='+', operands=(left, right)):
-                return self.builder.add(self.add(left, **kwargs), self.add(right, **kwargs))
-
-            case Operator(signature='-', operands=(left, right)):
-                return self.builder.sub(self.add(left, **kwargs), self.add(right, **kwargs))
-
-            case Operator(signature='*', operands=(left, right)):
-                return self.builder.mul(self.add(left, **kwargs), self.add(right, **kwargs))
+            case Operator(signature='+' | '-' | '*' as signature, operands=(left, right)):
+                return self._arithmetic_operator(signature, left, right)
 
             case Operator(signature='()', operands=(callee, *parameters)):
                 return self.builder.call(self.add(callee, **kwargs), (self.add(param, **kwargs) for param in parameters))
