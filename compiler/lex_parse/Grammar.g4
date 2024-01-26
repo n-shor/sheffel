@@ -7,8 +7,8 @@ block: SPACE* '{' '\n' ('\n' | SPACE)* (stat | block)* ('\n' | SPACE)* '}' (SPAC
 // Parser rules
 
 stat:
-   SPACE* '\n'                             # EmptyLine
-|  SPACE* expr SPACE* '\n'                         # ExpressionLine
+   SPACE* '\n'                      # EmptyLine
+|  SPACE* expr SPACE* '\n'          # ExpressionLine
 ;
 
 memoryQualifier: '*' | '&';
@@ -16,21 +16,21 @@ type: 'Int' | 'Long' | 'Float' | 'Double' | 'Function';
 behaviorQualifier: 'noread' | 'nowrite';
 
 expr:
-   expr SPACE* op=('*' | '/') SPACE* expr            # MulDiv
-|  expr SPACE* op=('+' | '-') SPACE* expr            # AddSub
-|  expr SPACE* op='=' SPACE* expr                    # Assignment
-|  (behaviorQualifier SPACE+)? type memoryQualifier SPACE+ VAR               # Declaration
+   expr SPACE* op=('*' | '/') SPACE* expr                                           # MulDiv
+|  expr SPACE* op=('+' | '-') SPACE* expr                                           # AddSub
+|  expr SPACE* op='=' SPACE* expr                                                   # Assignment
+|  (behaviorQualifier SPACE+)? type memoryQualifier SPACE+ VAR                      # Declaration
 |  (behaviorQualifier SPACE+)? (type memoryQualifier)? SPACE*
-       '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')' (SPACE | '\n')* block    # FuncLiteral
-|  VAR SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'           # FuncCall
-|  VAR                                               # Var
-|  INT                                               # Int
-|  DOUBLE                                            # Double
-|  '(' SPACE* expr SPACE* ')'                  # Parenthesize
-|  'copy' SPACE* expr                          # Copy
-|  'view' SPACE* expr                          # View
-|  'return' SPACE* expr                        # Return
-|  'return'                                    # EmptyReturn
+       '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')' (SPACE | '\n')* block   # FuncLiteral
+|  VAR SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'                  # FuncCall
+|  VAR                                                                              # Var
+|  INT                                                                              # Int
+|  DOUBLE                                                                           # Double
+|  '(' SPACE* expr SPACE* ')'                                                       # Parenthesize
+|  'copy' SPACE* expr                                                               # Copy
+|  'view' SPACE* expr                                                               # View
+|  'return' SPACE* expr                                                             # Return
+|  'return'                                                                         # EmptyReturn
 ;
 
 // Lexer rules
