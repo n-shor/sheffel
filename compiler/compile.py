@@ -48,7 +48,7 @@ def compile_from_code(code: str, *,
         print('Warning: recompiling without regenerating grammar.')
 
     from .lex_parse.create import create_ast
-    result = create_ast(code)
+    result = create_ast(code + '\n')
 
     if print_ast:
         from .ast import print_ast as print_
