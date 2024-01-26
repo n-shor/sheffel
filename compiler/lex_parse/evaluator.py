@@ -100,10 +100,16 @@ class GrammarASTBuilder(GrammarListener):
     def exitParenthesize(self, ctx: GrammarParser.ParenthesizeContext):
         return self.add(ctx.getChild(1))
 
+    def exitCopy(self, ctx: GrammarParser.CopyContext):
+        return Copy(self.add(ctx.getChild(0, GrammarParser.ExprContext)))
+
+    def exitView(self, ctx: GrammarParser.ViewContext):
+        return View(self.add(ctx.getChild(0, GrammarParser.ExprContext)))
+
     def exitReturn(self, ctx: GrammarParser.ReturnContext):
         return Return(self.add(ctx.getChild(0, GrammarParser.ExprContext)))
 
-    def exitEmptyReturn(self, ctx:GrammarParser.EmptyReturnContext):
+    def exitEmptyReturn(self, ctx: GrammarParser.EmptyReturnContext):
         return ReturnVoid()
 
     def exitFuncLiteral(self, ctx: GrammarParser.FuncLiteralContext):
@@ -120,7 +126,8 @@ class GrammarASTBuilder(GrammarListener):
 
             return Function.make(
                 VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()),
-                             self.resolve_memory_qualifier(ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()), ()),
+                             self.resolve_memory_qualifier(
+                                 ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()), ()),
                 parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
 
         elif isinstance(ctx.getChild(1), GrammarParser.TypeContext):  # Yes behavior
@@ -133,7 +140,9 @@ class GrammarASTBuilder(GrammarListener):
 
             return Function.make(
                 VariableType(NamedUnqualifiedType(ctx.getChild(0, GrammarParser.TypeContext).getText()),
-                             self.resolve_memory_qualifier(ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()), ()),  # add behavior qualifier here
+                             self.resolve_memory_qualifier(
+                                 ctx.getChild(0, GrammarParser.MemoryQualifierContext).getText()), ()),
+                # add behavior qualifier here
                 parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
 
         for i, child in enumerate(ctx.getChildren(GrammarParser.ExprContext)):
@@ -146,7 +155,8 @@ class GrammarASTBuilder(GrammarListener):
         return Function.make(VoidType(), parameters, self.add(ctx.getChild(0, GrammarParser.BlockContext)))
 
     def exitFuncCall(self, ctx: GrammarParser.FuncCallContext):
-        children = list(self.add(c) for c in ctx.getChildren() if not isinstance(c, (GrammarParser.EmptyLineContext, antlr4.tree.Tree.TerminalNodeImpl)))
+        children = list(self.add(c) for c in ctx.getChildren() if
+                        not isinstance(c, (GrammarParser.EmptyLineContext, antlr4.tree.Tree.TerminalNodeImpl)))
         children.insert(0, Variable(ctx.getChild(0).getText()))
         if not isinstance(children[0], Variable):
             raise TypeError(f"Parsing error: calling a non-variable ({children[0]}).")
@@ -157,7 +167,9 @@ class GrammarASTBuilder(GrammarListener):
         )
 
     def exitBlock(self, ctx: GrammarParser.BlockContext):
-        return Block(tuple(self.add(c) for c in ctx.getChildren() if not isinstance(c, GrammarParser.EmptyLineContext) and not isinstance(c, antlr4.tree.Tree.TerminalNodeImpl)))
+        return Block(tuple(self.add(c) for c in ctx.getChildren() if
+                           not isinstance(c, GrammarParser.EmptyLineContext) and not isinstance(c,
+                                                                                                antlr4.tree.Tree.TerminalNodeImpl)))
 
     def exitProg(self, ctx: GrammarParser.ProgContext):
         return self.exitBlock(ctx)

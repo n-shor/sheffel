@@ -1,9 +1,6 @@
-from enum import Enum, auto
-
-from llvmlite import ir
-
 from ...ast import nodes
 from ...ast.nodes import *
+from ...ast.nodes.keyword import Return, ReturnVoid
 from ...ast.types import *
 
 from .type_resolver import resolve as resolve_type

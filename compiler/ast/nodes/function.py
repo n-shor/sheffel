@@ -2,13 +2,14 @@ from dataclasses import dataclass
 
 from ..types import FunctionType, VariableType, ReferenceMemoryQualifier
 
-from . import Node, Value, Block, VariableDeclaration
+from . import Node, Block, VariableDeclaration
 
 
 @dataclass
-class Function(Value):
+class Function(Node):
     """Represents a function creating statement. The function has a type and body."""
 
+    type_: VariableType
     parameters: tuple[VariableDeclaration, ...]
     body: Block
 
@@ -23,15 +24,3 @@ class Function(Value):
             parameters,
             body
         )
-
-
-@dataclass
-class Return(Node):
-    """A terminator statement returning another statement."""
-
-    returnee: Node
-
-
-@dataclass
-class ReturnVoid(Node):
-    """A terminator statement returning void."""

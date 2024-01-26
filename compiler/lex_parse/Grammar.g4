@@ -27,6 +27,8 @@ expr:
 |  INT                                               # Int
 |  DOUBLE                                            # Double
 |  '(' SPACE* expr SPACE* ')'                  # Parenthesize
+|  'copy' SPACE* expr                          # Copy
+|  'view' SPACE* expr                          # View
 |  'return' SPACE* expr                        # Return
 |  'return'                                    # EmptyReturn
 ;
