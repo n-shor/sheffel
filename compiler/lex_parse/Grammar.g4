@@ -1,42 +1,59 @@
 grammar Grammar;
 
-prog: SPACE* (block | stat)* SPACE* EOF;
-
-block: SPACE* '{' '\n' ('\n' | SPACE)* (stat | block)* ('\n' | SPACE)* '}' (SPACE | '\n')*;
-
-// Parser rules
+prog:
+    stat* SPACE* EOF
+;
 
 stat:
-   SPACE* '\n'                      # EmptyLine
-|  SPACE* expr SPACE* '\n'          # ExpressionLine
+    SPACE* '\n'             # EmptyStat
+|   expr '\n'               # ExpressionStat
+|   block '\n'              # BlockStat
+;
+
+block:
+    '{\n' stat* '}'         # MultiLineBlock
+|   '{' expr '}'            # SingleLineBlock
 ;
 
 memoryQualifier: '*' | '&';
-type: 'Int' | 'Long' | 'Float' | 'Double' | 'Function';
+typeName: 'Int' | 'Long' | 'Float' | 'Double' | 'Function';
 behaviorQualifier: 'noread' | 'nowrite';
 
-expr:
-   expr SPACE* op=('*' | '/') SPACE* expr                                           # MulDiv
-|  expr SPACE* op=('+' | '-') SPACE* expr                                           # AddSub
-|  expr SPACE* op='=' SPACE* expr                                                   # Assignment
-|  (behaviorQualifier SPACE+)? type memoryQualifier SPACE+ VAR                      # Declaration
-|  (behaviorQualifier SPACE+)? (type memoryQualifier)? SPACE*
-       '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')' (SPACE | '\n')* block   # FuncLiteral
-|  VAR SPACE* '(' (SPACE* expr SPACE* ',')* SPACE* expr SPACE* ')'                  # FuncCall
-|  VAR                                                                              # Var
-|  INT                                                                              # Int
-|  DOUBLE                                                                           # Double
-|  '(' SPACE* expr SPACE* ')'                                                       # Parenthesize
-|  'copy' SPACE* expr                                                               # Copy
-|  'view' SPACE* expr                                                               # View
-|  'return' SPACE* expr                                                             # Return
-|  'return'                                                                         # EmptyReturn
+variableType:
+    (behaviorQualifier SPACE+)* typeName memoryQualifier    # FullVariableType
+|   (behaviorQualifier SPACE+)* memoryQualifier             # AutoVariableType
 ;
 
+expr:
+    SPACE+ expr                                         # LeftSpacedExpr
+|   expr SPACE+                                         # RightSpacedExpr
+|   '(' expr ')'                                        # ParenthesizedExpr
+
+|   expr op=OP expr                                     # BinaryOperatorExpr
+|   expr SPACE* '(' ((expr ',')* expr)? ')'             # CallOperatorExpr
+
+|   variableType SPACE+ name=VAR                        # VariableDeclarationExpr
+
+|   variableType SPACE* '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block   # FunctionCreationExpr
+|   '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block                       # VoidReturningFunctionCreationExpr
+
+|   'copy' SPACE+ expr                                  # CopyExpr
+|   'view' SPACE+ expr                                  # ViewExpr
+|   'return' SPACE+ expr?                               # ReturnExpr
+
+|   name=VAR                                            # VarExpr
+|   value=INT                                           # IntExpr
+|   value=DOUBLE                                        # DoubleExpr
+;
+
+
 // Lexer rules
-CUSTOM_OP: [!#$%&*+-/:;<=>?@^|~]+ ; //problematic, might match default operators
+
+FULL_SKIP: [\r]+ -> skip ;
+SPACE: [ \t] ;
+
 INT: [0-9]+ ;
 DOUBLE: [0-9]* '.' [0-9]+ ;
 VAR: [a-zA-Z_][a-zA-Z_0-9]* ;
-SPACE: [ \t] ;
-FULL_SKIP: [\r]+ -> skip ;  // Skips carriage returns
+
+OP: [!#$%&*+-/:;<=>?@^|~]+ ;
