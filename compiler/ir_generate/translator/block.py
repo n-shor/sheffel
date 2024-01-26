@@ -89,7 +89,7 @@ class Block(Scope):
             case Operator(signature='()', operands=(callee, *parameters)):
                 return self.builder.call(self.add(callee, **kwargs), (self.add(param, **kwargs) for param in parameters))
 
-            case Operator(signature='=', operands=(assigned, Value(type_=VariableType(base_type=type_hint)) | Literal(type_=type_hint) as assignee)):
+            case Operator(signature='=', operands=(assigned, Function(type_=type_hint) | Literal(type_=type_hint) as assignee)):
                 return self.builder.store(
                     self.add(assignee, **kwargs),
                     self.add(assigned, write=True, type_hint=type_hint, **kwargs)
