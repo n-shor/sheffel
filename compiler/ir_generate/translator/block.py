@@ -63,7 +63,7 @@ class Block(Scope):
                 func_builder.translate()
                 return func_builder.func
 
-            case VariableDeclaration(name=name, type_=VariableType(base_type=UnknownUnqualifiedType()) as type_):
+            case VariableDeclaration(name=name, type_=VariableType(base_type=AutoUnqualifiedType()) as type_):
                 type_hint: UnqualifiedType = kwargs['type_hint']
                 type_ = VariableType(type_hint, type_.memory, type_.behavior)
                 return self.allocate(name, resolve_type(type_), self.builder)

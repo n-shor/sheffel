@@ -36,7 +36,7 @@ class DirectUnqualifiedType(UnqualifiedType):
 
 
 @dataclass
-class UnknownUnqualifiedType(UnqualifiedType):
+class AutoUnqualifiedType(UnqualifiedType):
     """An unqualified type with an unknown value. Its value is decided in a later compilation step."""
 
     def get_direct(self, resolver: Callable[[str], ir.Type]) -> ir.Type:
