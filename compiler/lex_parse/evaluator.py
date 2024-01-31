@@ -85,16 +85,25 @@ class GrammarASTBuilder(GrammarListener):
 
     # Operator Expression:
 
-    def exitBinaryOperatorExpr(self, ctx: GrammarParser.BinaryOperatorExprContext):
-        return Operator(ctx.op.text, (self.add(ctx.expr(0)), self.add(ctx.expr(1))))
-
-    def exitCallOperatorExpr(self, ctx: GrammarParser.CallOperatorExprContext):
+    def exitCallOpExpr(self, ctx: GrammarParser.CallOpExprContext):
         subexpressions = tuple(self.add(e) for e in ctx.expr())
 
         if not isinstance(subexpressions[0], Variable):
             raise TypeError(f"Parsing error: calling a non-variable ({subexpressions[0]}).")
 
         return Operator('()', subexpressions)
+
+    def _exit_binary_operator(self, ctx: GrammarParser.ExprContext):
+        return Operator(ctx.op.text, (self.add(ctx.expr(0)), self.add(ctx.expr(1))))
+
+    def exitMulDivOpExpr(self, ctx: GrammarParser.MulDivOpExprContext):
+        return self._exit_binary_operator(ctx)
+
+    def exitAddSubOpExpr(self, ctx: GrammarParser.AddSubOpExprContext):
+        return self._exit_binary_operator(ctx)
+
+    def exitAssignOpExpr(self, ctx: GrammarParser.AssignOpExprContext):
+        return self._exit_binary_operator(ctx)
 
     # VariableType:
 

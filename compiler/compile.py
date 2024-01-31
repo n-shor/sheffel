@@ -40,10 +40,19 @@ def compile_from_code(code: str, *,
         return code
 
     if regenerate_grammar:
-        subprocess.call(['java',
-                         '-jar', './compiler/lex_parse/antlr-4.13.1-complete.jar',
-                         '-Dlanguage=Python3', './compiler/lex_parse/Grammar.g4',
-                         '-o', './compiler/lex_parse/grammar'])
+        result = subprocess.call([
+            'java',
+            '-jar', './compiler/lex_parse/antlr-4.13.1-complete.jar',
+            '-Dlanguage=Python3', './compiler/lex_parse/Grammar.g4',
+            '-o', './compiler/lex_parse/grammar'
+        ])
+
+        if result == 0:
+            print('Grammar regenerated successfully.')
+
+        else:
+            raise RuntimeError(f'Grammar regeneration process returned with a non-zero result {result}.')
+
     else:
         print('Warning: recompiling without regenerating grammar.')
 

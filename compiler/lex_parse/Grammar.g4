@@ -31,8 +31,10 @@ expr:
 |   expr SPACE+                                         # RightSpacedExpr
 |   '(' expr ')'                                        # ParenthesizedExpr
 
-|   expr op=OP expr                                     # BinaryOperatorExpr
-|   expr SPACE* '(' ((expr ',')* expr)? ')'             # CallOperatorExpr
+|   expr SPACE* '(' ((expr ',')* expr)? ')'             # CallOpExpr
+|   expr op=('*' | '/') expr                            # MulDivOpExpr
+|   expr op=('+' | '-') expr                            # AddSubOpExpr
+|   expr op='=' expr                                    # AssignOpExpr
 
 |   variableType SPACE+ name=VAR                        # VariableDeclarationExpr
 
