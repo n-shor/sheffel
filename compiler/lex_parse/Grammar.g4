@@ -5,14 +5,16 @@ prog:
 ;
 
 stat:
-    SPACE* '\n'             # EmptyStat
-|   expr '\n'               # ExpressionStat
-|   block '\n'              # BlockStat
+    SPACE* '\n'                  # EmptyStat
+|   expr '\n' (SPACE | '\n')*    # ExpressionStat
+|   block '\n' (SPACE | '\n')*   # BlockStat
 ;
 
 block:
-    '{\n' stat* '}'         # MultiLineBlock
+    '{' '\n'? stat* '}'         # MultiLineBlock
 |   '{' expr '}'            # SingleLineBlock
+|   'if' SPACE+ expr (SPACE | '\n')* block (SPACE | '\n')*
+    ('else' SPACE+ block (SPACE | '\n')*)? # IfBlock
 ;
 
 memoryQualifier: '*' | '&';
