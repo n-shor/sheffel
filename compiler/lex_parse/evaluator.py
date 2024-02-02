@@ -44,6 +44,10 @@ class GrammarASTBuilder(GrammarListener):
     def exitBlockStat(self, ctx: GrammarParser.BlockStatContext):
         return self.add(ctx.block())
 
+    def exitReturnStat(self, ctx: GrammarParser.ReturnStatContext):
+        subexpression = ctx.expr()
+        return ReturnVoid() if subexpression is None else Return(self.add(subexpression))
+
     # Block:
 
     def exitMultiLineBlock(self, ctx: GrammarParser.MultiLineBlockContext):
@@ -81,10 +85,6 @@ class GrammarASTBuilder(GrammarListener):
 
     def exitViewExpr(self, ctx: GrammarParser.ViewExprContext):
         return View(self.add(ctx.expr()))
-
-    def exitReturnExpr(self, ctx: GrammarParser.ReturnExprContext):
-        subexpression = ctx.expr()
-        return ReturnVoid() if subexpression is None else Return(self.add(subexpression))
 
     # Operator Expression:
 

@@ -5,9 +5,10 @@ prog:
 ;
 
 stat:
-    SPACE* '\n'                  # EmptyStat
-|   expr '\n' (SPACE | '\n')*    # ExpressionStat
-|   block '\n' (SPACE | '\n')*   # BlockStat
+    SPACE* '\n'                                # EmptyStat
+|   expr '\n' (SPACE | '\n')*                  # ExpressionStat
+|   block '\n' (SPACE | '\n')*                 # BlockStat
+|   'return' (SPACE+ expr)? (SPACE | '\n')*    # ReturnStat
 ;
 
 block:
@@ -31,10 +32,8 @@ expr:
 |   expr SPACE+                                         # RightSpacedExpr
 |   '(' expr ')'                                        # ParenthesizedExpr
 
-|   name=VAR                                            # VarExpr
-|   value=INT                                           # IntExpr
-|   value=DOUBLE                                        # DoubleExpr
-|   value=BOOL                                          # BoolExpr
+|   'copy' SPACE+ expr                                  # CopyExpr
+|   'view' SPACE+ expr                                  # ViewExpr
 
 |   expr SPACE* '(' ((expr ',')* expr)? ')'             # CallOpExpr
 |   expr op=('*' | '/') expr                            # MulDivOpExpr
@@ -47,9 +46,10 @@ expr:
 |   variableType SPACE* '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block   # FunctionCreationExpr
 |   '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block                       # VoidReturningFunctionCreationExpr
 
-|   'copy' SPACE+ expr                                  # CopyExpr
-|   'view' SPACE+ expr                                  # ViewExpr
-|   'return' SPACE+ expr?                               # ReturnExpr
+|   name=VAR                                            # VarExpr
+|   value=INT                                           # IntExpr
+|   value=DOUBLE                                        # DoubleExpr
+|   value=BOOL                                          # BoolExpr
 ;
 
 

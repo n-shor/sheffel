@@ -4,6 +4,8 @@ from compiler.compile import compile_from_code
 def main():
 
     code = """-5 + 5
+    return
+    return 3
     """
 
     result = compile_from_code(code, regenerate_grammar=True, print_ir=False, ir=False, exe=False)
