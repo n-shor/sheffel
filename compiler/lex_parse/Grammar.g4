@@ -6,9 +6,9 @@ prog:
 
 stat:
     SPACE* '\n'                                # EmptyStat
-|   expr '\n' (SPACE | '\n')*                  # ExpressionStat
-|   block '\n' (SPACE | '\n')*                 # BlockStat
-|   'return' (SPACE+ expr)? (SPACE | '\n')*    # ReturnStat
+|   SPACE* expr '\n' (SPACE | '\n')*                  # ExpressionStat
+|   SPACE* block '\n' (SPACE | '\n')*                 # BlockStat
+|   SPACE* 'return' (SPACE+ expr)? (SPACE | '\n')*    # ReturnStat
 ;
 
 block:
@@ -48,7 +48,11 @@ expr:
 
 |   name=VAR                                            # VarExpr
 |   value=INT                                           # IntExpr
+|   value=LONG                                          # LongExpr
+|   value=HEX                                           # HexExpr
+|   value=BINARY                                        # BinaryExpr
 |   value=DOUBLE                                        # DoubleExpr
+|   value=FLOAT                                         # FloatExpr
 |   value=BOOL                                          # BoolExpr
 ;
 
@@ -59,7 +63,11 @@ FULL_SKIP: [\r]+ -> skip ;
 SPACE: [ \t] ;
 
 INT: [0-9]+ ;
+LONG: [0-9]+ [lL] ;
+HEX: '0x' ([0-9] | [a-f] | [A-F])+ ;
+BINARY: [01]+ [bB] ;
 DOUBLE: [0-9]* '.' [0-9]+ ;
+FLOAT: [0-9]* '.' [0-9]+ [fF] ;
 BOOL: 'true' | 'false' ;
 VAR: [a-zA-Z_][a-zA-Z_0-9]* ;
 
