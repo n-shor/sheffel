@@ -108,6 +108,9 @@ class GrammarASTBuilder(GrammarListener):
     def exitAssignOpExpr(self, ctx: GrammarParser.AssignOpExprContext):
         return self._exit_binary_operator(ctx)
 
+    def exitUnarySignOpExpr(self, ctx: GrammarParser.UnarySignOpExprContext):
+        return Operator(ctx.op.text, self.add(ctx.expr()))
+
     # VariableType:
 
     @staticmethod

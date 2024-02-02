@@ -31,8 +31,14 @@ expr:
 |   expr SPACE+                                         # RightSpacedExpr
 |   '(' expr ')'                                        # ParenthesizedExpr
 
+|   name=VAR                                            # VarExpr
+|   value=INT                                           # IntExpr
+|   value=DOUBLE                                        # DoubleExpr
+|   value=BOOL                                          # BoolExpr
+
 |   expr SPACE* '(' ((expr ',')* expr)? ')'             # CallOpExpr
 |   expr op=('*' | '/') expr                            # MulDivOpExpr
+|   op=('+' | '-') expr                                 # UnarySignOpExpr
 |   expr op=('+' | '-') expr                            # AddSubOpExpr
 |   expr op='=' expr                                    # AssignOpExpr
 
@@ -44,11 +50,6 @@ expr:
 |   'copy' SPACE+ expr                                  # CopyExpr
 |   'view' SPACE+ expr                                  # ViewExpr
 |   'return' SPACE+ expr?                               # ReturnExpr
-
-|   name=VAR                                            # VarExpr
-|   value=INT                                           # IntExpr
-|   value=DOUBLE                                        # DoubleExpr
-|   value=BOOL                                          # BoolExpr
 ;
 
 
