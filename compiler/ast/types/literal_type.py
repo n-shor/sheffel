@@ -8,7 +8,8 @@ constant_types: dict[str, ir.Type] = {
     'Long': ir.IntType(64),
     'Float': ir.FloatType(),
     'Double': ir.DoubleType(),
-    'String': ir.IntType(8).as_pointer()  # change to a struct of char ptr and int
+    'String': ir.IntType(8).as_pointer(),  # change to a struct of char ptr and int
+    'Bool': ir.IntType(1)  # change to boolean type if needed
 }
 
 
@@ -61,3 +62,10 @@ class StringLiteralType(LiteralType):
     """The type information of a string literal."""
     def __init__(self):
         super().__init__(constant_types['String'])
+
+
+class BoolLiteralType(LiteralType):
+    """The type information of a literal boolean value."""
+    def __init__(self):
+        super().__init__(constant_types['Bool'])
+

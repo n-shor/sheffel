@@ -71,6 +71,9 @@ class GrammarASTBuilder(GrammarListener):
     def exitDoubleExpr(self, ctx: GrammarParser.DoubleExprContext):
         return Literal(float(ctx.getText()), DoubleLiteralType())
 
+    def exitBoolExpr(self, ctx:GrammarParser.BoolExprContext):
+        return Literal(True if ctx.getText() == "true" else False, BoolLiteralType())
+
     # Keyword Expression:
 
     def exitCopyExpr(self, ctx: GrammarParser.CopyExprContext):
