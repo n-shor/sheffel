@@ -18,7 +18,7 @@ block:
 ;
 
 memoryQualifier: '*' | '&';
-typeName: 'Int' | 'Long' | 'Float' | 'Double' | 'Function';
+typeName: 'Int' | 'Long' | 'Float' | 'Double' | 'Function' | 'Bool';
 behaviorQualifier: 'noread' | 'nowrite';
 
 variableType:
@@ -48,6 +48,7 @@ expr:
 |   name=VAR                                            # VarExpr
 |   value=INT                                           # IntExpr
 |   value=DOUBLE                                        # DoubleExpr
+|   value=BOOL                                          # BoolExpr
 ;
 
 
@@ -58,6 +59,7 @@ SPACE: [ \t] ;
 
 INT: [0-9]+ ;
 DOUBLE: [0-9]* '.' [0-9]+ ;
+BOOL: 'true' | 'false' ;
 VAR: [a-zA-Z_][a-zA-Z_0-9]* ;
 
 OP: [!#$%&*+-/:;<=>?@^|~]+ ;
