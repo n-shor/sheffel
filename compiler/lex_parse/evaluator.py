@@ -75,8 +75,20 @@ class GrammarASTBuilder(GrammarListener):
     def exitDoubleExpr(self, ctx: GrammarParser.DoubleExprContext):
         return Literal(float(ctx.getText()), DoubleLiteralType())
 
-    def exitBoolExpr(self, ctx:GrammarParser.BoolExprContext):
+    def exitBoolExpr(self, ctx: GrammarParser.BoolExprContext):
         return Literal(True if ctx.getText() == "true" else False, BoolLiteralType())
+
+    def exitFloatExpr(self, ctx: GrammarParser.FloatExprContext):
+        return Literal(float(ctx.getText()[:-1]), FloatLiteralType())
+
+    def exitLongExpr(self, ctx: GrammarParser.LongExprContext):
+        return Literal(int(ctx.getText()[:-1]), LongLiteralType())
+
+    def exitHexExpr(self, ctx: GrammarParser.HexExprContext):
+        return Literal(int(ctx.getText(), 16), IntLiteralType())
+
+    def exitBinaryExpr(self, ctx: GrammarParser.BinaryExprContext):
+        return Literal(int(ctx.getText()[:-1], 2), IntLiteralType())
 
     # Keyword Expression:
 

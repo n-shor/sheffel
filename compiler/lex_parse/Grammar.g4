@@ -67,7 +67,7 @@ LONG: [0-9]+ [lL] ;
 HEX: '0x' ([0-9] | [a-f] | [A-F])+ ;
 BINARY: [01]+ [bB] ;
 DOUBLE: [0-9]* '.' [0-9]+ ;
-FLOAT: [0-9]* '.' [0-9]+ [fF] ;
+FLOAT: ([0-9]* '.')? [0-9]+ [fF] ;
 BOOL: 'true' | 'false' ;
 VAR: [a-zA-Z_][a-zA-Z_0-9]* ;
 
