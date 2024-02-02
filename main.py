@@ -4,7 +4,7 @@ from compiler.compile import compile_from_code
 def main():
 
     code = """0x3fa3f
-     01010101010101001010B
+     01010101010101001010Bl
     .3F
       3.5
     3L

@@ -70,25 +70,29 @@ class GrammarASTBuilder(GrammarListener):
     # Literal Expression:
 
     def exitIntExpr(self, ctx: GrammarParser.IntExprContext):
-        return Literal(int(ctx.getText()), IntLiteralType())
+        return Literal(int(ctx.value.text), IntLiteralType())
 
     def exitDoubleExpr(self, ctx: GrammarParser.DoubleExprContext):
-        return Literal(float(ctx.getText()), DoubleLiteralType())
+        return Literal(float(ctx.value.text), DoubleLiteralType())
 
     def exitBoolExpr(self, ctx: GrammarParser.BoolExprContext):
-        return Literal(True if ctx.getText() == "true" else False, BoolLiteralType())
+        return Literal(True if ctx.value.text == "true" else False, BoolLiteralType())
 
     def exitFloatExpr(self, ctx: GrammarParser.FloatExprContext):
-        return Literal(float(ctx.getText()[:-1]), FloatLiteralType())
+        return Literal(float(ctx.value.text[:-1]), FloatLiteralType())
 
     def exitLongExpr(self, ctx: GrammarParser.LongExprContext):
-        return Literal(int(ctx.getText()[:-1]), LongLiteralType())
+        return Literal(int(ctx.value.text[:-1]), LongLiteralType())
 
     def exitHexExpr(self, ctx: GrammarParser.HexExprContext):
-        return Literal(int(ctx.getText(), 16), IntLiteralType())
+        if ctx.value.text[-1] == 'l' or ctx.value.text[-1] == 'L':
+            return Literal(int(ctx.value.text[:-1], 16), FloatLiteralType())
+        return Literal(int(ctx.value.text, 16), IntLiteralType())
 
     def exitBinaryExpr(self, ctx: GrammarParser.BinaryExprContext):
-        return Literal(int(ctx.getText()[:-1], 2), IntLiteralType())
+        if ctx.value.text[-1] == 'l' or ctx.value.text[-1] == 'L':
+            return Literal(int(ctx.value.text[:-2], 2), FloatLiteralType())
+        return Literal(int(ctx.value.text[:-1], 2), IntLiteralType())
 
     # Keyword Expression:
 

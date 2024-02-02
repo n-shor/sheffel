@@ -64,8 +64,8 @@ SPACE: [ \t] ;
 
 INT: [0-9]+ ;
 LONG: [0-9]+ [lL] ;
-HEX: '0x' ([0-9] | [a-f] | [A-F])+ ;
-BINARY: [01]+ [bB] ;
+HEX: '0x' ([0-9] | [a-f] | [A-F])+ [lL]? ;
+BINARY: [01]+ [bB] [lL]? ;
 DOUBLE: [0-9]* '.' [0-9]+ ;
 FLOAT: ([0-9]* '.')? [0-9]+ [fF] ;
 BOOL: 'true' | 'false' ;
