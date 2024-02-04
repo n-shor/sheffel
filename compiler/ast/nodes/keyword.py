@@ -4,31 +4,14 @@ from . import Node
 
 
 @dataclass
-class Keyword(Node):
-    """The base node for all keyword nodes."""
-
-
-@dataclass
-class Copy(Keyword):
+class Copy(Node):
     """Creates a copy of a variable."""
 
     copied: Node
 
 
 @dataclass
-class View(Keyword):
+class View(Node):
     """Creates a view of a variable."""
 
     viewed: Node
-
-
-@dataclass
-class Return(Keyword):
-    """A terminator statement returning another statement."""
-
-    returnee: Node
-
-
-@dataclass
-class ReturnVoid(Keyword):
-    """A terminator statement returning void."""
