@@ -11,7 +11,8 @@ from ..ast.types import *
 
 class GrammarASTBuilder(GrammarListener):
 
-    def add(self, ctx: ParserRuleContext) -> Any:
+    def exit(self, ctx: ParserRuleContext) -> Node | Any:
+        """Invokes the correct exit function for the context type and builds the ast from it."""
         # horrific
 
         t_name = type(ctx).__name__
@@ -39,33 +40,33 @@ class GrammarASTBuilder(GrammarListener):
         raise TypeError(f"Attempted to create an empty ast node.")
 
     def exitExpressionStat(self, ctx: GrammarParser.ExpressionStatContext):
-        return self.add(ctx.expr())
+        return self.exit(ctx.expr())
 
     def exitBlockStat(self, ctx: GrammarParser.BlockStatContext):
-        return self.add(ctx.block())
+        return self.exit(ctx.block())
 
     def exitReturnStat(self, ctx: GrammarParser.ReturnStatContext):
         subexpression = ctx.expr()
-        return Return(self.add(subexpression)) if subexpression is not None else ReturnVoid()
+        return Return(self.exit(subexpression)) if subexpression is not None else ReturnVoid()
 
     # Block:
 
     def exitMultiLineBlock(self, ctx: GrammarParser.MultiLineBlockContext):
-        return Block(tuple(self.add(s) for s in ctx.stat() if not isinstance(s, GrammarParser.EmptyStatContext)))
+        return Block(tuple(self.exit(s) for s in ctx.stat() if not isinstance(s, GrammarParser.EmptyStatContext)))
 
     def exitSingleLineBlock(self, ctx: GrammarParser.SingleLineBlockContext):
-        return Block((self.add(ctx.expr()),))
+        return Block((self.exit(ctx.expr()),))
 
     # Parsing Expression:
 
     def exitLeftSpacedExpr(self, ctx: GrammarParser.LeftSpacedExprContext):
-        return self.add(ctx.expr())
+        return self.exit(ctx.expr())
 
     def exitRightSpacedExpr(self, ctx: GrammarParser.RightSpacedExprContext):
-        return self.add(ctx.expr())
+        return self.exit(ctx.expr())
 
     def exitParenthesizedExpr(self, ctx: GrammarParser.ParenthesizedExprContext):
-        return self.add(ctx.expr())
+        return self.exit(ctx.expr())
 
     # Literal Expression:
 
@@ -97,18 +98,18 @@ class GrammarASTBuilder(GrammarListener):
     # Keyword Expression:
 
     def exitCopyExpr(self, ctx: GrammarParser.CopyExprContext):
-        return Copy(self.add(ctx.expr()))
+        return Copy(self.exit(ctx.expr()))
 
     def exitViewExpr(self, ctx: GrammarParser.ViewExprContext):
-        return View(self.add(ctx.expr()))
+        return View(self.exit(ctx.expr()))
 
     # Operator Expression:
 
     def exitCallOpExpr(self, ctx: GrammarParser.CallOpExprContext):
-        return Operator('()', tuple(self.add(e) for e in ctx.expr()))
+        return Operator('()', tuple(self.exit(e) for e in ctx.expr()))
 
     def _exit_binary_operator(self, ctx: GrammarParser.ExprContext):
-        return Operator(ctx.op.text, (self.add(ctx.expr(0)), self.add(ctx.expr(1))))
+        return Operator(ctx.op.text, (self.exit(ctx.expr(0)), self.exit(ctx.expr(1))))
 
     def exitMulDivOpExpr(self, ctx: GrammarParser.MulDivOpExprContext):
         return self._exit_binary_operator(ctx)
@@ -120,16 +121,16 @@ class GrammarASTBuilder(GrammarListener):
         return self._exit_binary_operator(ctx)
 
     def exitUnarySignOpExpr(self, ctx: GrammarParser.UnarySignOpExprContext):
-        return Operator(ctx.op.text, self.add(ctx.expr()))
+        return Operator(ctx.op.text, self.exit(ctx.expr()))
 
     # VariableType:
 
     @staticmethod
-    def _resolve_type_name(ctx: GrammarParser.TypeNameContext):
+    def _resolve_type_name(ctx: GrammarParser.TypeNameContext) -> UnqualifiedType:
         return NamedUnqualifiedType(ctx.getText())
 
     @staticmethod
-    def _resolve_memory_qualifier(ctx: GrammarParser.MemoryQualifierContext):
+    def _resolve_memory_qualifier(ctx: GrammarParser.MemoryQualifierContext) -> MemoryQualifier:
         match ctx.getText():
             case '&':
                 return ValueMemoryQualifier()
@@ -141,7 +142,7 @@ class GrammarASTBuilder(GrammarListener):
                 raise ValueError(f'Unknown signature: "{other}".')
 
     @staticmethod
-    def _resolve_behavior_qualifier(ctx: GrammarParser.BehaviorQualifierContext):
+    def _resolve_behavior_qualifier(ctx: GrammarParser.BehaviorQualifierContext) -> BehaviorQualifier:
         match ctx.getText():
             case 'noread':
                 return NoReadBehaviorQualifier()
@@ -172,13 +173,13 @@ class GrammarASTBuilder(GrammarListener):
         return Variable(ctx.name.text)
 
     def exitVariableDeclarationExpr(self, ctx: GrammarParser.VariableDeclarationExprContext):
-        return VariableDeclaration(ctx.name.text, self.add(ctx.variableType()))
+        return VariableDeclaration(ctx.name.text, self.exit(ctx.variableType()))
 
     # Value Creation
 
     def exitFunctionCreationExpr(self, ctx: GrammarParser.FunctionCreationExprContext):
 
-        parameters = tuple(self.add(e) for e in ctx.expr())
+        parameters = tuple(self.exit(e) for e in ctx.expr())
 
         if not all(isinstance(p, VariableDeclaration) for p in parameters):
             raise TypeError(f'Attempted to use a non-variable-declaration as a parameter.')
@@ -186,9 +187,9 @@ class GrammarASTBuilder(GrammarListener):
         return_type = ctx.variableType()
 
         return Function.make(
-            self.add(return_type) if return_type is not None else VoidType(),
+            self.exit(return_type) if return_type is not None else VoidType(),
             parameters,
-            self.add(ctx.block())
+            self.exit(ctx.block())
         )
 
     # builder:
@@ -197,5 +198,5 @@ class GrammarASTBuilder(GrammarListener):
         lexer = GrammarLexer(InputStream(input_string))
         stream = CommonTokenStream(lexer)
         parser = GrammarParser(stream)
-        tree = parser.prog()
-        return self.add(tree)
+        prog = parser.prog()
+        return self.exit(prog)
