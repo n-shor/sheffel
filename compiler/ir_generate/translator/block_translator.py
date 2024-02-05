@@ -15,34 +15,11 @@ class BlockTranslator(Scope):
 
         super().__init__(parent, {})
 
-    def _arithmetic_operator(self, signature: str, left: Node, right: Node):
-        """Adds the relevant arithmetic instruction between left and right."""
-
-        translated_left = self.add(left)
-        translated_right = self.add(right)
-
-        integer_operations = {
-            '+': self.builder.add,
-            '-': self.builder.sub,
-            '*': self.builder.mul
-        }
-
-        floating_operations = {
-            '+': self.builder.fadd,
-            '-': self.builder.fsub,
-            '*': self.builder.fmul
-        }
-
-        try:
-            instruction = integer_operations[signature](translated_left.label, translated_right.label)
-
-        except TypeError:
-            instruction = floating_operations[signature](translated_left.label, translated_right.label)
-
-        return TranslatedExpression.make_from_instruction(instruction)
-
     def add(self, expression: Node, **kwargs):
         """Adds a statement to the block."""
+
+        def add(_expression: Node, **override_kwargs):
+            return self.add(_expression, **kwargs, **override_kwargs)
 
         match expression:
 
@@ -53,7 +30,7 @@ class BlockTranslator(Scope):
                 )
 
             case Return(returnee=returnee):
-                translated = self.add(returnee, **kwargs)
+                translated = add(returnee)
                 return TranslatedExpression(
                     self.builder.ret(translated.label),
                     translated.type_
@@ -105,27 +82,42 @@ class BlockTranslator(Scope):
                     VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
                 )
 
-            case Operator(signature='+' | '-' | '*' as signature, operands=(left, right)):
-                return self._arithmetic_operator(signature, left, right)
-
             case Operator(signature='()', operands=(callee, *parameters)):
-                translated_callee = self.add(callee, **kwargs)
+                translated_callee = add(callee)
 
                 if not isinstance(translated_callee.type_, FunctionType):
                     raise TypeError(f"Attempted to call a non function: {translated_callee}")
 
                 return TranslatedExpression(
-                    self.builder.call(translated_callee.label, (self.add(param, **kwargs).label for param in parameters)),
+                    self.builder.call(translated_callee.label, (add(param).label for param in parameters)),
                     translated_callee.type_.return_type
                 )
 
             case Operator(signature='=', operands=(assigned, assignee)):
-                translated_assignee = self.add(assignee, **kwargs)
-                translated_assigned = self.add(assigned, write=True, type_hint=translated_assignee.type_, **kwargs)
+                translated_assignee = add(assignee)
+                translated_assigned = add(assigned, write=True, type_hint=translated_assignee.type_)
 
                 return TranslatedExpression(
                     self.builder.store(translated_assignee.label, translated_assigned.label),
                     translated_assigned.type_
+                )
+
+            case Operator(signature='+' | '-' | '*' as signature, operands=(left, right)):
+                return TranslatedExpression.type_from_instruction(
+                    {
+                        '+': self.builder.add,
+                        '-': self.builder.sub,
+                        '*': self.builder.mul
+                    }[signature](add(left).label, add(right).label),
+                    ValueMemoryQualifier(),
+                    (NoWriteBehaviorQualifier(),)
+                )
+
+            case Operator(signature='<' | '<=' | '>' | '>=' | '==' | '!=' as signature, operands=(left, right)):
+                return TranslatedExpression.type_from_instruction(
+                    self.builder.icmp_signed(signature, add(left).label, add(right).label),
+                    ValueMemoryQualifier(),
+                    (NoWriteBehaviorQualifier(),)
                 )
 
             case Operator(signature=signature):
