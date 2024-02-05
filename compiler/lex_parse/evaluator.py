@@ -86,12 +86,12 @@ class GrammarASTBuilder(GrammarListener):
 
     def exitHexExpr(self, ctx: GrammarParser.HexExprContext):
         if ctx.value.text[-1] == 'l' or ctx.value.text[-1] == 'L':
-            return Literal(int(ctx.value.text[:-1], 16), FloatLiteralType())
+            return Literal(int(ctx.value.text[:-1], 16), LongLiteralType())
         return Literal(int(ctx.value.text, 16), IntLiteralType())
 
     def exitBinaryExpr(self, ctx: GrammarParser.BinaryExprContext):
         if ctx.value.text[-1] == 'l' or ctx.value.text[-1] == 'L':
-            return Literal(int(ctx.value.text[:-2], 2), FloatLiteralType())
+            return Literal(int(ctx.value.text[:-2], 2), LongLiteralType())
         return Literal(int(ctx.value.text[:-1], 2), IntLiteralType())
 
     # Keyword Expression:
