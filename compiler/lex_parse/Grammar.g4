@@ -29,31 +29,32 @@ variableType:
 ;
 
 expr:
-    SPACE+ expr                                         # LeftSpacedExpr
-|   expr SPACE+                                         # RightSpacedExpr
-|   '(' expr ')'                                        # ParenthesizedExpr
+    SPACE+ expr             # LeftSpacedExpr
+|   expr SPACE+             # RightSpacedExpr
+|   '(' expr ')'            # ParenthesizedExpr
 
-|   'copy' SPACE+ expr                                  # CopyExpr
-|   'view' SPACE+ expr                                  # ViewExpr
+|   'copy' SPACE+ expr      # CopyExpr
+|   'view' SPACE+ expr      # ViewExpr
 
-|   expr SPACE* '(' ((expr ',')* expr)? ')'             # CallOpExpr
-|   expr op=('*' | '/') expr                            # MulDivOpExpr
-|   op=('+' | '-') expr                                 # UnarySignOpExpr
-|   expr op=('+' | '-') expr                            # AddSubOpExpr
-|   expr op='=' expr                                    # AssignOpExpr
+|   expr SPACE* '(' ((expr ',')* expr)? ')'                 # CallOpExpr
+|   op=OP expr                                              # UnaryOpExpr
+|   expr op=('*' | '/') expr                                # MulDivOpExpr
+|   expr op=('+' | '-') expr                                # AddSubOpExpr
+|   expr op=('<' | '<=' | '>' | '>=' | '==' | '!=') expr    # CompareOpExpr
+|   expr op='=' expr                                        # AssignOpExpr
 
-|   variableType SPACE+ name=VAR                        # VariableDeclarationExpr
+|   variableType SPACE+ name=VAR                            # VariableDeclarationExpr
 
 |   (variableType SPACE*)? '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block    # FunctionCreationExpr
 
-|   name=VAR                                            # VarExpr
-|   value=INT                                           # IntExpr
-|   value=LONG                                          # LongExpr
-|   value=HEX                                           # HexExpr
-|   value=BINARY                                        # BinaryExpr
-|   value=DOUBLE                                        # DoubleExpr
-|   value=FLOAT                                         # FloatExpr
-|   value=BOOL                                          # BoolExpr
+|   name=VAR        # VarExpr
+|   value=INT       # IntExpr
+|   value=LONG      # LongExpr
+|   value=HEX       # HexExpr
+|   value=BINARY    # BinaryExpr
+|   value=DOUBLE    # DoubleExpr
+|   value=FLOAT     # FloatExpr
+|   value=BOOL      # BoolExpr
 ;
 
 

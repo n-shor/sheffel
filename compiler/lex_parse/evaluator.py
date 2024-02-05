@@ -126,10 +126,13 @@ class GrammarASTBuilder(GrammarListener):
     def exitAddSubOpExpr(self, ctx: GrammarParser.AddSubOpExprContext):
         return self._exit_binary_operator(ctx)
 
+    def exitCompareOpExpr(self, ctx: GrammarParser.CompareOpExprContext):
+        return self._exit_binary_operator(ctx)
+
     def exitAssignOpExpr(self, ctx: GrammarParser.AssignOpExprContext):
         return self._exit_binary_operator(ctx)
 
-    def exitUnarySignOpExpr(self, ctx: GrammarParser.UnarySignOpExprContext):
+    def exitUnaryOpExpr(self, ctx: GrammarParser.UnaryOpExprContext):
         return Operator(ctx.op.text, self.exit(ctx.expr()))
 
     # VariableType:
