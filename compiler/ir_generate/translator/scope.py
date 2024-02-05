@@ -2,27 +2,36 @@ from __future__ import annotations
 
 from llvmlite import ir
 
+from ...ast.types import VariableType
+
+from .type_resolver import resolve as resolve_type
+from .translated_expression import TranslatedExpression
+
 
 class Scope:
-    def __init__(self, parent: Scope | None, parameters: dict[str, ir.Argument]):
+    def __init__(self, parent: Scope | None, parameters: dict[str, TranslatedExpression]):
         self._parent = parent
-        self._allocations: dict[str, ir.AllocaInstr] = {}
-        self._parameters: dict[str, ir.Argument] = parameters
+        self._allocations: dict[str, TranslatedExpression] = {}
+        self._parameters = parameters
 
-    def allocate(self, name: str, type_: ir.Type, builder: ir.IRBuilder):
+    def allocate(self, name: str, type_: VariableType, builder: ir.IRBuilder):
         """Allocates a named variable of the given type on the stack.
         Returns the relevant label to write to."""
         if name in self._allocations:
             raise KeyError(f'"{name}" is already allocated.')
 
-        allocation = builder.alloca(type_)
+        allocation = TranslatedExpression(builder.alloca(resolve_type(type_)), type_)
         self._allocations[name] = allocation
         return allocation
 
     def read(self, name: str, builder: ir.IRBuilder):
         """Adds an instruction reading the named variable and returns the relevant virtual register to read from."""
         if name in self._allocations:
-            return builder.load(self._allocations[name])
+            translated = self._allocations[name]
+            return TranslatedExpression(
+                builder.load(translated.label),
+                translated.type_
+            )
 
         if name in self._parameters:
             return self._parameters[name]

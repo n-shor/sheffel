@@ -3,6 +3,7 @@ from llvmlite import ir
 from ...ast import nodes
 from ...ast.types import VariableType, DirectUnqualifiedType, ValueMemoryQualifier
 
+from .translated_expression import TranslatedExpression
 from .type_resolver import resolve as resolve_type
 from .scope import Scope
 
@@ -16,7 +17,7 @@ class Function(Scope):
         self.module = module
         self.func = ir.Function(module, resolve_type(syntax.type_.base_type), symbol or self._get_unique_symbol())
 
-        super().__init__(None, {param.name: arg for param, arg in zip(syntax.parameters, self.func.args)})
+        super().__init__(None, {param.name: TranslatedExpression(arg, param.type_) for param, arg in zip(syntax.parameters, self.func.args)})
 
     @classmethod
     def _get_unique_symbol(cls):
