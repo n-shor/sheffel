@@ -1,4 +1,3 @@
-import antlr4.tree.Tree
 from antlr4 import CommonTokenStream, InputStream, ParserRuleContext
 
 from .grammar import GrammarLexer
