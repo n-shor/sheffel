@@ -16,7 +16,7 @@ block:
 |   '{' expr '}'                                # SingleLineBlock
 |   'if' SPACE+ expr (SPACE | '\n')*
     block (SPACE | '\n')*
-    ('else' SPACE+ block (SPACE | '\n')*)?      # IfBlock
+    ('else' (SPACE | '\n')* block (SPACE | '\n')*)?      # IfBlock
 ;
 
 memoryQualifier: '*' | '&';
