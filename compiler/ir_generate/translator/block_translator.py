@@ -83,17 +83,6 @@ class BlockTranslator(Scope):
                     VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
                 )
 
-            case Operator(signature='()', operands=(callee, *parameters)):
-                translated_callee = add(callee)
-
-                if not isinstance(translated_callee.type_, FunctionType):
-                    raise TypeError(f"Attempted to call a non function: {translated_callee}")
-
-                return TranslatedExpression(
-                    self.builder.call(translated_callee.label, (add(param).label for param in parameters)),
-                    translated_callee.type_.return_type
-                )
-
             case Operator(signature='=', operands=(assigned, assignee)):
                 translated_assignee = add(assignee)
                 translated_assigned = add(assigned, write=True, type_hint=translated_assignee.type_.base_type)
@@ -101,6 +90,17 @@ class BlockTranslator(Scope):
                 return TranslatedExpression(
                     self.builder.store(translated_assignee.label, translated_assigned.label),
                     translated_assigned.type_
+                )
+
+            case Operator(signature='()', operands=(callee, *parameters)):
+                translated_callee = add(callee)
+
+                if not isinstance(translated_callee.type_.base_type, FunctionType):
+                    raise TypeError(f"Attempted to call a non function: {translated_callee}")
+
+                return TranslatedExpression(
+                    self.builder.call(translated_callee.label, (add(param).label for param in parameters)),
+                    translated_callee.type_.base_type.return_type
                 )
 
             case Operator(signature='+' | '-' | '*' as signature, operands=(left, right)):
