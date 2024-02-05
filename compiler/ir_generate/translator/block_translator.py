@@ -7,11 +7,9 @@ from . import resolve_type, TranslatedExpression, Scope
 class BlockTranslator(Scope):
     """A translation unit consisting of many uninterrupted lines."""
 
-    def __init__(self, syntax: Block, func: ir.Function, parent: Scope):
-        self.statements = syntax.statements
+    def __init__(self, func: ir.Function, parent: Scope):
         self.func = func
-        self.block = self.func.append_basic_block()
-        self.builder = ir.IRBuilder(self.block)
+        self.builder = ir.IRBuilder(self.func.append_basic_block())
 
         super().__init__(parent, {})
 
@@ -43,13 +41,17 @@ class BlockTranslator(Scope):
                 )
 
             case Block() as syntax:
-                print('breh')
-                translator = BlockTranslator(syntax, self.func, self)
-                translator.translate()
-                return TranslatedExpression(
-                    self.builder.branch(translator.block),
-                    VoidType()
-                )
+                sub_block_translator = BlockTranslator(self.func, self)
+                instruction = self.builder.branch(sub_block_translator.builder.block)
+                is_terminated = sub_block_translator.translate(syntax)
+
+                if is_terminated:
+                    return TranslatedExpression(instruction, VoidType())
+
+                next_block = self.func.append_basic_block()
+                sub_block_translator.builder.branch(next_block)
+                self.builder = ir.IRBuilder(next_block)
+                return
 
             case IfElseConditional(condition=condition, then=then, otherwise=otherwise):
                 raise NotImplementedError()
@@ -59,10 +61,10 @@ class BlockTranslator(Scope):
                 # with self.builder.if_then(self.add(condition).label) as then_block:
 
             case Function() as syntax:
-                translator = FunctionTranslator(syntax, self.func.module)
-                translator.translate()
+                sub_block_translator = FunctionTranslator(syntax, self.func.module)
+                sub_block_translator.translate()
                 return TranslatedExpression(
-                    translator.func,
+                    sub_block_translator.func,
                     syntax.type_
                 )
 
@@ -130,17 +132,15 @@ class BlockTranslator(Scope):
             case other:
                 raise TypeError(f'{other} is not a node type.')
 
-    def translate(self) -> bool:
+    def translate(self, syntax: Block) -> bool:
         """Translates the entire block. Returns whether it is successfully terminated."""
 
-        for statement in self.statements:
+        for statement in syntax.statements:
 
             match self.add(statement):
                 case TranslatedExpression(label=ir.Terminator()):
-                    print("Info: stopped translation due to terminator.")
                     return True
 
-        print("Warning: stopped translation without a terminator.")
         return False
 
 
