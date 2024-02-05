@@ -7,9 +7,8 @@ from . import resolve_type, TranslatedExpression, Scope
 class BlockTranslator(Scope):
     """A translation unit consisting of many uninterrupted lines."""
 
-    def __init__(self, func: ir.Function, parent: Scope):
-        self.func = func
-        self.builder = ir.IRBuilder(self.func.append_basic_block())
+    def __init__(self, ir_block: ir.Block, parent: Scope):
+        self.builder = ir.IRBuilder(ir_block)
 
         super().__init__(parent, {})
 
@@ -41,27 +40,33 @@ class BlockTranslator(Scope):
                 )
 
             case Block() as syntax:
-                sub_block_translator = BlockTranslator(self.func, self)
+                sub_block_translator = BlockTranslator(self.builder.append_basic_block(), self)
                 instruction = self.builder.branch(sub_block_translator.builder.block)
                 is_terminated = sub_block_translator.translate(syntax)
 
                 if is_terminated:
                     return TranslatedExpression(instruction, VoidType())
 
-                next_block = self.func.append_basic_block()
+                next_block = self.builder.append_basic_block()
                 sub_block_translator.builder.branch(next_block)
                 self.builder = ir.IRBuilder(next_block)
                 return
 
             case IfElseConditional(condition=condition, then=then, otherwise=otherwise):
-                raise NotImplementedError()
+                with self.builder.if_else(self.add(condition).label) as (then_block, otherwise_block):
+                    with then_block:
+                        self.translate(then)
+                    with otherwise_block:
+                        self.translate(otherwise)
+                return
 
             case IfConditional(condition=condition, then=then):
-                raise NotImplementedError()
-                # with self.builder.if_then(self.add(condition).label) as then_block:
+                with self.builder.if_then(self.add(condition).label) as then_block:
+                    self.translate(then)
+                return
 
             case Function() as syntax:
-                sub_block_translator = FunctionTranslator(syntax, self.func.module)
+                sub_block_translator = FunctionTranslator(syntax, self.builder.module)
                 sub_block_translator.translate()
                 return TranslatedExpression(
                     sub_block_translator.func,
