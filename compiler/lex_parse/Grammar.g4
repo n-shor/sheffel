@@ -43,8 +43,7 @@ expr:
 
 |   variableType SPACE+ name=VAR                        # VariableDeclarationExpr
 
-|   variableType SPACE* '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block   # FunctionCreationExpr
-|   '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block                       # VoidReturningFunctionCreationExpr
+|   (variableType SPACE*)? '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block    # FunctionCreationExpr
 
 |   name=VAR                                            # VarExpr
 |   value=INT                                           # IntExpr

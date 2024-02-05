@@ -188,21 +188,10 @@ class GrammarASTBuilder(GrammarListener):
         if not all(isinstance(p, VariableDeclaration) for p in parameters):
             raise TypeError(f'Attempted to use a non-variable-declaration as a parameter.')
 
-        return Function.make(
-            self.add(ctx.variableType()),
-            parameters,
-            ctx.block()
-        )
-
-    def exitVoidReturningFunctionCreationExpr(self, ctx: GrammarParser.VoidReturningFunctionCreationExprContext):
-
-        parameters = tuple(self.add(e) for e in ctx.expr())
-
-        if any(not isinstance(p, VariableDeclaration) for p in parameters):
-            raise TypeError(f'Attempted to use a non-variable-declaration as a parameter.')
+        return_type = ctx.variableType()
 
         return Function.make(
-            VoidType(),
+            self.add(return_type) if return_type is not None else VoidType(),
             parameters,
             ctx.block()
         )
