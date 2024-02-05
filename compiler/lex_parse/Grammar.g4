@@ -12,10 +12,11 @@ stat:
 ;
 
 block:
-    '{' '\n'? stat* '}'         # MultiLineBlock
-|   '{' expr '}'            # SingleLineBlock
-|   'if' SPACE+ expr (SPACE | '\n')* block (SPACE | '\n')*
-    ('else' SPACE+ block (SPACE | '\n')*)? # IfBlock
+    '{' '\n'? stat* '}'                         # MultiLineBlock
+|   '{' expr '}'                                # SingleLineBlock
+|   'if' SPACE+ expr (SPACE | '\n')*
+    block (SPACE | '\n')*
+    ('else' SPACE+ block (SPACE | '\n')*)?      # IfBlock
 ;
 
 memoryQualifier: '*' | '&';
