@@ -15,13 +15,13 @@ class BlockTranslator(Scope):
 
         super().__init__(parent, {})
 
-    def add(self, expression: Node, **kwargs):
+    def add(self, _expression: Node, *, _write: bool = None, _type_hint: UnqualifiedType = None):
         """Adds a statement to the block."""
 
-        def add(_expression: Node, **override_kwargs):
-            return self.add(_expression, **kwargs, **override_kwargs)
+        def add(expression: Node, *, write: bool = None, type_hint: UnqualifiedType = None):
+            return self.add(expression, _write=_override(write, _write), _type_hint=_override(type_hint, _type_hint))
 
-        match expression:
+        match _expression:
 
             case Literal(value=value, type_=LiteralType() as type_):
                 return TranslatedExpression(
@@ -43,6 +43,7 @@ class BlockTranslator(Scope):
                 )
 
             case Block() as syntax:
+                print('breh')
                 translator = BlockTranslator(syntax, self.func, self)
                 translator.translate()
                 return TranslatedExpression(
@@ -55,6 +56,7 @@ class BlockTranslator(Scope):
 
             case IfConditional(condition=condition, then=then):
                 raise NotImplementedError()
+                # with self.builder.if_then(self.add(condition).label) as then_block:
 
             case Function() as syntax:
                 translator = FunctionTranslator(syntax, self.func.module)
@@ -65,15 +67,14 @@ class BlockTranslator(Scope):
                 )
 
             case VariableDeclaration(name=name, type_=VariableType(base_type=AutoUnqualifiedType() | NamedUnqualifiedType(name='Function')) as type_):
-                type_hint: UnqualifiedType = kwargs['type_hint']
-                type_ = VariableType(type_hint, type_.memory, type_.behavior)
+                type_ = VariableType(_type_hint, type_.memory, type_.behavior)
                 return self.allocate(name, type_, self.builder)
 
             case VariableDeclaration(name=name, type_=type_):
                 return self.allocate(name, type_, self.builder)
 
             case Variable(name=name):
-                return self.write(name, self.builder) if 'write' in kwargs else self.read(name, self.builder)
+                return self.write(name, self.builder) if _write else self.read(name, self.builder)
 
             # negative literal
             case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
@@ -95,7 +96,7 @@ class BlockTranslator(Scope):
 
             case Operator(signature='=', operands=(assigned, assignee)):
                 translated_assignee = add(assignee)
-                translated_assigned = add(assigned, write=True, type_hint=translated_assignee.type_)
+                translated_assigned = add(assigned, write=True, type_hint=translated_assignee.type_.base_type)
 
                 return TranslatedExpression(
                     self.builder.store(translated_assignee.label, translated_assigned.label),
@@ -124,10 +125,10 @@ class BlockTranslator(Scope):
                 raise ValueError(f'{signature} is an unknown operation.')
 
             case Node():
-                raise TypeError(f'{expression} is of a primitive or unknown node type.')
+                raise TypeError(f'{_expression} is of a primitive or unknown node type.')
 
             case _:
-                raise TypeError(f'{expression} is not a node type.')
+                raise TypeError(f'{_expression} is not a node type.')
 
     def translate(self) -> bool:
         """Translates the entire block. Returns whether it is successfully terminated."""
@@ -141,5 +142,10 @@ class BlockTranslator(Scope):
 
         print("Warning: stopped translation without a terminator.")
         return False
+
+
+def _override(new_arg, old_arg):
+    return new_arg if new_arg is not None else old_arg
+
 
 from .function_translator import FunctionTranslator
