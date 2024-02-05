@@ -56,6 +56,16 @@ class GrammarASTBuilder(GrammarListener):
     def exitSingleLineBlock(self, ctx: GrammarParser.SingleLineBlockContext):
         return Block((self.exit(ctx.expr()),))
 
+    def exitIfBlock(self, ctx: GrammarParser.IfBlockContext):
+        condition = ctx.expr()
+        on_true = ctx.block(0)
+        on_false = ctx.block(1)
+
+        if on_false is None:
+            return IfConditional(self.exit(condition), self.exit(on_true))
+
+        return IfElseConditional(self.exit(condition), self.exit(on_true), self.exit(on_false))
+
     # Parsing Expression:
 
     def exitLeftSpacedExpr(self, ctx: GrammarParser.LeftSpacedExprContext):
