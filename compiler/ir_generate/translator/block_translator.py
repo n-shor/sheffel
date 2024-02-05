@@ -39,39 +39,36 @@ class BlockTranslator(Scope):
                     VoidType()
                 )
 
+            case Function() as syntax:
+                function_translator = FunctionTranslator(syntax, self.builder.module)
+                function_translator.translate()
+                return TranslatedExpression(
+                    function_translator.func,
+                    syntax.type_
+                )
+
             case Block() as syntax:
-                sub_block_translator = BlockTranslator(self.builder.append_basic_block(), self)
-                instruction = self.builder.branch(sub_block_translator.builder.block)
-                is_terminated = sub_block_translator.translate(syntax)
-
-                if is_terminated:
-                    return TranslatedExpression(instruction, VoidType())
-
+                sub_block = self.builder.append_basic_block()
                 next_block = self.builder.append_basic_block()
-                sub_block_translator.builder.branch(next_block)
-                self.builder = ir.IRBuilder(next_block)
-                return
+
+                self.builder.branch(sub_block)
+
+                with self.builder.goto_block(sub_block):
+                    if not self.translate(syntax):
+                        self.builder.branch(next_block)
+
+                self.builder.position_at_start(next_block)
 
             case IfElseConditional(condition=condition, then=then, otherwise=otherwise):
                 with self.builder.if_else(self.add(condition).label) as (then_block, otherwise_block):
                     with then_block:
-                        self.translate(then)
+                        self.add(then)
                     with otherwise_block:
-                        self.translate(otherwise)
-                return
+                        self.add(otherwise)
 
             case IfConditional(condition=condition, then=then):
-                with self.builder.if_then(self.add(condition).label) as then_block:
-                    self.translate(then)
-                return
-
-            case Function() as syntax:
-                sub_block_translator = FunctionTranslator(syntax, self.builder.module)
-                sub_block_translator.translate()
-                return TranslatedExpression(
-                    sub_block_translator.func,
-                    syntax.type_
-                )
+                with self.builder.if_then(self.add(condition).label):
+                    self.add(then)
 
             case VariableDeclaration(name=name, type_=VariableType(base_type=AutoUnqualifiedType() | NamedUnqualifiedType(name='Function')) as type_):
                 type_ = VariableType(_type_hint, type_.memory, type_.behavior)
@@ -137,10 +134,10 @@ class BlockTranslator(Scope):
             case other:
                 raise TypeError(f'{other} is not a node type.')
 
-    def translate(self, syntax: Block) -> bool:
-        """Translates the entire block. Returns whether it is successfully terminated."""
+    def translate(self, body: Block) -> bool:
+        """Translates the entire block. Returns whether it is terminated."""
 
-        for statement in syntax.statements:
+        for statement in body.statements:
 
             match self.add(statement):
                 case TranslatedExpression(label=ir.Terminator()):

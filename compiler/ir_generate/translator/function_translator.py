@@ -1,6 +1,6 @@
 from llvmlite import ir
 
-from ...ast import nodes
+from ...ast.nodes import Block, Function
 from ...ast.types import VariableType, DirectUnqualifiedType, ValueMemoryQualifier
 
 
@@ -11,9 +11,9 @@ class FunctionTranslator(Scope):
 
     _symbol_id = 0
 
-    def __init__(self, syntax: nodes.Function, module: ir.Module, symbol: str = ''):
-        self.body = syntax.body
+    def __init__(self, syntax: Function, module: ir.Module, symbol: str = ''):
         self.module = module
+        self.syntax = syntax
         self.func = ir.Function(module, resolve_type(syntax.type_.base_type), symbol or self._get_unique_symbol())
 
         super().__init__(None, {param.name: TranslatedExpression(arg, param.type_) for param, arg in zip(syntax.parameters, self.func.args)})
@@ -25,15 +25,15 @@ class FunctionTranslator(Scope):
 
     def translate(self):
         """Translates the function."""
-        return BlockTranslator(self.func.append_basic_block(), self).translate(self.body)
+        return BlockTranslator(self.func.append_basic_block(), self).translate(self.syntax.body)
 
 
-def make_entry_function(module: ir.Module, body: nodes.Block):
+def make_entry_function(module: ir.Module, body: Block):
 
     return_type = VariableType(DirectUnqualifiedType(ir.IntType(32)), ValueMemoryQualifier(), ())
-    func = nodes.Function.make(return_type, (), body)
+    syntax = Function.make(return_type, (), body)
 
-    return FunctionTranslator(func, module, 'main')
+    return FunctionTranslator(syntax, module, 'main')
 
 
 from .block_translator import BlockTranslator
