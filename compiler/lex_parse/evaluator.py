@@ -54,7 +54,7 @@ class GrammarASTBuilder(GrammarListener):
         return Block(tuple(self.add(s) for s in ctx.stat() if not isinstance(s, GrammarParser.EmptyStatContext)))
 
     def exitSingleLineBlock(self, ctx: GrammarParser.SingleLineBlockContext):
-        return Block((ctx.expr(),))
+        return Block((self.add(ctx.expr()),))
 
     # Parsing Expression:
 
