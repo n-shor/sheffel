@@ -81,7 +81,7 @@ class Block(Scope):
                 func_builder.translate()
                 return TranslatedExpression(
                     func_builder.func,
-                    func_builder.type_
+                    syntax.type_
                 )
 
             case VariableDeclaration(name=name, type_=VariableType(base_type=AutoUnqualifiedType() | NamedUnqualifiedType(name='Function')) as type_):

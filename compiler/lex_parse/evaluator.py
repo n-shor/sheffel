@@ -46,7 +46,7 @@ class GrammarASTBuilder(GrammarListener):
 
     def exitReturnStat(self, ctx: GrammarParser.ReturnStatContext):
         subexpression = ctx.expr()
-        return ReturnVoid() if subexpression is None else Return(self.add(subexpression))
+        return Return(self.add(subexpression)) if subexpression is not None else ReturnVoid()
 
     # Block:
 
@@ -105,12 +105,7 @@ class GrammarASTBuilder(GrammarListener):
     # Operator Expression:
 
     def exitCallOpExpr(self, ctx: GrammarParser.CallOpExprContext):
-        subexpressions = tuple(self.add(e) for e in ctx.expr())
-
-        if not isinstance(subexpressions[0], Variable):
-            raise TypeError(f"Parsing error: calling a non-variable ({subexpressions[0]}).")
-
-        return Operator('()', subexpressions)
+        return Operator('()', tuple(self.add(e) for e in ctx.expr()))
 
     def _exit_binary_operator(self, ctx: GrammarParser.ExprContext):
         return Operator(ctx.op.text, (self.add(ctx.expr(0)), self.add(ctx.expr(1))))
@@ -193,7 +188,7 @@ class GrammarASTBuilder(GrammarListener):
         return Function.make(
             self.add(return_type) if return_type is not None else VoidType(),
             parameters,
-            ctx.block()
+            self.add(ctx.block())
         )
 
     # builder:

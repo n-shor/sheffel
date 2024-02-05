@@ -5,10 +5,10 @@ prog:
 ;
 
 stat:
-    SPACE* '\n'                                # EmptyStat
-|   SPACE* expr '\n' (SPACE | '\n')*                  # ExpressionStat
-|   SPACE* block '\n' (SPACE | '\n')*                 # BlockStat
-|   SPACE* 'return' (SPACE+ expr)? (SPACE | '\n')*    # ReturnStat
+    SPACE* '\n'                                         # EmptyStat
+|   SPACE* expr '\n' (SPACE | '\n')*                    # ExpressionStat
+|   SPACE* block '\n' (SPACE | '\n')*                   # BlockStat
+|   SPACE* 'return' (SPACE+ expr)? (SPACE | '\n')*      # ReturnStat
 ;
 
 block:
