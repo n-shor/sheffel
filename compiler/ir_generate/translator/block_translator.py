@@ -1,16 +1,13 @@
-from ...ast import nodes
 from ...ast.nodes import *
 from ...ast.types import *
 
-from .type_resolver import resolve as resolve_type
-from .translated_expression import TranslatedExpression
-from .scope import Scope
+from . import resolve_type, TranslatedExpression, Scope
 
 
-class Block(Scope):
+class BlockTranslator(Scope):
     """A translation unit consisting of many uninterrupted lines."""
 
-    def __init__(self, syntax: nodes.Block, func: ir.Function, parent: Scope):
+    def __init__(self, syntax: Block, func: ir.Function, parent: Scope):
         self.statements = syntax.statements
         self.func = func
         self.block = self.func.append_basic_block()
@@ -24,23 +21,23 @@ class Block(Scope):
         translated_left = self.add(left)
         translated_right = self.add(right)
 
-        iops = {
+        integer_operations = {
             '+': self.builder.add,
             '-': self.builder.sub,
             '*': self.builder.mul
         }
 
-        fops = {
+        floating_operations = {
             '+': self.builder.fadd,
             '-': self.builder.fsub,
             '*': self.builder.fmul
         }
 
         try:
-            instruction = iops[signature](translated_left.label, translated_right.label)
+            instruction = integer_operations[signature](translated_left.label, translated_right.label)
 
         except TypeError:
-            instruction = fops[signature](translated_left.label, translated_right.label)
+            instruction = floating_operations[signature](translated_left.label, translated_right.label)
 
         return TranslatedExpression.make_from_instruction(instruction)
 
@@ -55,11 +52,11 @@ class Block(Scope):
                     VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
                 )
 
-            case nodes.Block() as syntax:
-                next_ = Block(syntax, self.func, self)
-                next_.translate()
+            case Block() as syntax:
+                translator = BlockTranslator(syntax, self.func, self)
+                translator.translate()
                 return TranslatedExpression(
-                    self.builder.branch(next_.block),
+                    self.builder.branch(translator.block),
                     VoidType()
                 )
 
@@ -76,11 +73,11 @@ class Block(Scope):
                     VoidType()
                 )
 
-            case nodes.Function() as syntax:
-                func_builder = function.Function(syntax, self.func.module)
-                func_builder.translate()
+            case Function() as syntax:
+                translator = FunctionTranslator(syntax, self.func.module)
+                translator.translate()
                 return TranslatedExpression(
-                    func_builder.func,
+                    translator.func,
                     syntax.type_
                 )
 
@@ -147,5 +144,4 @@ class Block(Scope):
         print("Warning: stopped translation without a terminator.")
         return False
 
-
-from . import function
+from .function_translator import FunctionTranslator
