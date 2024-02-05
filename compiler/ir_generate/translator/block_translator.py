@@ -124,11 +124,11 @@ class BlockTranslator(Scope):
             case Operator(signature=signature):
                 raise ValueError(f'{signature} is an unknown operation.')
 
-            case Node():
-                raise TypeError(f'{_expression} is of a primitive or unknown node type.')
+            case Node() as node:
+                raise TypeError(f'{node} is of a primitive or unknown node type.')
 
-            case _:
-                raise TypeError(f'{_expression} is not a node type.')
+            case other:
+                raise TypeError(f'{other} is not a node type.')
 
     def translate(self) -> bool:
         """Translates the entire block. Returns whether it is successfully terminated."""
