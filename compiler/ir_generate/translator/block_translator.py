@@ -52,14 +52,6 @@ class BlockTranslator(Scope):
                     VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
                 )
 
-            case Block() as syntax:
-                translator = BlockTranslator(syntax, self.func, self)
-                translator.translate()
-                return TranslatedExpression(
-                    self.builder.branch(translator.block),
-                    VoidType()
-                )
-
             case Return(returnee=returnee):
                 translated = self.add(returnee, **kwargs)
                 return TranslatedExpression(
@@ -72,6 +64,20 @@ class BlockTranslator(Scope):
                     self.builder.ret_void(),
                     VoidType()
                 )
+
+            case Block() as syntax:
+                translator = BlockTranslator(syntax, self.func, self)
+                translator.translate()
+                return TranslatedExpression(
+                    self.builder.branch(translator.block),
+                    VoidType()
+                )
+
+            case IfElseConditional(condition=condition, then=then, otherwise=otherwise):
+                raise NotImplementedError()
+
+            case IfConditional(condition=condition, then=then):
+                raise NotImplementedError()
 
             case Function() as syntax:
                 translator = FunctionTranslator(syntax, self.func.module)
