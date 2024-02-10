@@ -37,7 +37,9 @@ def compile_from_ast(ast: Block, *,
     result = create_ir(ast)
 
     if print_ir:
-        print(str(result))
+        lines = str(result).split('\n')
+        lines_without_meta = lines[3:]
+        print('\n'.join(lines_without_meta))
 
     return compile_from_ir(result, **kwargs)
 
