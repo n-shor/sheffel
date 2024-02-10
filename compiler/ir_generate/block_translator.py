@@ -1,5 +1,5 @@
-from ...ast.nodes import *
-from ...ast.types import *
+from compiler.ast.nodes import *
+from compiler.ast.types import *
 
 from . import resolve_type, TranslatedExpression, Scope
 
@@ -139,6 +139,7 @@ class BlockTranslator(Scope):
             match self.add(statement):
                 case TranslatedExpression(label=ir.Terminator()) as expr:
                     return expr
+
 
 def _override(new_arg, old_arg):
     return new_arg if new_arg is not None else old_arg

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from llvmlite import ir
 
-from ...ast.types import VariableType, DirectUnqualifiedType, MemoryQualifier, BehaviorQualifier
+from ..ast.types import VariableType, DirectUnqualifiedType, MemoryQualifier, BehaviorQualifier
 
 
 @dataclass

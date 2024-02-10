@@ -1,7 +1,7 @@
 from llvmlite import ir
 
-from ...ast.nodes import Block, Function
-from ...ast.types import VariableType, DirectUnqualifiedType, ValueMemoryQualifier
+from compiler.ast.nodes import Block, Function
+from compiler.ast.types import VariableType, DirectUnqualifiedType, ValueMemoryQualifier
 
 
 from . import resolve_type, TranslatedExpression, Scope

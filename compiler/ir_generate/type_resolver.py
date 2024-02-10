@@ -1,7 +1,7 @@
 from llvmlite import ir
 
-from ...ast.types import UnqualifiedType, VariableType, ValueMemoryQualifier, ReferenceMemoryQualifier
-from ...ast.types.literal_type import constant_types
+from ..ast.types import UnqualifiedType, VariableType, ValueMemoryQualifier, ReferenceMemoryQualifier
+from ..ast.types.literal_type import constant_types
 
 
 def resolver(name: str) -> ir.Type:

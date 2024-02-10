@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from llvmlite import ir
 
-from ...ast.types import VariableType
+from ..ast.types import VariableType
 
-from .type_resolver import resolve as resolve_type
-from .translated_expression import TranslatedExpression
+from . import resolve_type, TranslatedExpression
 
 
 class Scope:
