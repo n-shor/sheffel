@@ -4,16 +4,26 @@ from .ast import Block
 from llvmlite.ir import Module
 
 
+def run_from_exe(name: str,
+                 run: bool = True,
+                 **kwargs):
+    if not run:
+        return name
+
+    return subprocess.call([name])
+
+
 def compile_from_ir(ir: Module,
                     exe: bool = True,
+                    name: str = "Program",
                     **kwargs):
     if not exe:
         return ir
 
     from .build.create import create_exe
-    result = create_exe(ir)
+    result = create_exe(ir, name)
 
-    return result
+    return run_from_exe(result, **kwargs)
 
 
 def compile_from_ast(ast: Block, *,

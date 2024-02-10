@@ -3,15 +3,21 @@ from compiler.compile import compile_from_code
 
 def main():
 
-    code = """0x3fa3f
-     01010101010101001010Bl
-    .3F
-      3.5
-    3L
+    code = """
+    Function* double = Int&(Int& x) { return x * 2 }
+    
+    if double(3) == 6
+    {
+        return 1
+    }
+    else
+    {
+        return 0
+    }
     """
 
-    result = compile_from_code(code, regenerate_grammar=True, print_ir=False, ir=False, exe=False)
-    print(f'{result = }')
+    result = compile_from_code(code, regenerate_grammar=False, print_ir=False, ir=True, exe=True, run=True)
+    print(result)
 
 
 if __name__ == "__main__":
