@@ -6,11 +6,17 @@ from llvmlite.ir import Module
 
 def run_from_exe(name: str,
                  run: bool = True,
+                 print_result: bool = True,
                  **kwargs):
     if not run:
         return name
 
-    return subprocess.call([name])
+    result = subprocess.call([name])
+
+    if print_result:
+        print(result)
+
+    return result
 
 
 def compile_from_ir(ir: Module,
