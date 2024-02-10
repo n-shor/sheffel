@@ -7,8 +7,8 @@ from . import resolve_type, TranslatedExpression, Scope
 class BlockTranslator(Scope):
     """A translation unit consisting of many uninterrupted lines."""
 
-    def __init__(self, ir_block: ir.Block, parent: Scope):
-        self.builder = ir.IRBuilder(ir_block)
+    def __init__(self, builder: ir.IRBuilder, parent: Scope):
+        self.builder = builder
 
         super().__init__(parent, {})
 
@@ -43,26 +43,24 @@ class BlockTranslator(Scope):
                 function_translator = FunctionTranslator(syntax, self.builder.module)
                 function_translator.translate()
                 return TranslatedExpression(
-                    function_translator.func,
+                    function_translator.func,  # the function's pointer
                     syntax.type_
                 )
 
             case Block() as syntax:
-                sub_block = self.builder.append_basic_block()
-                next_block = self.builder.append_basic_block()
+                return BlockTranslator(self.builder, self).translate(syntax)
 
-                self.builder.branch(sub_block)
+            case IfElseConditional(condition=condition, then=then, otherwise=otherwise) if then.returns():
+                with self.builder.if_then(self.add(condition).label):
+                    self.add(then)
 
-                with self.builder.goto_block(sub_block):
-                    if not self.translate(syntax):
-                        self.builder.branch(next_block)
-
-                self.builder.position_at_start(next_block)
+                return self.add(otherwise)
 
             case IfElseConditional(condition=condition, then=then, otherwise=otherwise):
                 with self.builder.if_else(self.add(condition).label) as (then_block, otherwise_block):
                     with then_block:
                         self.add(then)
+
                     with otherwise_block:
                         self.add(otherwise)
 
@@ -134,17 +132,13 @@ class BlockTranslator(Scope):
             case other:
                 raise TypeError(f'{other} is not a node type.')
 
-    def translate(self, body: Block) -> bool:
-        """Translates the entire block. Returns whether it is terminated."""
+    def translate(self, body: Block) -> TranslatedExpression | None:
+        """Translates the entire block. Returns its terminator."""
 
         for statement in body.statements:
-
             match self.add(statement):
-                case TranslatedExpression(label=ir.Terminator()):
-                    return True
-
-        return False
-
+                case TranslatedExpression(label=ir.Terminator()) as expr:
+                    return expr
 
 def _override(new_arg, old_arg):
     return new_arg if new_arg is not None else old_arg

@@ -15,3 +15,15 @@ class View(Node):
     """Creates a view of a variable."""
 
     viewed: Node
+
+
+@dataclass
+class Return(Node):
+    """A terminator statement returning another statement."""
+
+    returnee: Node
+
+
+@dataclass
+class ReturnVoid(Node):
+    """A terminator statement returning void."""

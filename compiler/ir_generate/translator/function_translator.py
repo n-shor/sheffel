@@ -25,7 +25,7 @@ class FunctionTranslator(Scope):
 
     def translate(self):
         """Translates the function."""
-        return BlockTranslator(self.func.append_basic_block(), self).translate(self.syntax.body)
+        return BlockTranslator(ir.IRBuilder(self.func.append_basic_block()), self).translate(self.syntax.body)
 
 
 def make_entry_function(module: ir.Module, body: Block):
