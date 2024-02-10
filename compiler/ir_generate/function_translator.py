@@ -4,7 +4,8 @@ from compiler.ast.nodes import Block, Function
 from compiler.ast.types import VariableType, DirectUnqualifiedType, ValueMemoryQualifier
 
 
-from . import resolve_type, TranslatedExpression, Scope
+from . import resolve_type, Scope
+from .variable import Parameter
 
 
 class FunctionTranslator(Scope):
@@ -16,12 +17,15 @@ class FunctionTranslator(Scope):
         self.syntax = syntax
         self.func = ir.Function(module, resolve_type(syntax.type_.base_type), symbol or self._get_unique_symbol())
 
-        super().__init__(None, {param.name: TranslatedExpression(arg, param.type_) for param, arg in zip(syntax.parameters, self.func.args)})
+        super().__init__(
+            None,
+            {param.name: Parameter(arg, param.type_.base_type) for param, arg in zip(syntax.parameters, self.func.args)}
+        )
 
     @classmethod
     def _get_unique_symbol(cls):
         cls._symbol_id += 1
-        return f'__function{cls._symbol_id}__'
+        return f'${cls._symbol_id}'
 
     def translate(self):
         """Translates the function."""

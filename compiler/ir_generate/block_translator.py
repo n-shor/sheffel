@@ -2,6 +2,7 @@ from compiler.ast.nodes import *
 from compiler.ast.types import *
 
 from . import resolve_type, TranslatedExpression, Scope
+from .variable import StackVariable, HeapVariable
 
 
 class BlockTranslator(Scope):
@@ -70,13 +71,26 @@ class BlockTranslator(Scope):
 
             case VariableDeclaration(name=name, type_=VariableType(base_type=AutoUnqualifiedType() | NamedUnqualifiedType(name='Function')) as type_):
                 type_ = VariableType(_type_hint, type_.memory, type_.behavior)
-                return self.allocate(name, type_, self.builder)
+                self.add(VariableDeclaration(name, type_))
 
-            case VariableDeclaration(name=name, type_=type_):
-                return self.allocate(name, type_, self.builder)
+            case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
+                var = StackVariable(self.builder, type_)
+                self.add_variable(name, var)
+                return TranslatedExpression(var.as_pointer(), type_)
+
+            case VariableDeclaration(name=name, type_=VariableType(memory=ReferenceMemoryQualifier()) as type_):
+                var = HeapVariable(self.builder, type_)
+                self.add_variable(name, var)
+                return TranslatedExpression(var.as_pointer(), type_)
 
             case Variable(name=name):
-                return self.write(name, self.builder) if _write else self.read(name, self.builder)
+                var = self.get_variable(name)
+
+                if _write:
+                    return TranslatedExpression(var.as_pointer(), var.type_)
+
+                else:
+                    return TranslatedExpression(var.load(), var.type_)
 
             # negative literal
             case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
@@ -135,10 +149,13 @@ class BlockTranslator(Scope):
     def translate(self, body: Block) -> TranslatedExpression | None:
         """Translates the entire block. Returns its terminator."""
 
-        for statement in body.statements:
-            match self.add(statement):
-                case TranslatedExpression(label=ir.Terminator()) as expr:
-                    return expr
+        try:
+            for statement in body.statements:
+                match self.add(statement):
+                    case TranslatedExpression(label=ir.Terminator()) as expr:
+                        return expr
+        finally:
+            self.free_scope()
 
 
 def _override(new_arg, old_arg):

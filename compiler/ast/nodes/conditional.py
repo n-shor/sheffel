@@ -8,11 +8,11 @@ class IfConditional(Node):
     """Represents a conditional if statement."""
 
     condition: Node
-    then: Block
+    then: Node
 
 
 @dataclass
 class IfElseConditional(IfConditional):
     """Represents a conditional if statement which includes an else clause."""
 
-    otherwise: Block
+    otherwise: Node

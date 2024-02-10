@@ -1,54 +1,28 @@
 from __future__ import annotations
 
-from llvmlite import ir
-
-from ..ast.types import VariableType
-
-from . import resolve_type, TranslatedExpression
+from .variable import Variable
 
 
 class Scope:
-    def __init__(self, parent: Scope | None, parameters: dict[str, TranslatedExpression]):
+    def __init__(self, parent: Scope | None, parameters: dict[str, Variable]):
         self._parent = parent
-        self._allocations: dict[str, TranslatedExpression] = {}
-        self._parameters = parameters
+        self._variables: dict[str, Variable] = parameters
 
-    def allocate(self, name: str, type_: VariableType, builder: ir.IRBuilder):
-        """Allocates a named variable of the given type on the stack.
-        Returns the relevant label to write to."""
-        if name in self._allocations:
+    def add_variable(self, name: str, variable: Variable):
+        if name in self._variables:
             raise KeyError(f'"{name}" is already allocated.')
 
-        allocation = TranslatedExpression(builder.alloca(resolve_type(type_)), type_)
-        self._allocations[name] = allocation
-        return allocation
+        self._variables[name] = variable
 
-    def read(self, name: str, builder: ir.IRBuilder):
-        """Adds an instruction reading the named variable and returns the relevant virtual register to read from."""
-        if name in self._allocations:
-            translated = self._allocations[name]
-            return TranslatedExpression(
-                builder.load(translated.label),
-                translated.type_
-            )
+    def get_variable(self, name: str):
+        if name in self._variables:
+            return self._variables[name]
 
-        if name in self._parameters:
-            return self._parameters[name]
+        if self._parent is None:
+            raise KeyError(f'"{name}" is not allocated.')
 
-        if self._parent is not None:
-            return self._parent.read(name, builder)
+        return self._parent.get_variable(name)
 
-        raise KeyError(f'"{name}" is neither allocated nor is a parameter name.')
-
-    def write(self, name: str, builder: ir.IRBuilder):
-        """Returns the relevant virtual register for writing to the named variable."""
-        if name in self._allocations:
-            return self._allocations[name]
-
-        if name in self._parameters:
-            raise KeyError(f'"{name}" is a parameter and cannot be written to.')
-
-        if self._parent is not None:
-            return self._parent.write(name, builder)
-
-        raise KeyError(f'"{name}" is not allocated.')
+    def free_scope(self):
+        for var in self._variables.values():
+            var.free()
