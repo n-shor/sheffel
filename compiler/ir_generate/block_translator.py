@@ -93,18 +93,6 @@ class BlockTranslator(Scope):
                     translated_value
                 )
 
-            case Operator(signature='=', operands=(VariableDeclaration(name=name) as var_declaration, value)):
-                translated_value = self.add(value)
-
-                if isinstance(var_declaration.type_.base_type, AutoUnqualifiedType):
-                    var_declaration.type_.base_type = translated_value.type_.base_type
-
-                    if isinstance(value, Function):
-                        self.add_variable(name, variable.StackVariable(self.builder, type_))
-
-                self.add(var_declaration)
-                return self._assign(self.get_variable(name), translated_value)
-
             case Operator(signature='=', operands=(Variable(name=name), value)):
                 return self._assign(self.get_variable(name), self.add(value))
 
