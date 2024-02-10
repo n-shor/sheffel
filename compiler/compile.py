@@ -11,7 +11,7 @@ def compile_from_ir(ir: Module,
         return ir
 
     from .build.create import create_exe
-    result = create_exe()
+    result = create_exe(ir)
 
     return result
 
