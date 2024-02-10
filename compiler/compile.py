@@ -4,14 +4,14 @@ from .ast import Block
 from llvmlite.ir import Module
 
 
-def compile_from_ir(ir: Module, *,
+def compile_from_ir(ir: Module,
                     exe: bool = True,
                     **kwargs):
     if not exe:
         return ir
 
-    from .bind.run import run
-    result = run(ir)
+    from .build.create import create_exe
+    result = create_exe()
 
     return result
 
