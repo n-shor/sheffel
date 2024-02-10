@@ -67,19 +67,15 @@ class BlockTranslator(Scope):
                     self.add(then)
 
             case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
-                var = variable.StackVariable(self.builder, type_)
-                self.add_variable(name, var)
-                return TranslatedExpression(var.as_pointer(), type_)
+                self.add_variable(name, variable.StackVariable(self.builder, type_))
 
             case VariableDeclaration(name=name, type_=VariableType(memory=ReferenceMemoryQualifier()) as type_):
-                var = variable.HeapVariable(self.builder, type_)
-                self.add_variable(name, var)
-                return TranslatedExpression(var.as_pointer(), type_)
+                self.add_variable(name, variable.HeapVariable(self.builder, type_))
 
             # Reads from a variable
             case Variable(name=name):
                 var = self.get_variable(name)
-                return TranslatedExpression(var.load(), var.type_)
+                return TranslatedExpression(var.load(), var.get_type())
 
             # negative literal
             case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
@@ -141,29 +137,25 @@ class BlockTranslator(Scope):
     def translate(self, body: Block) -> TranslatedExpression | None:
         """Translates the entire block. Returns its terminator."""
 
-        for statement in body.statements:
-            match self.add(statement):
-                case TranslatedExpression(label=ir.Terminator() as terminator) as expr:
-
-                    self.builder.position_before(terminator)
-                    self.free_scope()
-                    self.builder.position_after(terminator)
-
-                    return expr
+        try:
+            for statement in body.statements:
+                match self.add(statement):
+                    case TranslatedExpression(label=ir.Terminator()) as expr:
+                        return expr
+        finally:
+            with self.builder.goto_block(self.builder.block):  # positions before terminator
+                self.free_scope()
 
     def _assign(self, var: variable.Variable, value: TranslatedExpression):
-        match (var.type_.memory, value.type_.memory):
-            case (ValueMemoryQualifier(), ValueMemoryQualifier()):
+
+        match (var.get_type().memory, value.type_.memory):
+            case (ValueMemoryQualifier() | ReferenceMemoryQualifier(), ValueMemoryQualifier()):
                 return TranslatedExpression(
                     self.builder.store(value.label, var.as_pointer()),
                     value.type_
                 )
 
-            case (ReferenceMemoryQualifier(), ValueMemoryQualifier()):
-                return TranslatedExpression(
-                    self.builder.store(value.label, var.as_pointer()),
-                    value.type_
-                )
+        raise TypeError("Illegal assignment type.")
 
 
 from .function_translator import FunctionTranslator

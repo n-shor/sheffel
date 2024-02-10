@@ -2,6 +2,7 @@ from llvmlite import ir, binding
 
 from ..ast.nodes import Block
 from .function_translator import make_entry_function
+from . import external
 
 
 def create_ir(program: Block):
@@ -11,8 +12,8 @@ def create_ir(program: Block):
 
     module.triple = binding.get_default_triple()
 
-    ir.Function(module, ir.FunctionType(ir.IntType(8).as_pointer(), (ir.IntType(64), )), 'malloc')
-    ir.Function(module, ir.FunctionType(ir.VoidType(), (ir.IntType(8).as_pointer(), )), 'free')
+    external.malloc.add(module)
+    external.free.add(module)
 
     func = make_entry_function(module, program)
 

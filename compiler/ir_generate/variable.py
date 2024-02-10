@@ -3,14 +3,13 @@ from abc import ABC, abstractmethod
 from llvmlite import ir, binding
 
 from ..ast.types import VariableType
-from . import resolve_type
-from .external_call import malloc_instruction, free_instruction
+from . import resolve_type, external
 
 
 class Variable(ABC):
     def __init__(self, type_: VariableType):
         """Constructs the variable and adds an instruction to allocate space for the variable."""
-        self.type_ = type_
+        self._type = type_
 
     @abstractmethod
     def load(self) -> ir.Instruction:
@@ -23,6 +22,9 @@ class Variable(ABC):
     @abstractmethod
     def free(self) -> ir.Instruction:
         """Adds an instruction to free space allocated for the variable."""
+
+    def get_type(self):
+        return self._type
 
 
 class StackVariable(Variable):
@@ -56,28 +58,38 @@ class Parameter(Variable):
         pass
 
 
-_malloc_size_type = ir.IntType(64)
-_generic_ptr_type = ir.IntType(8).as_pointer()
+_REF_COUNTER_TYPE = external.SIZE_TYPE
+_STRUCT_INDEX_TYPE = ir.IntType(32)
+_DEREFERENCE_STRUCT = external.SIZE_TYPE(1)
 
 
 class HeapVariable(Variable):
     def __init__(self, builder: ir.IRBuilder, type_: VariableType):
-        super().__init__(type_)
 
-        ir_value_type = resolve_type(type_.base_type)
         target_data = binding.create_target_data(builder.module.data_layout)
-        size = ir_value_type.get_abi_size(target_data)
 
-        self._generic_ptr = malloc_instruction(builder, _malloc_size_type(size))
-        self._ptr = builder.bitcast(self._generic_ptr, ir_value_type.as_pointer())
+        self._data_type = resolve_type(type_.base_type)
+        struct_type = ir.LiteralStructType((_REF_COUNTER_TYPE, self._data_type))
+
+        struct_size = struct_type.get_abi_size(target_data)
+
+        self._generic_ptr = external.malloc(builder, external.SIZE_TYPE(struct_size))
+        self._struct_ptr = builder.bitcast(self._generic_ptr, struct_type.as_pointer())
+
+        builder.load(self._struct_ptr)
+        ref_counter_ptr = builder.gep(self._struct_ptr, (_DEREFERENCE_STRUCT, _STRUCT_INDEX_TYPE(0)))
+        builder.store(_REF_COUNTER_TYPE(1), ref_counter_ptr)  # stores a 1 in the reference_counter
 
         self._builder = builder
 
+        super().__init__(type_)
+
     def load(self):
-        return self._builder.load(self._ptr)
+        return self._builder.load(self.as_pointer())
 
     def as_pointer(self):
-        return self._ptr
+        self._builder.load(self._struct_ptr)
+        return self._builder.gep(self._struct_ptr, (_DEREFERENCE_STRUCT, _STRUCT_INDEX_TYPE(1),))
 
     def free(self):
-        return free_instruction(self._builder, self._generic_ptr)
+        return external.free(self._builder, self._generic_ptr)

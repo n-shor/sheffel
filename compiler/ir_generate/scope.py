@@ -9,10 +9,12 @@ class Scope:
         self._variables: dict[str, Variable] = parameters
 
     def add_variable(self, name: str, variable: Variable):
+        """Adds a variable to the scope and returns it."""
         if name in self._variables:
             raise KeyError(f'"{name}" is already allocated.')
 
         self._variables[name] = variable
+        return variable
 
     def get_variable(self, name: str):
         if name in self._variables:
