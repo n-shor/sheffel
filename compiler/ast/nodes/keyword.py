@@ -18,6 +18,16 @@ class View(Node):
 
 
 @dataclass
+class Break(Node):
+    """A statement immediately terminating a loop."""
+
+
+@dataclass
+class Break(Node):
+    """A statement immediately ending a loop's body."""
+
+
+@dataclass
 class Return(Node):
     """A terminator statement returning another statement."""
 
