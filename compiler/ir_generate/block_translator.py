@@ -3,6 +3,7 @@ from compiler.ast.types import *
 
 from . import resolve_type, TranslatedExpression, Scope
 from . import variable
+from .variable import create_variable
 
 
 class BlockTranslator(Scope):
@@ -66,11 +67,8 @@ class BlockTranslator(Scope):
                 with self.builder.if_then(self.add(condition).label):
                     self.add(then)
 
-            case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
-                self.add_variable(name, variable.StackVariable(self.builder, type_))
-
-            case VariableDeclaration(name=name, type_=VariableType(memory=ReferenceMemoryQualifier()) as type_):
-                self.add_variable(name, variable.HeapVariable(self.builder, type_))
+            case VariableDeclaration() as node:
+                raise TypeError(f"{node} should be dealt with at the = operator.")
 
             # Reads from a variable
             case Variable(name=name):
@@ -89,6 +87,20 @@ class BlockTranslator(Scope):
 
                 if isinstance(var_declaration.type_.base_type, AutoUnqualifiedType):
                     var_declaration.type_.base_type = translated_value.type_.base_type
+
+                return self._assign(
+                    self.add_variable(name, create_variable(self.builder, var_declaration.type_)),
+                    translated_value
+                )
+
+            case Operator(signature='=', operands=(VariableDeclaration(name=name) as var_declaration, value)):
+                translated_value = self.add(value)
+
+                if isinstance(var_declaration.type_.base_type, AutoUnqualifiedType):
+                    var_declaration.type_.base_type = translated_value.type_.base_type
+
+                    if isinstance(value, Function):
+                        self.add_variable(name, variable.StackVariable(self.builder, type_))
 
                 self.add(var_declaration)
                 return self._assign(self.get_variable(name), translated_value)
@@ -155,7 +167,7 @@ class BlockTranslator(Scope):
                     value.type_
                 )
 
-        raise TypeError("Illegal assignment type.")
+        raise TypeError(f"Illegal assignment type - {value.type_.memory} to {var.get_type().memory}.")
 
 
 from .function_translator import FunctionTranslator

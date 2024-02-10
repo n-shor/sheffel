@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 
 from llvmlite import ir, binding
 
-from ..ast.types import VariableType
+from ..ast.types import VariableType, FunctionType
+from ..ast.types.qualifiers import ValueMemoryQualifier, ReferenceMemoryQualifier
 from . import resolve_type, external
 
 
@@ -93,3 +94,18 @@ class HeapVariable(Variable):
 
     def free(self):
         return external.free(self._builder, self._generic_ptr)
+
+
+def create_variable(builder: ir.IRBuilder, type_: VariableType) -> Variable:
+    match type_:
+        case VariableType(memory=ValueMemoryQualifier()):
+            return StackVariable(builder, type_)
+
+        case VariableType(base_type=FunctionType()):
+            return StackVariable(builder, type_)
+
+        case VariableType(memory=ReferenceMemoryQualifier()):
+            return HeapVariable(builder, type_)
+
+        case _:
+            raise TypeError("Unknown variable type.")
