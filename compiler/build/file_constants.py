@@ -1,4 +1,4 @@
-BUILD_PATH = './build'
+BUILD_PATH = './build_files'
 
 IR_FILE = 'generated_ir.ll'
 ASM_FILE = 'generated_assembly.s'

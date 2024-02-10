@@ -17,8 +17,38 @@ def create_exe(module: ir.Module):
     with open(f"{BUILD_PATH}/{IR_FILE}", 'w') as f:
         f.write(str(module))
 
-    subprocess.run(f'mingw64 llc "{BUILD_PATH}/{IR_FILE}" -o "{BUILD_PATH}/{ASM_FILE}"')
-    subprocess.run(f'mingw64 gcc -c "{BUILD_PATH}/{ASM_FILE}" -o "{BUILD_PATH}/{OBJECT_FILE}"')
-    subprocess.run(f'mingw64 gcc "{BUILD_PATH}/{OBJECT_FILE}" -o "{BUILD_PATH}/{EXECUTABLE_FILE}"')
+    result = -1
 
-    return 0
+    try:
+        result = _mingw64_compilation_step(
+            'llc',
+            f'"{BUILD_PATH}/{IR_FILE}"',
+            '-o', f'"{BUILD_PATH}/{ASM_FILE}"',
+            name="Assembly file generation")
+
+        result = _mingw64_compilation_step(
+            'gcc',
+            '-c', f'"{BUILD_PATH}/{ASM_FILE}"',
+            '-o', f'"{BUILD_PATH}/{OBJECT_FILE}"',
+            name="Object file generation")
+
+        result = _mingw64_compilation_step(
+            'gcc',
+            f'"{BUILD_PATH}/{OBJECT_FILE}"',
+            '-o', f'"{BUILD_PATH}/{EXECUTABLE_FILE}"',
+            name="Executable file generation")
+
+    except RuntimeError:
+        return result
+
+    return result
+
+
+def _mingw64_compilation_step(*args: str, name: str):
+    result = subprocess.call(['mingw64', *args])
+
+    if result != 0:
+        raise RuntimeError(f'{name} process returned with a non-zero result {result}.')
+
+    print(f'{name} successful.')
+    return result

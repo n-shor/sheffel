@@ -11,4 +11,4 @@ grammar/
 !grammar/__init__.py
 
 # build files
-sheffel/build/
+build_files/
