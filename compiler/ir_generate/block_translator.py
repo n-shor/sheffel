@@ -13,11 +13,8 @@ class BlockTranslator(Scope):
 
         super().__init__(parent, {})
 
-    def add(self, _expression: Node, *, _write: bool = None, _type_hint: UnqualifiedType = None):
+    def add(self, _expression: Node):
         """Adds a statement to the block."""
-
-        def add(expression: Node, *, write: bool = None, type_hint: UnqualifiedType = None):
-            return self.add(expression, _write=_override(write, _write), _type_hint=_override(type_hint, _type_hint))
 
         match _expression:
 
@@ -28,7 +25,7 @@ class BlockTranslator(Scope):
                 )
 
             case Return(returnee=returnee):
-                translated = add(returnee)
+                translated = self.add(returnee)
                 return TranslatedExpression(
                     self.builder.ret(translated.label),
                     translated.type_
@@ -69,10 +66,6 @@ class BlockTranslator(Scope):
                 with self.builder.if_then(self.add(condition).label):
                     self.add(then)
 
-            case VariableDeclaration(name=name, type_=VariableType(base_type=AutoUnqualifiedType() | NamedUnqualifiedType(name='Function')) as type_):
-                type_ = VariableType(_type_hint, type_.memory, type_.behavior)
-                self.add(VariableDeclaration(name, type_))
-
             case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
                 var = StackVariable(self.builder, type_)
                 self.add_variable(name, var)
@@ -83,14 +76,10 @@ class BlockTranslator(Scope):
                 self.add_variable(name, var)
                 return TranslatedExpression(var.as_pointer(), type_)
 
+            # Reads from a variable
             case Variable(name=name):
                 var = self.get_variable(name)
-
-                if _write:
-                    return TranslatedExpression(var.as_pointer(), var.type_)
-
-                else:
-                    return TranslatedExpression(var.load(), var.type_)
+                return TranslatedExpression(var.load(), var.type_)
 
             # negative literal
             case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
@@ -99,23 +88,34 @@ class BlockTranslator(Scope):
                     VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
                 )
 
-            case Operator(signature='=', operands=(assigned, assignee)):
-                translated_assignee = add(assignee)
-                translated_assigned = add(assigned, write=True, type_hint=translated_assignee.type_.base_type)
+            case Operator(signature='=', operands=(VariableDeclaration() as var_declaration, value)):
+                translated_value = self.add(value)
+
+                if isinstance(var_declaration.type_.base_type, AutoUnqualifiedType):
+                    var_declaration.type_.base_type = translated_value.type_.base_type
 
                 return TranslatedExpression(
-                    self.builder.store(translated_assignee.label, translated_assigned.label),
-                    translated_assigned.type_
+                    self.builder.store(translated_value.label, self.add(var_declaration).label),
+                    translated_value.type_
+                )
+
+            case Operator(signature='=', operands=(Variable(name=name), value)):
+                translated_value = self.add(value)
+                var = self.get_variable(name)
+
+                return TranslatedExpression(
+                    self.builder.store(translated_value.label, var.load()),
+                    translated_value.type_
                 )
 
             case Operator(signature='()', operands=(callee, *parameters)):
-                translated_callee = add(callee)
+                translated_callee = self.add(callee)
 
                 if not isinstance(translated_callee.type_.base_type, FunctionType):
                     raise TypeError(f"Attempted to call a non function: {translated_callee}")
 
                 return TranslatedExpression(
-                    self.builder.call(translated_callee.label, (add(param).label for param in parameters)),
+                    self.builder.call(translated_callee.label, (self.add(param).label for param in parameters)),
                     translated_callee.type_.base_type.return_type
                 )
 
@@ -125,14 +125,14 @@ class BlockTranslator(Scope):
                         '+': self.builder.add,
                         '-': self.builder.sub,
                         '*': self.builder.mul
-                    }[signature](add(left).label, add(right).label),
+                    }[signature](self.add(left).label, self.add(right).label),
                     ValueMemoryQualifier(),
                     (NoWriteBehaviorQualifier(),)
                 )
 
             case Operator(signature='<' | '<=' | '>' | '>=' | '==' | '!=' as signature, operands=(left, right)):
                 return TranslatedExpression.type_from_instruction(
-                    self.builder.icmp_signed(signature, add(left).label, add(right).label),
+                    self.builder.icmp_signed(signature, self.add(left).label, self.add(right).label),
                     ValueMemoryQualifier(),
                     (NoWriteBehaviorQualifier(),)
                 )
