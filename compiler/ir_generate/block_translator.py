@@ -2,7 +2,7 @@ from compiler.ast.nodes import *
 from compiler.ast.types import *
 
 from . import resolve_type, TranslatedExpression, Scope
-from .variable import StackVariable, HeapVariable
+from . import variable
 
 
 class BlockTranslator(Scope):
@@ -67,12 +67,12 @@ class BlockTranslator(Scope):
                     self.add(then)
 
             case VariableDeclaration(name=name, type_=VariableType(memory=ValueMemoryQualifier()) as type_):
-                var = StackVariable(self.builder, type_)
+                var = variable.StackVariable(self.builder, type_)
                 self.add_variable(name, var)
                 return TranslatedExpression(var.as_pointer(), type_)
 
             case VariableDeclaration(name=name, type_=VariableType(memory=ReferenceMemoryQualifier()) as type_):
-                var = HeapVariable(self.builder, type_)
+                var = variable.HeapVariable(self.builder, type_)
                 self.add_variable(name, var)
                 return TranslatedExpression(var.as_pointer(), type_)
 
@@ -88,25 +88,17 @@ class BlockTranslator(Scope):
                     VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
                 )
 
-            case Operator(signature='=', operands=(VariableDeclaration() as var_declaration, value)):
+            case Operator(signature='=', operands=(VariableDeclaration(name=name) as var_declaration, value)):
                 translated_value = self.add(value)
 
                 if isinstance(var_declaration.type_.base_type, AutoUnqualifiedType):
                     var_declaration.type_.base_type = translated_value.type_.base_type
 
-                return TranslatedExpression(
-                    self.builder.store(translated_value.label, self.add(var_declaration).label),
-                    translated_value.type_
-                )
+                self.add(var_declaration)
+                return self._assign(self.get_variable(name), translated_value)
 
             case Operator(signature='=', operands=(Variable(name=name), value)):
-                translated_value = self.add(value)
-                var = self.get_variable(name)
-
-                return TranslatedExpression(
-                    self.builder.store(translated_value.label, var.load()),
-                    translated_value.type_
-                )
+                return self._assign(self.get_variable(name), self.add(value))
 
             case Operator(signature='()', operands=(callee, *parameters)):
                 translated_callee = self.add(callee)
@@ -149,17 +141,29 @@ class BlockTranslator(Scope):
     def translate(self, body: Block) -> TranslatedExpression | None:
         """Translates the entire block. Returns its terminator."""
 
-        try:
-            for statement in body.statements:
-                match self.add(statement):
-                    case TranslatedExpression(label=ir.Terminator()) as expr:
-                        return expr
-        finally:
-            self.free_scope()
+        for statement in body.statements:
+            match self.add(statement):
+                case TranslatedExpression(label=ir.Terminator() as terminator) as expr:
 
+                    self.builder.position_before(terminator)
+                    self.free_scope()
+                    self.builder.position_after(terminator)
 
-def _override(new_arg, old_arg):
-    return new_arg if new_arg is not None else old_arg
+                    return expr
+
+    def _assign(self, var: variable.Variable, value: TranslatedExpression):
+        match (var.type_.memory, value.type_.memory):
+            case (ValueMemoryQualifier(), ValueMemoryQualifier()):
+                return TranslatedExpression(
+                    self.builder.store(value.label, var.as_pointer()),
+                    value.type_
+                )
+
+            case (ReferenceMemoryQualifier(), ValueMemoryQualifier()):
+                return TranslatedExpression(
+                    self.builder.store(value.label, var.as_pointer()),
+                    value.type_
+                )
 
 
 from .function_translator import FunctionTranslator

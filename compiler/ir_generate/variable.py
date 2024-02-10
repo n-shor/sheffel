@@ -28,14 +28,14 @@ class Variable(ABC):
 class StackVariable(Variable):
     def __init__(self, builder: ir.IRBuilder, type_: VariableType):
         super().__init__(type_)
-        self.ptr = builder.alloca(resolve_type(type_))
-        self.builder = builder
+        self._ptr = builder.alloca(resolve_type(type_))
+        self._builder = builder
 
     def load(self):
-        return self.builder.load(self.ptr)
+        return self._builder.load(self._ptr)
 
     def as_pointer(self):
-        return self.ptr
+        return self._ptr
 
     def free(self):
         pass
@@ -44,10 +44,10 @@ class StackVariable(Variable):
 class Parameter(Variable):
     def __init__(self, argument: ir.Argument, type_: VariableType):
         super().__init__(type_)
-        self.label = argument
+        self._label = argument
 
     def load(self):
-        return self.label
+        return self._label
 
     def as_pointer(self):
         raise TypeError("Cannot write to a function's parameter.")
@@ -56,18 +56,28 @@ class Parameter(Variable):
         pass
 
 
+_malloc_size_type = ir.IntType(64)
+_generic_ptr_type = ir.IntType(8).as_pointer()
+
+
 class HeapVariable(Variable):
     def __init__(self, builder: ir.IRBuilder, type_: VariableType):
         super().__init__(type_)
-        size = resolve_type(type_).get_abi_size(binding.create_target_data(builder.module.data_layout))
-        self.ptr = malloc_instruction(builder, ir.IntType(64)(size))
-        self.builder = builder
+
+        ir_value_type = resolve_type(type_.base_type)
+        target_data = binding.create_target_data(builder.module.data_layout)
+        size = ir_value_type.get_abi_size(target_data)
+
+        self._generic_ptr = malloc_instruction(builder, _malloc_size_type(size))
+        self._ptr = builder.bitcast(self._generic_ptr, ir_value_type.as_pointer())
+
+        self._builder = builder
 
     def load(self):
-        return self.builder.load(self.ptr)
+        return self._builder.load(self._ptr)
 
     def as_pointer(self):
-        return self.ptr
+        return self._ptr
 
     def free(self):
-        return free_instruction(self.builder, self.ptr)
+        return free_instruction(self._builder, self._generic_ptr)
