@@ -14,6 +14,8 @@ stat:
 block:
     '{' '\n'? stat* '}'                         # MultiLineBlock
 |   '{' expr '}'                                # SingleLineBlock
+|   'while' SPACE+ expr (SPACE | '\n')*
+    block (SPACE | '\n')*                       # WhileBlock
 |   'if' SPACE+ expr (SPACE | '\n')*
     block (SPACE | '\n')*
     ('else' (SPACE | '\n')* block (SPACE | '\n')*)?      # IfBlock

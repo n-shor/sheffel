@@ -16,7 +16,7 @@ def main():
     }
     """
 
-    result = compile_from_code(code, regenerate_grammar=False, print_ir=True)
+    result = compile_from_code(code, regenerate_grammar=True, print_ir=True, print_ast=True)
     print(result)
 
 
