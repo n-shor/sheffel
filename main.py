@@ -4,15 +4,9 @@ from compiler.compile import compile_from_code
 def main():
 
     code = """
-    Function* double = Int&(Int& x) { return x * 2 }
-    
-    if double(3) == 6
+    while (true)
     {
-        return 1
-    }
-    else
-    {
-        return 0
+        x = 5
     }
     """
 
