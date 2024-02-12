@@ -5,7 +5,7 @@ from compiler.ast.types import VariableType, DirectUnqualifiedType, ValueMemoryQ
 
 
 from . import resolve_type, Scope
-from .variable import Parameter
+from .translated.variable import Parameter
 
 
 class FunctionTranslator(Scope):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .variable import Variable
+from .translated.variable import Variable
 
 
 class Scope:

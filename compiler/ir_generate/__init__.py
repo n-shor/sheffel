@@ -1,3 +1,3 @@
 from .type_resolver import resolve as resolve_type
-from .translated_expression import TranslatedExpression
+from compiler.ir_generate.translated.expression import Expression
 from .scope import Scope

@@ -1,16 +1,20 @@
-from abc import ABC, abstractmethod
+from __future__ import annotations
+
+from abc import ABCMeta, abstractmethod
 
 from llvmlite import ir, binding
 
-from ..ast.types import VariableType, FunctionType
-from ..ast.types.qualifiers import ValueMemoryQualifier, ReferenceMemoryQualifier
-from . import resolve_type, external
+from ...ast.types import VariableType, FunctionType
+from ...ast.types.qualifiers import ValueMemoryQualifier, ReferenceMemoryQualifier
+
+from .. import resolve_type, external
+from . import Expression
 
 
-class Variable(ABC):
+class Variable(Expression, metaclass=ABCMeta):
     def __init__(self, type_: VariableType):
         """Constructs the variable and adds an instruction to allocate space for the variable."""
-        self._type = type_
+        super().__init__(self.as_pointer(), type_)
 
     @abstractmethod
     def load(self) -> ir.Instruction:
@@ -24,15 +28,30 @@ class Variable(ABC):
     def free(self) -> ir.Instruction:
         """Adds an instruction to free space allocated for the variable."""
 
-    def get_type(self):
-        return self._type
+    @classmethod
+    def create(cls, builder: ir.IRBuilder, type_: VariableType) -> Variable:
+        """Creates the correct ir variable based on the variable's type"""
+
+        match type_:
+            case VariableType(memory=ValueMemoryQualifier()):
+                return StackVariable(builder, type_)
+
+            case VariableType(base_type=FunctionType()):
+                return StackVariable(builder, type_)
+
+            case VariableType(memory=ReferenceMemoryQualifier()):
+                return HeapVariable(builder, type_)
+
+            case _:
+                raise TypeError("Unknown variable type.")
 
 
 class StackVariable(Variable):
     def __init__(self, builder: ir.IRBuilder, type_: VariableType):
-        super().__init__(type_)
         self._ptr = builder.alloca(resolve_type(type_))
         self._builder = builder
+
+        super().__init__(type_)
 
     def load(self):
         return self._builder.load(self._ptr)
@@ -94,18 +113,3 @@ class HeapVariable(Variable):
 
     def free(self):
         return external.free(self._builder, self._generic_ptr)
-
-
-def create_variable(builder: ir.IRBuilder, type_: VariableType) -> Variable:
-    match type_:
-        case VariableType(memory=ValueMemoryQualifier()):
-            return StackVariable(builder, type_)
-
-        case VariableType(base_type=FunctionType()):
-            return StackVariable(builder, type_)
-
-        case VariableType(memory=ReferenceMemoryQualifier()):
-            return HeapVariable(builder, type_)
-
-        case _:
-            raise TypeError("Unknown variable type.")

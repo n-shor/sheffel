@@ -1,9 +1,8 @@
 from compiler.ast.nodes import *
 from compiler.ast.types import *
 
-from . import resolve_type, TranslatedExpression, Scope
-from . import variable
-from .variable import create_variable
+from . import resolve_type, Scope
+from .translated import Expression, CopiedExpression, ViewedExpression, Variable as IRVariable
 
 
 class BlockTranslator(Scope):
@@ -20,28 +19,41 @@ class BlockTranslator(Scope):
         match _expression:
 
             case Literal(value=value, type_=LiteralType() as type_):
-                return TranslatedExpression(
+                return Expression(
                     ir.Constant(resolve_type(type_), value),
+                    VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
+                )
+
+            # negative literal
+            case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
+                return Expression(
+                    ir.Constant(resolve_type(type_), -value),
                     VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
                 )
 
             case Return(returnee=returnee):
                 translated = self.add(returnee)
-                return TranslatedExpression(
+                return Expression(
                     self.builder.ret(translated.label),
                     translated.type_
                 )
 
             case ReturnVoid():
-                return TranslatedExpression(
+                return Expression(
                     self.builder.ret_void(),
                     VoidType()
                 )
 
+            case Copy(copied=copied):
+                return CopiedExpression(self.add(copied))
+
+            case View(viewed=viewed):
+                return ViewedExpression(self.add(viewed))
+
             case Function() as syntax:
                 function_translator = FunctionTranslator(syntax, self.builder.module)
                 function_translator.translate()
-                return TranslatedExpression(
+                return Expression(
                     function_translator.func,  # the function's pointer
                     syntax.type_
                 )
@@ -72,15 +84,7 @@ class BlockTranslator(Scope):
 
             # Reads from a variable
             case Variable(name=name):
-                var = self.get_variable(name)
-                return TranslatedExpression(var.load(), var.get_type())
-
-            # negative literal
-            case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_),)):
-                return TranslatedExpression(
-                    ir.Constant(resolve_type(type_), -value),
-                    VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
-                )
+                return self.get_variable(name)
 
             case Operator(signature='=', operands=(VariableDeclaration(name=name) as var_declaration, value)):
                 translated_value = self.add(value)
@@ -89,12 +93,12 @@ class BlockTranslator(Scope):
                     var_declaration.type_.base_type = translated_value.type_.base_type
 
                 return self._assign(
-                    self.add_variable(name, create_variable(self.builder, var_declaration.type_)),
+                    self.add_variable(name, IRVariable.create(self.builder, var_declaration.type_)),
                     translated_value
                 )
 
-            case Operator(signature='=', operands=(Variable(name=name), value)):
-                return self._assign(self.get_variable(name), self.add(value))
+            case Operator(signature='=', operands=(target, value)):
+                return self._assign(self.add(target), self.add(value))
 
             case Operator(signature='()', operands=(callee, *parameters)):
                 translated_callee = self.add(callee)
@@ -102,13 +106,13 @@ class BlockTranslator(Scope):
                 if not isinstance(translated_callee.type_.base_type, FunctionType):
                     raise TypeError(f"Attempted to call a non function: {translated_callee}")
 
-                return TranslatedExpression(
+                return Expression(
                     self.builder.call(translated_callee.label, (self.add(param).label for param in parameters)),
                     translated_callee.type_.base_type.return_type
                 )
 
             case Operator(signature='+' | '-' | '*' as signature, operands=(left, right)):
-                return TranslatedExpression.type_from_instruction(
+                return Expression.from_base_type_of(
                     {
                         '+': self.builder.add,
                         '-': self.builder.sub,
@@ -119,7 +123,7 @@ class BlockTranslator(Scope):
                 )
 
             case Operator(signature='<' | '<=' | '>' | '>=' | '==' | '!=' as signature, operands=(left, right)):
-                return TranslatedExpression.type_from_instruction(
+                return Expression.from_base_type_of(
                     self.builder.icmp_signed(signature, self.add(left).label, self.add(right).label),
                     ValueMemoryQualifier(),
                     (NoWriteBehaviorQualifier(),)
@@ -134,28 +138,46 @@ class BlockTranslator(Scope):
             case other:
                 raise TypeError(f'{other} is not a node type.')
 
-    def translate(self, body: Block) -> TranslatedExpression | None:
+    def translate(self, body: Block) -> Expression | None:
         """Translates the entire block. Returns its terminator."""
 
         try:
             for statement in body.statements:
                 match self.add(statement):
-                    case TranslatedExpression(label=ir.Terminator()) as expr:
+                    case Expression(label=ir.Terminator()) as expr:
                         return expr
         finally:
             with self.builder.goto_block(self.builder.block):  # positions before terminator
                 self.free_scope()
 
-    def _assign(self, var: variable.Variable, value: TranslatedExpression):
+    def _assign(self, var: IRVariable, value: Expression):
+        var_mem = var.type_.memory
+        val_mem = value.type_.memory
 
-        match (var.get_type().memory, value.type_.memory):
-            case (ValueMemoryQualifier() | ReferenceMemoryQualifier(), ValueMemoryQualifier()):
-                return TranslatedExpression(
+        match value:
+            case CopiedExpression():
+                return Expression(
                     self.builder.store(value.label, var.as_pointer()),
                     value.type_
                 )
 
-        raise TypeError(f"Illegal assignment type - {value.type_.memory} to {var.get_type().memory}.")
+            case ViewedExpression():
+                match (var_mem, val_mem):
+                    case (ValueMemoryQualifier() | ReferenceMemoryQualifier(), ValueMemoryQualifier()):
+                        return Expression(
+                            self.builder.store(value.label, var.as_pointer()),
+                            value.type_
+                        )
+
+            case _:
+                match (var_mem, val_mem):
+                    case (ValueMemoryQualifier() | ReferenceMemoryQualifier(), ValueMemoryQualifier()):
+                        return Expression(
+                            self.builder.store(value.label, var.as_pointer()),
+                            value.type_
+                        )
+
+        raise TypeError(f"Illegal view assignment types: {var_mem} to {val_mem}.")
 
 
 from .function_translator import FunctionTranslator
