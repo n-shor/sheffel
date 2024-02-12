@@ -25,12 +25,13 @@ def new(builder: ir.IRBuilder, size: ir.Value):
     Allocates a new managed object on the heap, sets its reference count to 1, and returns a pointer to it.
     """
     struct_size = builder.add(size, utils.sizeof(_REF_COUNTER_TYPE, as_type=libc.SIZE_TYPE))
-    struct_ptr = libc.malloc(builder, struct_size)
+    generic_ptr = libc.malloc(builder, struct_size)
 
-    typed_ptr = _cast_to_generic_struct(builder, struct_ptr)
-    builder.load(typed_ptr)
-    builder.store(_REF_COUNTER_TYPE(1), _get_ref_count_ptr(builder, typed_ptr))
-    return typed_ptr
+    struct_ptr = _cast_to_generic_struct(builder, generic_ptr)
+    builder.load(struct_ptr)
+    builder.store(_REF_COUNTER_TYPE(1), _get_ref_count_ptr(builder, struct_ptr))
+
+    builder.ret(generic_ptr)
 
 
 @InternalFunction.create(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE, )))
@@ -44,6 +45,8 @@ def add_ref(builder: ir.IRBuilder, ptr: ir.Value):
     value = builder.load(ref_count_ptr)
     updated = builder.add(value, _REF_COUNTER_TYPE(1))
     builder.store(updated, ref_count_ptr)
+
+    builder.ret_void()
 
 
 @InternalFunction.create(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE, )))
@@ -66,6 +69,8 @@ def remove_ref(builder: ir.IRBuilder, ptr: ir.Value):
         with otherwise_block:
             builder.store(updated, ref_count_ptr)
 
+    builder.ret_void()
+
 
 @InternalFunction.create(ir.FunctionType(libc.GENERIC_PTR_TYPE, (libc.GENERIC_PTR_TYPE, )))
 def get_data_ptr(builder: ir.IRBuilder, ptr: ir.Value):
@@ -74,7 +79,9 @@ def get_data_ptr(builder: ir.IRBuilder, ptr: ir.Value):
     """
     typed_ptr = _cast_to_generic_struct(builder, ptr)
     builder.load(typed_ptr)
-    return builder.gep(typed_ptr, (DEREFERENCE_STRUCT, STRUCT_INDEX_TYPE(1)))
+    res = builder.gep(typed_ptr, (DEREFERENCE_STRUCT, STRUCT_INDEX_TYPE(1)))
+
+    builder.ret(res)
 
 
 def add_all_to(module: ir.Module):
