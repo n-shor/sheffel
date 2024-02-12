@@ -4,13 +4,15 @@ from compiler.compile import compile_from_code
 def main():
 
     code = """
-    while (true)
+    if (true)
     {
-        x = 5
+        
     }
+    
+    return 0
     """
 
-    result = compile_from_code(code, regenerate_grammar=True, print_ir=True, print_ast=True)
+    result = compile_from_code(code, regenerate_grammar=True, print_ir=False, print_ast=True)
     print(result)
 
 

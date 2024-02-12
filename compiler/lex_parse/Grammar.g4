@@ -12,7 +12,7 @@ stat:
 ;
 
 block:
-    '{' '\n'? stat* '}'                         # MultiLineBlock
+    '{' SPACE* '\n'? stat* SPACE* '}'                         # MultiLineBlock
 |   '{' expr '}'                                # SingleLineBlock
 |   'while' SPACE+ expr (SPACE | '\n')*
     block (SPACE | '\n')*                       # WhileBlock
