@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 
-from llvmlite import ir, binding
+from llvmlite import ir
 
 from ...ast.types import VariableType, FunctionType
 from ...ast.types.qualifiers import ValueMemoryQualifier, ReferenceMemoryQualifier
 
-from .. import resolve_type, external
+from .. import resolve_type
+from .. import utils
+from ..static import managed, libc
+
 from .expression import BaseExpression
 
 
@@ -98,76 +101,38 @@ class Parameter(Variable):
         pass
 
 
-_REF_COUNTER_TYPE = external.SIZE_TYPE
-_STRUCT_INDEX_TYPE = ir.IntType(32)
-_DEREFERENCE_STRUCT = external.SIZE_TYPE(1)
-
-
 class HeapVariable(Variable):
     def __init__(self, builder: ir.IRBuilder, type_: VariableType):
 
         self._builder = builder
-
-        target_data = binding.create_target_data(self._builder.module.data_layout)
-
         self._data_type = resolve_type(type_.base_type)
-        struct_type = ir.LiteralStructType((_REF_COUNTER_TYPE, self._data_type))
-
-        struct_size = struct_type.get_abi_size(target_data)
-
-        self._generic_ptr = external.malloc(self._builder, external.SIZE_TYPE(struct_size))
-        self._struct_ptr = self._builder.bitcast(self._generic_ptr, struct_type.as_pointer())
-
-        self._set_ref_count_to_1()
+        self._ptr = managed.new(builder, utils.sizeof(self._data_type, as_type=libc.SIZE_TYPE))
 
         super().__init__(type_)
 
     def as_pointer(self):
-        self._builder.load(self._struct_ptr)
-        return self._builder.gep(self._struct_ptr, (_DEREFERENCE_STRUCT, _STRUCT_INDEX_TYPE(1),))
+        generic_ptr = managed.get_data_ptr(self._builder, self._ptr)
+        return self._builder.bitcast(generic_ptr, self._data_type.as_pointer())
 
     def load(self):
         return self._builder.load(self.as_pointer())
 
     def assign(self, value):
-        raise self._builder.store(value, self.as_pointer())
+        return self._builder.store(value, self.as_pointer())
 
-    # reference counting
-
-    def _get_ref_count_ptr(self):
-        self._builder.load(self._struct_ptr)
-        return self._builder.gep(self._struct_ptr, (_DEREFERENCE_STRUCT, _STRUCT_INDEX_TYPE(0)))
-
-    def _set_ref_count_to_1(self):
-        rfp = self._get_ref_count_ptr()
-        self._builder.store(rfp, _REF_COUNTER_TYPE(1))
-
-    def _inc_ref_count(self):
-        rfp = self._get_ref_count_ptr()
-        loaded = self._builder.load(rfp)
-        updated = self._builder.add(loaded, _REF_COUNTER_TYPE(1))
-        self._builder.store(updated, rfp)
-
-    def _dec_ref_count(self):
-        rfp = self._get_ref_count_ptr()
-        loaded = self._builder.load(rfp)
-        updated = self._builder.sub(loaded, _REF_COUNTER_TYPE(1))
-        is_zero = self._builder.icmp_unsigned('==', updated, _REF_COUNTER_TYPE(0))
-
-        with self._builder.if_else(is_zero) as (then_block, otherwise_block):
-            with then_block:
-                external.free(self._builder, self._generic_ptr)
-
-            with otherwise_block:
-                self._builder.store(updated, rfp)
+    def _get_typed_struct_ptr(self):
+        type_ = managed.get_full_struct_type(self._data_type)
+        ptr = self._builder.bitcast(self._ptr, type_)
+        return ptr
 
     def assign_view(self, assignee: HeapVariable):
 
-        self._dec_ref_count()
-        assignee._inc_ref_count()
+        managed.remove_ref(self._builder, self._ptr)
+        managed.add_ref(self._builder, assignee._ptr)
 
-        assignee_struct = self._builder.gep(assignee._struct_ptr, (_DEREFERENCE_STRUCT,))
-        return self._builder.store(assignee_struct, self._struct_ptr)
+        assignee_typed_ptr = assignee._get_typed_struct_ptr()
+        assignee_struct = self._builder.gep(assignee_typed_ptr, (managed.DEREFERENCE_STRUCT,))
+        return self._builder.store(assignee_struct, self._ptr)
 
     def free(self):
-        self._dec_ref_count()
+        managed.remove_ref(self._builder, self._ptr)

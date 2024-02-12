@@ -4,20 +4,13 @@ from compiler.compile import compile_from_code
 def main():
 
     code = """
-    Function* double = Int&(Int& x) { return x * 2 }
-    
-    if double(3) == 6
-    {
-        return 1
-    }
-    else
-    {
-        return 0
-    }
+    Int* x = 5
+    Int& y = copy x
+
+    return 0
     """
 
-    result = compile_from_code(code, regenerate_grammar=False, print_ir=True)
-    print(result)
+    compile_from_code(code, regenerate_grammar=False, print_ir=True, print_result=True, exe=False)
 
 
 if __name__ == "__main__":
