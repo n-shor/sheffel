@@ -17,12 +17,16 @@ class Variable(Expression, metaclass=ABCMeta):
         super().__init__(self.as_pointer(), type_)
 
     @abstractmethod
+    def as_pointer(self) -> ir.Instruction:
+        """Returns the variable as a pointer."""
+
+    @abstractmethod
     def load(self) -> ir.Instruction:
         """Adds an instruction to load the variable for reading."""
 
     @abstractmethod
-    def as_pointer(self) -> ir.Instruction:
-        """Returns the variable as a pointer."""
+    def assign(self, value: ir.Value) -> ir.Instruction:
+        """Adds an instruction to assign a value into the variable."""
 
     @abstractmethod
     def free(self) -> ir.Instruction:
@@ -53,11 +57,14 @@ class StackVariable(Variable):
 
         super().__init__(type_)
 
+    def as_pointer(self):
+        return self._ptr
+
     def load(self):
         return self._builder.load(self._ptr)
 
-    def as_pointer(self):
-        return self._ptr
+    def assign(self, value):
+        return self._builder.store(value, self._ptr)
 
     def free(self):
         pass
@@ -68,10 +75,13 @@ class Parameter(Variable):
         super().__init__(type_)
         self._label = argument
 
+    def as_pointer(self):
+        raise TypeError("Function parameters have no pointers.")
+
     def load(self):
         return self._label
 
-    def as_pointer(self):
+    def assign(self, value):
         raise TypeError("Cannot write to a function's parameter.")
 
     def free(self):
@@ -86,30 +96,68 @@ _DEREFERENCE_STRUCT = external.SIZE_TYPE(1)
 class HeapVariable(Variable):
     def __init__(self, builder: ir.IRBuilder, type_: VariableType):
 
-        target_data = binding.create_target_data(builder.module.data_layout)
+        self._builder = builder
+
+        target_data = binding.create_target_data(self._builder.module.data_layout)
 
         self._data_type = resolve_type(type_.base_type)
         struct_type = ir.LiteralStructType((_REF_COUNTER_TYPE, self._data_type))
 
         struct_size = struct_type.get_abi_size(target_data)
 
-        self._generic_ptr = external.malloc(builder, external.SIZE_TYPE(struct_size))
-        self._struct_ptr = builder.bitcast(self._generic_ptr, struct_type.as_pointer())
+        self._generic_ptr = external.malloc(self._builder, external.SIZE_TYPE(struct_size))
+        self._struct_ptr = self._builder.bitcast(self._generic_ptr, struct_type.as_pointer())
 
-        builder.load(self._struct_ptr)
-        ref_counter_ptr = builder.gep(self._struct_ptr, (_DEREFERENCE_STRUCT, _STRUCT_INDEX_TYPE(0)))
-        builder.store(_REF_COUNTER_TYPE(1), ref_counter_ptr)  # stores a 1 in the reference_counter
-
-        self._builder = builder
+        self._set_ref_count_to_1()
 
         super().__init__(type_)
-
-    def load(self):
-        return self._builder.load(self.as_pointer())
 
     def as_pointer(self):
         self._builder.load(self._struct_ptr)
         return self._builder.gep(self._struct_ptr, (_DEREFERENCE_STRUCT, _STRUCT_INDEX_TYPE(1),))
+
+    def load(self):
+        return self._builder.load(self.as_pointer())
+
+    def assign(self, value):
+        raise self._builder.store(value, self.as_pointer())
+
+    # reference counting
+
+    def _get_ref_count_ptr(self):
+        self._builder.load(self._struct_ptr)
+        return self._builder.gep(self._struct_ptr, (_DEREFERENCE_STRUCT, _STRUCT_INDEX_TYPE(0)))
+
+    def _set_ref_count_to_1(self):
+        rfp = self._get_ref_count_ptr()
+        self._builder.store(rfp, _REF_COUNTER_TYPE(1))
+
+    def _inc_ref_count(self):
+        rfp = self._get_ref_count_ptr()
+        loaded = self._builder.load(rfp)
+        updated = self._builder.add(loaded, _REF_COUNTER_TYPE(1))
+        self._builder.store(updated, rfp)
+
+    def _dec_ref_count(self):
+        rfp = self._get_ref_count_ptr()
+        loaded = self._builder.load(rfp)
+        updated = self._builder.sub(loaded, _REF_COUNTER_TYPE(1))
+        is_zero = self._builder.icmp_unsigned('==', updated, _REF_COUNTER_TYPE(0))
+
+        with self._builder.if_else(is_zero) as (then_block, otherwise_block):
+            with then_block:
+                self.free()
+
+            with otherwise_block:
+                self._builder.store(updated, rfp)
+
+    def assign_view(self, assignee: HeapVariable):
+
+        self._dec_ref_count()
+        assignee._inc_ref_count()
+
+        assignee_struct = self._builder.gep(assignee._struct_ptr, (_DEREFERENCE_STRUCT,))
+        return self._builder.store(assignee_struct, self._struct_ptr)
 
     def free(self):
         return external.free(self._builder, self._generic_ptr)
