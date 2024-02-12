@@ -35,11 +35,9 @@ def new(builder: ir.IRBuilder, size: ir.Value):
     builder.ret(generic_ptr)
 
 
-@InternalFunction.create(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE, )))
-def add_ref(builder: ir.IRBuilder, ptr: ir.Value):
-    """(managed_object_ptr: i8*) -> : void
-    Increments the reference count of a managed object.
-    """
+def _increment_ref_count(builder: ir.IRBuilder, ptr: ir.Value):
+    """Increments the ref count and returns its value."""
+
     struct_ptr = _cast_to_generic_struct(builder, ptr)
     builder.load(struct_ptr)
     ref_count_ptr = builder.gep(struct_ptr, REF_COUNTER_INDICES)
@@ -47,6 +45,15 @@ def add_ref(builder: ir.IRBuilder, ptr: ir.Value):
     updated = builder.add(value, REF_COUNTER_TYPE(1))
     builder.store(updated, ref_count_ptr)
 
+    return updated
+
+
+@InternalFunction.create(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE, )))
+def add_ref(builder: ir.IRBuilder, ptr: ir.Value):
+    """(managed_object_ptr: i8*) -> : void
+    Increments the reference count of a managed object.
+    """
+    _increment_ref_count(builder, ptr)
     builder.ret_void()
 
 
@@ -88,7 +95,10 @@ def assign_from(builder: ir.IRBuilder, ptr: ir.Value, ptr_from: ir.Value, size: 
     If the reference count reaches zero, the old object is deleted.
     """
     is_zero = _decrement_ref_count(builder, ptr)
+    _increment_ref_count(builder, ptr_from)
+
     libc.memory_copy(builder, ptr, ptr_from, _calculate_total_size(builder, size))
+
     _free_if(builder, ptr, is_zero)
     builder.ret_void()
 

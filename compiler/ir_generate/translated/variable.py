@@ -121,8 +121,18 @@ class HeapVariable(Variable):
         return self._builder.store(value, self.as_pointer())
 
     def assign_view(self, assignee: HeapVariable):
-        return managed.assign_from(self._builder, self._ptr, assignee._ptr,
-                                   utils.sizeof(self._data_type, as_type=libc.SIZE_TYPE))
+        """Assigns the `assignee` to the `assigned`."""
+
+        instruction = managed.assign_from(
+            self._builder, self._ptr, assignee._ptr,
+            utils.sizeof(self._data_type, as_type=libc.SIZE_TYPE)
+        )
+
+        self._builder = assignee._builder
+        self._data_type = assignee._data_type
+        self._ptr = assignee._ptr
+
+        return instruction
 
     def free(self):
         managed.remove_ref(self._builder, self._ptr)
