@@ -120,27 +120,9 @@ class HeapVariable(Variable):
     def assign(self, value):
         return self._builder.store(value, self.as_pointer())
 
-    def _get_typed_struct_ptr(self):
-        struct_type = ir.LiteralStructType((managed.REF_COUNTER_TYPE, self._data_type)).as_pointer()
-        return self._builder.bitcast(self._ptr, struct_type)
-
-    def _get_sub_ptrs(self):
-        struct_ptr = self._get_typed_struct_ptr()
-        return (
-            self._builder.gep(struct_ptr, managed.REF_COUNTER_INDICES),
-            self._builder.gep(struct_ptr, managed.DATA_INDICES)
-        )
-
     def assign_view(self, assignee: HeapVariable):
-
-        managed.remove_ref(self._builder, self._ptr)
-        managed.add_ref(self._builder, assignee._ptr)
-
-        self_ref_counter, self_data = self._get_sub_ptrs()
-        assignee_ref_counter, assignee_data = assignee._get_sub_ptrs()
-
-        self._builder.store(self._builder.load(assignee_ref_counter), self_ref_counter)
-        return self._builder.store(self._builder.load(assignee_data), self_data)
+        return managed.assign_from(self._builder, self._ptr, assignee._ptr,
+                                   utils.sizeof(self._data_type, as_type=libc.SIZE_TYPE))
 
     def free(self):
         managed.remove_ref(self._builder, self._ptr)
