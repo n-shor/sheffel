@@ -1,11 +1,20 @@
-from . import Expression
+from .expression import BaseExpression
 
 
-class SemanticWrapper(Expression):
+class SemanticWrapper(BaseExpression):
     """Represents an expression which wraps a subexpression and adds no additional instructions to it."""
 
-    def __init__(self, expression: Expression):
-        super().__init__(expression.label, expression.type_)
+    def __init__(self, subexpression: BaseExpression):
+        super().__init__()
+        self.subexpression = subexpression
+
+    @property
+    def label(self):
+        return self.subexpression.label
+
+    @property
+    def type_(self):
+        return self.subexpression.type_
 
 
 class CopiedExpression(SemanticWrapper):

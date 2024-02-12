@@ -8,13 +8,23 @@ from ...ast.types import VariableType, FunctionType
 from ...ast.types.qualifiers import ValueMemoryQualifier, ReferenceMemoryQualifier
 
 from .. import resolve_type, external
-from . import Expression
+from .expression import BaseExpression
 
 
-class Variable(Expression, metaclass=ABCMeta):
+class Variable(BaseExpression, metaclass=ABCMeta):
     def __init__(self, type_: VariableType):
         """Constructs the variable and adds an instruction to allocate space for the variable."""
-        super().__init__(self.as_pointer(), type_)
+        super().__init__()
+
+        self._type = type_
+
+    @property
+    def label(self):
+        return self.as_pointer()
+
+    @property
+    def type_(self):
+        return self._type
 
     @abstractmethod
     def as_pointer(self) -> ir.Instruction:

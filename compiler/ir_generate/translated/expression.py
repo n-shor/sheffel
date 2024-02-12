@@ -1,14 +1,38 @@
+from abc import ABCMeta, abstractmethod
+
 from llvmlite import ir
 
 from ...ast.types import VariableType, DirectUnqualifiedType, MemoryQualifier, BehaviorQualifier
 
 
-class Expression:
+class BaseExpression(metaclass=ABCMeta):
     """Represents a translated expression or statement with a type an ir representation."""
 
-    def __init__(self, label: ir.Value | ir.NamedValue, type_: VariableType):
-        self.label = label
-        self.type_ = type_
+    @property
+    @abstractmethod
+    def label(self) -> ir.Value:
+        """The instruction the expression represents."""
+
+    @property
+    @abstractmethod
+    def type_(self) -> VariableType:
+        """The type of the expression."""
+
+
+class Expression(BaseExpression):
+    """Represents a translated expression or statement with a type an ir representation."""
+
+    def __init__(self, label: ir.Value, type_: VariableType):
+        self._label = label
+        self._type = type_
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def type_(self):
+        return self._type
 
     @classmethod
     def from_base_type_of(cls,
