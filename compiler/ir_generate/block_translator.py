@@ -2,7 +2,7 @@ from compiler.ast.nodes import *
 from compiler.ast.types import *
 
 from . import resolve_type, Scope
-from .translated import Expression, CopiedExpression, ViewedExpression, Variable as IRVariable
+from .translated import Expression, CopiedExpression, ViewedExpression, Variable as IRVariable, HeapVariable, StackVariable
 
 
 class BlockTranslator(Scope):
@@ -150,34 +150,24 @@ class BlockTranslator(Scope):
             with self.builder.goto_block(self.builder.block):  # positions before terminator
                 self.free_scope()
 
-    def _assign(self, var: IRVariable, value: Expression):
-        var_mem = var.type_.memory
-        val_mem = value.type_.memory
+    def _assign(self, var: IRVariable, val: Expression):
 
-        match value:
+        match val:
             case CopiedExpression():
-                return Expression(
-                    self.builder.store(value.label, var.as_pointer()),
-                    value.type_
-                )
+                return Expression(var.assign(val.label), val.type_)
 
-            case ViewedExpression():
-                match (var_mem, val_mem):
-                    case (ValueMemoryQualifier() | ReferenceMemoryQualifier(), ValueMemoryQualifier()):
-                        return Expression(
-                            self.builder.store(value.label, var.as_pointer()),
-                            value.type_
-                        )
+            case ViewedExpression(subexpression=val):
+                if isinstance(var, HeapVariable) and isinstance(val, HeapVariable):
+                    return Expression(var.assign_view(val), val.type_)
+
+                raise TypeError(f"View assignment must be between two reference variables, but {var} from {val} given.")
+
+        match (var, val.type_.memory):
+            case (HeapVariable(), ReferenceMemoryQualifier()):
+                raise TypeError(f"Illegal assignment of a reference to a reference: {var} from {val}.")
 
             case _:
-                match (var_mem, val_mem):
-                    case (ValueMemoryQualifier() | ReferenceMemoryQualifier(), ValueMemoryQualifier()):
-                        return Expression(
-                            self.builder.store(value.label, var.as_pointer()),
-                            value.type_
-                        )
-
-        raise TypeError(f"Illegal view assignment types: {var_mem} to {val_mem}.")
+                return Expression(var.assign(val.label), val.type_)
 
 
 from .function_translator import FunctionTranslator
