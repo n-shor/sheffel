@@ -20,7 +20,7 @@ class Variable(BaseExpression, metaclass=ABCMeta):
 
     @property
     def label(self):
-        return self.as_pointer()
+        return self.load()
 
     @property
     def type_(self):
@@ -156,7 +156,7 @@ class HeapVariable(Variable):
 
         with self._builder.if_else(is_zero) as (then_block, otherwise_block):
             with then_block:
-                self.free()
+                external.free(self._builder, self._generic_ptr)
 
             with otherwise_block:
                 self._builder.store(updated, rfp)
@@ -170,4 +170,4 @@ class HeapVariable(Variable):
         return self._builder.store(assignee_struct, self._struct_ptr)
 
     def free(self):
-        return external.free(self._builder, self._generic_ptr)
+        self._dec_ref_count()
