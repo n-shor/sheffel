@@ -79,6 +79,15 @@ class BlockTranslator(Scope):
                 with self.builder.if_then(self.add(condition).label):
                     self.add(then)
 
+            case While(condition=condition, body=body):
+                preloop_block = self.builder.append_basic_block()
+                self.builder.branch(preloop_block)
+
+                self.builder.position_at_start(preloop_block)
+                with self.builder.if_then(self.add(condition).label):
+                    self.add(body)
+                    self.builder.branch(preloop_block)
+
             case VariableDeclaration(name=name, type_=type_):
                 return self.add_variable(name, IRVariable.create(self.builder, type_))
 
