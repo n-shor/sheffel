@@ -123,7 +123,7 @@ class GrammarASTBuilder(GrammarListener):
     def _exit_binary_operator(self, ctx: GrammarParser.ExprContext):
         return Operator(ctx.op.text, (self.exit(ctx.expr(0)), self.exit(ctx.expr(1))))
 
-    def exitMulDivOpExpr(self, ctx: GrammarParser.MulDivOpExprContext):
+    def exitMulDivModOpExpr(self, ctx: GrammarParser.MulDivModOpExprContext):
         return self._exit_binary_operator(ctx)
 
     def exitAddSubOpExpr(self, ctx: GrammarParser.AddSubOpExprContext):
