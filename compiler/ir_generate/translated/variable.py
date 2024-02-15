@@ -8,8 +8,7 @@ from ...ast.types import VariableType, FunctionType
 from ...ast.types.qualifiers import ValueMemoryQualifier, ReferenceMemoryQualifier
 
 from .. import resolve_type
-from .. import utils
-from ..static import managed, libc
+from ..static import managed, utils, libc
 
 from .expression import BaseExpression
 
@@ -106,7 +105,7 @@ class HeapVariable(Variable):
 
         self._builder = builder
         self._data_type = resolve_type(type_.base_type)
-        self._ptr = managed.new(builder, utils.sizeof(self._data_type, as_type=libc.SIZE_TYPE))
+        self._ptr = managed.new(builder, utils.size_of(self._builder, self._data_type))
 
         super().__init__(type_)
 
@@ -125,7 +124,7 @@ class HeapVariable(Variable):
 
         instruction = managed.assign_from(
             self._builder, self._ptr, assignee._ptr,
-            utils.sizeof(self._data_type, as_type=libc.SIZE_TYPE)
+            utils.size_of(self._builder, self._data_type)
         )
 
         self._builder = assignee._builder

@@ -1,15 +1,12 @@
 from llvmlite import ir
 
-from .. import utils
 from .static_function import InternalFunction
-from . import libc
+from . import libc, utils
 
-DEREFERENCE_STRUCT = libc.SIZE_TYPE(1)
-STRUCT_INDEX_TYPE = ir.IntType(32)
+
 REF_COUNTER_TYPE = libc.SIZE_TYPE
-
-REF_COUNTER_INDICES = (DEREFERENCE_STRUCT, STRUCT_INDEX_TYPE(0))
-DATA_INDICES = (DEREFERENCE_STRUCT, STRUCT_INDEX_TYPE(1))
+REF_COUNTER_INDICES = (utils.DEREFERENCE_STRUCT, utils.INDEX_TYPE(0))
+DATA_INDICES = (utils.DEREFERENCE_STRUCT, utils.INDEX_TYPE(1))
 
 
 def _cast_to_generic_struct(builder: ir.IRBuilder, ptr: ir.Value):
@@ -18,7 +15,7 @@ def _cast_to_generic_struct(builder: ir.IRBuilder, ptr: ir.Value):
 
 
 def _calculate_total_size(builder: ir.IRBuilder, size: ir.Value):
-    return builder.add(size, utils.sizeof(REF_COUNTER_TYPE, as_type=libc.SIZE_TYPE))
+    return builder.add(size, utils.size_of(builder, libc.SIZE_TYPE))
 
 
 @InternalFunction.create(ir.FunctionType(libc.GENERIC_PTR_TYPE, (libc.SIZE_TYPE,)))

@@ -3,7 +3,6 @@ from llvmlite import ir, binding
 from ..ast.nodes import Block
 from .function_translator import make_entry_function
 from . import static
-from . import utils
 
 
 def create_ir(program: Block):
@@ -12,7 +11,6 @@ def create_ir(program: Block):
     module = ir.Module()
 
     module.triple = binding.get_default_triple()
-    utils.target_data = binding.create_target_data(module.data_layout)
 
     static.libc.add_all_to(module)
     static.managed.add_all_to(module)
