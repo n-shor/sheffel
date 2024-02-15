@@ -105,13 +105,19 @@ class HeapVariable(Variable):
 
         self._builder = builder
         self._data_type = resolve_type(type_.base_type)
-        self._ptr = managed.new(builder, utils.size_of(self._builder, self._data_type))
+
+        self._stack_var = builder.alloca(libc.GENERIC_PTR_TYPE)
+        ptr = managed.new(builder, utils.size_of(self._builder, self._data_type))
+        builder.store(ptr, self._stack_var)
 
         super().__init__(type_)
 
+    def _get_generic_ptr(self):
+        return self._builder.load(self._stack_var)
+
     def as_pointer(self):
-        generic_ptr = managed.get_data_ptr(self._builder, self._ptr)
-        return self._builder.bitcast(generic_ptr, self._data_type.as_pointer())
+        data_ptr = managed.get_data_ptr(self._builder, self._get_generic_ptr())
+        return self._builder.bitcast(data_ptr, self._data_type.as_pointer())
 
     def load(self):
         return self._builder.load(self.as_pointer())
@@ -123,15 +129,14 @@ class HeapVariable(Variable):
         """Assigns the `assignee` to the `assigned`."""
 
         instruction = managed.assign_from(
-            self._builder, self._ptr, assignee._ptr,
+            self._builder, self._get_generic_ptr(), assignee._get_generic_ptr(),
             utils.size_of(self._builder, self._data_type)
         )
 
-        self._builder = assignee._builder
         self._data_type = assignee._data_type
-        self._ptr = assignee._ptr
+        self._builder.store(assignee._get_generic_ptr(), self._stack_var)
 
         return instruction
 
     def free(self):
-        managed.remove_ref(self._builder, self._ptr)
+        managed.remove_ref(self._builder, self._get_generic_ptr())
