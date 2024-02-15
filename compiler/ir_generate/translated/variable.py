@@ -20,28 +20,27 @@ class Variable(BaseExpression, metaclass=ABCMeta):
 
         self._type = type_
 
-    @property
-    def label(self):
-        return self.load()
+    def label(self, builder):
+        return self.load(builder)
 
     @property
     def type_(self):
         return self._type
 
     @abstractmethod
-    def as_pointer(self) -> ir.Instruction:
+    def get_ptr(self, builder: ir.IRBuilder) -> ir.Value:
         """Returns the variable as a pointer."""
 
     @abstractmethod
-    def load(self) -> ir.Instruction:
-        """Adds an instruction to load the variable for reading."""
+    def load(self, builder: ir.IRBuilder) -> ir.Value:
+        """Loads the value of the variable."""
 
     @abstractmethod
-    def assign(self, value: ir.Value) -> ir.Instruction:
+    def assign(self, builder: ir.IRBuilder, value: ir.Value) -> ir.Value:
         """Adds an instruction to assign a value into the variable."""
 
     @abstractmethod
-    def free(self) -> ir.Instruction:
+    def free(self, builder: ir.IRBuilder) -> ir.Value:
         """Adds an instruction to free space allocated for the variable."""
 
     @classmethod
@@ -63,22 +62,21 @@ class Variable(BaseExpression, metaclass=ABCMeta):
 
 
 class StackVariable(Variable):
-    def __init__(self, builder: ir.IRBuilder, type_: VariableType):
-        self._ptr = builder.alloca(resolve_type(type_))
-        self._builder = builder
+    def __init__(self, builder: ir.IRBuilder, type_: VariableType, ir_type: ir.Type = None):
+        self._ptr = builder.alloca(ir_type if ir_type is not None else resolve_type(type_))
 
         super().__init__(type_)
 
-    def as_pointer(self):
+    def get_ptr(self, builder):
         return self._ptr
 
-    def load(self):
-        return self._builder.load(self._ptr)
+    def load(self, builder):
+        return builder.load(self._ptr)
 
-    def assign(self, value):
-        return self._builder.store(value, self._ptr)
+    def assign(self, builder, value):
+        return builder.store(value, self._ptr)
 
-    def free(self):
+    def free(self, builder):
         pass
 
 
@@ -87,56 +85,52 @@ class Parameter(Variable):
         super().__init__(type_)
         self._label = argument
 
-    def as_pointer(self):
+    def get_ptr(self, builder):
         raise TypeError("Function parameters have no pointers.")
 
-    def load(self):
+    def load(self, builder):
         return self._label
 
-    def assign(self, value):
+    def assign(self, builder, value):
         raise TypeError("Cannot write to a function's parameter.")
 
-    def free(self):
+    def free(self, builder):
         pass
 
 
 class HeapVariable(Variable):
     def __init__(self, builder: ir.IRBuilder, type_: VariableType):
-
-        self._builder = builder
-        self._data_type = resolve_type(type_.base_type)
-
-        self._stack_var = builder.alloca(libc.GENERIC_PTR_TYPE)
-        ptr = managed.new(builder, utils.size_of(self._builder, self._data_type))
-        builder.store(ptr, self._stack_var)
-
         super().__init__(type_)
 
-    def _get_generic_ptr(self):
-        return self._builder.load(self._stack_var)
+        self._data_type = resolve_type(type_.base_type)
 
-    def as_pointer(self):
-        data_ptr = managed.get_data_ptr(self._builder, self._get_generic_ptr())
-        return self._builder.bitcast(data_ptr, self._data_type.as_pointer())
+        self._ptr_var = StackVariable(builder, type_, libc.GENERIC_PTR_TYPE)
+        self._ptr_var.assign(builder, managed.new(builder, utils.size_of(builder, self._data_type)))
 
-    def load(self):
-        return self._builder.load(self.as_pointer())
+    def get_ptr(self, builder):
+        data_ptr = managed.get_data_ptr(builder, self._ptr_var.load(builder))
+        return builder.bitcast(data_ptr, self._data_type.as_pointer())
 
-    def assign(self, value):
-        return self._builder.store(value, self.as_pointer())
+    def load(self, builder):
+        return builder.load(self.get_ptr(builder))
 
-    def assign_view(self, assignee: HeapVariable):
+    def assign(self, builder, value):
+        return builder.store(value, self.get_ptr(builder))
+
+    def assign_view(self, builder, assignee: HeapVariable):
         """Assigns the `assignee` to the `assigned`."""
 
         instruction = managed.assign_from(
-            self._builder, self._get_generic_ptr(), assignee._get_generic_ptr(),
-            utils.size_of(self._builder, self._data_type)
+            builder,
+            self._ptr_var.load(builder),
+            assignee._ptr_var.load(builder),
+            utils.size_of(builder, self._data_type)
         )
 
         self._data_type = assignee._data_type
-        self._builder.store(assignee._get_generic_ptr(), self._stack_var)
+        self._ptr_var.assign(builder, assignee._ptr_var.load(builder))
 
         return instruction
 
-    def free(self):
-        managed.remove_ref(self._builder, self._get_generic_ptr())
+    def free(self, builder):
+        managed.remove_ref(builder, self._ptr_var.load(builder))
