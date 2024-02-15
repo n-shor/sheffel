@@ -108,7 +108,7 @@ class HeapVariable(Variable):
         self._ptr_var.assign(builder, managed.new(builder, utils.size_of(builder, self._data_type)))
 
     def get_ptr(self, builder):
-        data_ptr = managed.get_data_ptr(builder, self._ptr_var.load(builder))
+        data_ptr = managed.get(builder, self._ptr_var.load(builder))
         return builder.bitcast(data_ptr, self._data_type.as_pointer())
 
     def load(self, builder):
@@ -120,17 +120,13 @@ class HeapVariable(Variable):
     def assign_view(self, builder, assignee: HeapVariable):
         """Assigns the `assignee` to the `assigned`."""
 
-        instruction = managed.assign_from(
-            builder,
-            self._ptr_var.load(builder),
-            assignee._ptr_var.load(builder),
-            utils.size_of(builder, self._data_type)
-        )
-
         self._data_type = assignee._data_type
-        self._ptr_var.assign(builder, assignee._ptr_var.load(builder))
 
-        return instruction
+        assignee_ptr = assignee._ptr_var.load(builder)
+
+        managed.remove_ref(builder, self._ptr_var.load(builder))
+        managed.add_ref(builder, assignee_ptr)
+        return self._ptr_var.assign(builder, assignee_ptr)
 
     def free(self, builder):
         managed.remove_ref(builder, self._ptr_var.load(builder))
