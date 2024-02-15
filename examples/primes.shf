@@ -1,0 +1,15 @@
+* is_prime = Bool&(Int& number)
+{
+    Int& i = 2
+
+    while i < number
+    {
+        if number % i == 0 { return false }
+        i = i + 1
+    }
+
+    return true
+}
+
+if is_prime(99) { return 1 }
+else { return 0 }
