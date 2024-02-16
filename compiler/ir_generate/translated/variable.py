@@ -119,14 +119,8 @@ class HeapVariable(Variable):
 
     def assign_view(self, builder, assignee: HeapVariable):
         """Assigns the `assignee` to the `assigned`."""
-
         self._data_type = assignee._data_type
-
-        assignee_ptr = assignee._ptr_var.load(builder)
-
-        managed.remove_ref(builder, self._ptr_var.load(builder))
-        managed.add_ref(builder, assignee_ptr)
-        return self._ptr_var.assign(builder, assignee_ptr)
+        return managed.assign_indirect(builder, self._ptr_var.get_ptr(builder), assignee._ptr_var.get_ptr(builder))
 
     def free(self, builder):
         managed.remove_ref(builder, self._ptr_var.load(builder))

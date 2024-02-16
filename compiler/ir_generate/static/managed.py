@@ -71,6 +71,23 @@ def remove_ref(builder: ir.IRBuilder, ptr: ir.Value):
     builder.ret_void()
 
 
+@InternalFunction.create(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE.as_pointer(), libc.GENERIC_PTR_TYPE.as_pointer())))
+def assign_indirect(builder: ir.IRBuilder, ptr_to_a_ptr: ir.Value, ptr_to_v_ptr: ir.Value):
+    """(ptr_to_managed_object_ptr: i8**, ptr_to_managed_object_ptr: i8**) -> : void
+    Assigns `v` to `a`. Performs necessary incrementing and decrementing."""
+    value_ptr = builder.load(ptr_to_v_ptr)
+    assigned_ptr = builder.load(ptr_to_a_ptr)
+
+    not_same = builder.icmp_unsigned('!=', value_ptr, assigned_ptr)
+
+    with builder.if_then(not_same):
+        remove_ref(builder, assigned_ptr)
+        add_ref(builder, value_ptr)
+        builder.store(value_ptr, ptr_to_a_ptr)
+
+    builder.ret_void()
+
+
 @InternalFunction.create(ir.FunctionType(libc.GENERIC_PTR_TYPE, (libc.GENERIC_PTR_TYPE, )))
 def get(builder: ir.IRBuilder, ptr: ir.Value):
     """(managed_object_ptr: i8*) -> data_ptr: i8*
@@ -85,4 +102,5 @@ def add_all_to(module: ir.Module):
     new.add_to(module)
     add_ref.add_to(module)
     remove_ref.add_to(module)
+    assign_indirect.add_to(module)
     get.add_to(module)
