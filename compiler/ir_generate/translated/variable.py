@@ -8,7 +8,7 @@ from ...ast.types import VariableType, FunctionType
 from ...ast.types.qualifiers import ValueMemoryQualifier, ReferenceMemoryQualifier
 
 from .. import resolve_type
-from ..static import managed, utils, libc
+from ..lib import managed, libc, utils
 
 from .expression import BaseExpression
 
