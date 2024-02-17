@@ -2,7 +2,7 @@ from compiler.ast.nodes import *
 from compiler.ast.types import *
 
 from . import resolve_type, Scope
-from .translated import Expression, CopiedExpression, ViewedExpression, Variable as IRVariable, HeapVariable, StackVariable
+from .translated import Expression, TerminatorExpression, CopiedExpression, ViewedExpression, Variable as IRVariable, HeapVariable, StackVariable
 
 
 class BlockTranslator(Scope):
@@ -33,13 +33,13 @@ class BlockTranslator(Scope):
 
             case Return(returnee=returnee):
                 translated = self.add(returnee)
-                return Expression(
-                    self.builder.ret(translated.label),
+                return TerminatorExpression(
+                    self.builder.ret(translated.label(self.builder)),
                     translated.type_
                 )
 
             case ReturnVoid():
-                return Expression(
+                return TerminatorExpression(
                     self.builder.ret_void(),
                     VoidType()
                 )
@@ -62,13 +62,13 @@ class BlockTranslator(Scope):
                 return BlockTranslator(self.builder, self).translate(syntax)
 
             case IfElseConditional(condition=condition, then=then, otherwise=otherwise) if then.returns():
-                with self.builder.if_then(self.add(condition).label):
+                with self.builder.if_then(self.add(condition).label(self.builder)):
                     self.add(then)
 
                 return self.add(otherwise)
 
             case IfElseConditional(condition=condition, then=then, otherwise=otherwise):
-                with self.builder.if_else(self.add(condition).label) as (then_block, otherwise_block):
+                with self.builder.if_else(self.add(condition).label(self.builder)) as (then_block, otherwise_block):
                     with then_block:
                         self.add(then)
 
@@ -76,8 +76,17 @@ class BlockTranslator(Scope):
                         self.add(otherwise)
 
             case IfConditional(condition=condition, then=then):
-                with self.builder.if_then(self.add(condition).label):
+                with self.builder.if_then(self.add(condition).label(self.builder)):
                     self.add(then)
+
+            case While(condition=condition, body=body):
+                preloop_block = self.builder.append_basic_block()
+                self.builder.branch(preloop_block)
+
+                self.builder.position_at_start(preloop_block)
+                with self.builder.if_then(self.add(condition).label(self.builder)):
+                    self.add(body)
+                    self.builder.branch(preloop_block)
 
             case VariableDeclaration(name=name, type_=type_):
                 return self.add_variable(name, IRVariable.create(self.builder, type_))
@@ -107,24 +116,31 @@ class BlockTranslator(Scope):
                     raise TypeError(f"Attempted to call a non function: {translated_callee}")
 
                 return Expression(
-                    self.builder.call(translated_callee.label, (self.add(param).label for param in parameters)),
+                    self.builder.call(
+                        translated_callee.label(self.builder),
+                        (self.add(param).label(self.builder) for param in parameters)
+                    ),
                     translated_callee.type_.base_type.return_type
                 )
 
-            case Operator(signature='+' | '-' | '*' as signature, operands=(left, right)):
+            case Operator(signature='+' | '-' | '*' | '%' as signature, operands=(left, right)):
                 return Expression.from_base_type_of(
                     {
                         '+': self.builder.add,
                         '-': self.builder.sub,
-                        '*': self.builder.mul
-                    }[signature](self.add(left).label, self.add(right).label),
+                        '*': self.builder.mul,
+                        '%': self.builder.srem
+                    }[signature](self.add(left).label(self.builder), self.add(right).label(self.builder)),
                     ValueMemoryQualifier(),
                     (NoWriteBehaviorQualifier(),)
                 )
 
             case Operator(signature='<' | '<=' | '>' | '>=' | '==' | '!=' as signature, operands=(left, right)):
                 return Expression.from_base_type_of(
-                    self.builder.icmp_signed(signature, self.add(left).label, self.add(right).label),
+                    self.builder.icmp_signed(signature,
+                                             self.add(left).label(self.builder),
+                                             self.add(right).label(self.builder)
+                                             ),
                     ValueMemoryQualifier(),
                     (NoWriteBehaviorQualifier(),)
                 )
@@ -138,27 +154,28 @@ class BlockTranslator(Scope):
             case other:
                 raise TypeError(f'{other} is not a node type.')
 
-    def translate(self, body: Block) -> Expression | None:
+    def translate(self, body: Block) -> TerminatorExpression | None:
         """Translates the entire block. Returns its terminator."""
 
         try:
             for statement in body.statements:
                 match self.add(statement):
-                    case Expression(label=ir.Terminator()) as expr:
+                    case TerminatorExpression() as expr:
                         return expr
         finally:
             with self.builder.goto_block(self.builder.block):  # positions before terminator
-                self.free_scope()
+                for var in self.get_all():
+                    var.free(self.builder)
 
     def _assign(self, var: IRVariable, val: Expression):
 
         match val:
             case CopiedExpression():
-                return Expression(var.assign(val.label), val.type_)
+                return Expression(var.assign(self.builder, val.label(self.builder)), val.type_)
 
             case ViewedExpression(subexpression=val):
                 if isinstance(var, HeapVariable) and isinstance(val, HeapVariable):
-                    return Expression(var.assign_view(val), val.type_)
+                    return Expression(var.assign_view(self.builder, val), val.type_)
 
                 raise TypeError(f"View assignment must be between two reference variables, but {var} from {val} given.")
 
@@ -167,7 +184,7 @@ class BlockTranslator(Scope):
                 raise TypeError(f"Illegal assignment of a reference to a reference: {var} from {val}.")
 
             case _:
-                return Expression(var.assign(val.label), val.type_)
+                return Expression(var.assign(self.builder, val.label(self.builder)), val.type_)
 
 
 from .function_translator import FunctionTranslator

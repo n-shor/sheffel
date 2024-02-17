@@ -19,15 +19,15 @@ def run_from_exe(name: str,
     return result
 
 
-def compile_from_ir(ir: Module,
+def compile_from_ir(*ir: Module,
                     exe: bool = True,
-                    name: str = "Program",
+                    name: str = "program",
                     **kwargs):
     if not exe:
         return ir
 
     from .build.create import create_exe
-    result = create_exe(ir, name)
+    result = create_exe(*ir, name=name)
 
     return run_from_exe(result, **kwargs)
 
@@ -43,11 +43,11 @@ def compile_from_ast(ast: Block, *,
     result = create_ir(ast)
 
     if print_ir:
-        lines = str(result).split('\n')
+        lines = str(result[0]).split('\n')
         lines_without_meta = lines[3:]
         print('\n'.join(lines_without_meta))
 
-    return compile_from_ir(result, **kwargs)
+    return compile_from_ir(*result, **kwargs)
 
 
 def compile_from_code(code: str, *,

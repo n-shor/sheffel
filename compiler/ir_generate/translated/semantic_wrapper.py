@@ -8,8 +8,7 @@ class SemanticWrapper(BaseExpression):
         super().__init__()
         self.subexpression = subexpression
 
-    @property
-    def label(self):
+    def label(self, builder):
         return self.subexpression.label
 
     @property

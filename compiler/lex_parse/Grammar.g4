@@ -40,7 +40,7 @@ expr:
 
 |   expr SPACE* '(' ((expr ',')* expr)? ')'                 # CallOpExpr
 |   op=OP expr                                              # UnaryOpExpr
-|   expr op=('*' | '/') expr                                # MulDivOpExpr
+|   expr op=('*' | '/' | '%') expr                          # MulDivModOpExpr
 |   expr op=('+' | '-') expr                                # AddSubOpExpr
 |   expr op=('<' | '<=' | '>' | '>=' | '==' | '!=') expr    # CompareOpExpr
 |   expr op='=' expr                                        # AssignOpExpr

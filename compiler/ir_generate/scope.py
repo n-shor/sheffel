@@ -25,6 +25,6 @@ class Scope:
 
         return self._parent.get_variable(name)
 
-    def free_scope(self):
+    def get_all(self):
         for var in self._variables.values():
-            var.free()
+            yield var
