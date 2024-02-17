@@ -22,7 +22,7 @@ block:
 ;
 
 memoryQualifier: '*' | '&';
-typeName: 'Int' | 'Long' | 'Float' | 'Double' | 'Function' | 'Bool';
+typeName: 'Int' | 'Long' | 'Float' | 'Double' | 'Function' | 'Bool' | 'Char' | 'String';
 behaviorQualifier: 'noread' | 'nowrite';
 
 variableType:
@@ -57,6 +57,8 @@ expr:
 |   value=DOUBLE    # DoubleExpr
 |   value=FLOAT     # FloatExpr
 |   value=BOOL      # BoolExpr
+|   value=CHAR      # CharExpr
+|   value=STR       # StrExpr
 ;
 
 
@@ -72,6 +74,8 @@ BINARY: [01]+ [bB] [lL]? ;
 DOUBLE: [0-9]* '.' [0-9]+ ;
 FLOAT: ([0-9]* '.')? [0-9]+ [fF] ;
 BOOL: 'true' | 'false' ;
+CHAR: '\'' . '\'' ;
+STR: '"' .+? '"' ;
 VAR: [a-zA-Z_][a-zA-Z_0-9]* ;
 
 OP: [!#$%&*+-/:;<=>?@^|~]+ ;

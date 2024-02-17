@@ -8,7 +8,8 @@ constant_types: dict[str, ir.Type] = {
     'Long': ir.IntType(64),
     'Float': ir.FloatType(),
     'Double': ir.DoubleType(),
-    'String': None,
+    'Char': None,  # int1?
+    'String': None,  # int32 (pointer)?
     'Bool': ir.IntType(1)
 }
 
@@ -56,6 +57,12 @@ class DoubleLiteralType(FloatingPointLiteralType):
     """The type information of a literal double (8 byte) value."""
     def __init__(self):
         super().__init__(constant_types['Double'])
+
+
+class CharLiteralType(LiteralType):
+    """The type information of a char literal."""
+    def __init__(self):
+        super().__init__(constant_types['Char'])
 
 
 class StringLiteralType(LiteralType):

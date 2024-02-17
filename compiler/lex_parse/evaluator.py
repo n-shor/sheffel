@@ -107,6 +107,12 @@ class GrammarASTBuilder(GrammarListener):
             return Literal(int(ctx.value.text[:-2], 2), LongLiteralType())
         return Literal(int(ctx.value.text[:-1], 2), IntLiteralType())
 
+    def exitCharExpr(self, ctx: GrammarParser.CharExprContext):
+        return Literal(ctx.value.text, CharLiteralType())
+
+    def exitStrExpr(self, ctx: GrammarParser.StrExprContext):
+        return Literal(ctx.value.text, StringLiteralType())
+
     # Keyword Expression:
 
     def exitCopyExpr(self, ctx: GrammarParser.CopyExprContext):
