@@ -8,8 +8,8 @@ constant_types: dict[str, ir.Type] = {
     'Long': ir.IntType(64),
     'Float': ir.FloatType(),
     'Double': ir.DoubleType(),
-    'Char': None,  # int1?
-    'String': None,  # int32 (pointer)?
+    'Char': ir.IntType(8),
+    'String': ir.IntType(8).as_pointer(),
     'Bool': ir.IntType(1)
 }
 
