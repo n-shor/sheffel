@@ -12,20 +12,15 @@ class FunctionTranslator(Scope):
 
     _symbol_id = 0
 
-    def __init__(self, syntax: Function, module: ir.Module, symbol: str = ''):
+    def __init__(self, syntax: Function, module: ir.Module, name: str = ''):
         self.module = module
         self.syntax = syntax
-        self.func = ir.Function(module, resolve_type(syntax.type_.base_type), symbol or self._get_unique_symbol())
+        self.func = ir.Function(module, resolve_type(syntax.type_.base_type), module.get_unique_name(name))
 
         super().__init__(
             None,
             {param.name: Parameter(arg, param.type_.base_type) for param, arg in zip(syntax.parameters, self.func.args)}
         )
-
-    @classmethod
-    def _get_unique_symbol(cls):
-        cls._symbol_id += 1
-        return f'${cls._symbol_id}'
 
     def translate(self):
         """Translates the function."""
