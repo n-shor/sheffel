@@ -11,5 +11,19 @@
     return true
 }
 
-if is_prime(99) { return 1 }
-else { return 0 }
+Int& n = 2
+
+while n < 1000
+{
+    if is_prime(n)
+    {
+        printf: "%d, ", n
+    }
+
+    n = n + 1
+}
+
+printf: "\nAre primes.\n"
+
+
+return 0

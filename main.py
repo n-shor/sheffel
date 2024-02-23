@@ -1,14 +1,9 @@
-from compiler.compile import compile_from_code
+from compiler.compile import compile_from_file
 
 
 def main():
 
-    code = """
-    String& x = "aaa"
-    Char* y = 'a'
-    """
-
-    compile_from_code(code, regenerate_grammar=True, print_ir=True, print_result=True)
+    compile_from_file('examples/primes.shf')
 
 
 if __name__ == "__main__":
