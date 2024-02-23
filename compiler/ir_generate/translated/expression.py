@@ -34,12 +34,12 @@ class Expression(BaseExpression):
 
     @classmethod
     def from_base_type_of(cls,
-                          instruction: ir.Instruction,
+                          value: ir.Value,
                           memory_qualifier: MemoryQualifier, behavior_qualifiers: tuple[BehaviorQualifier, ...]
                           ):
         return cls(
-            instruction,
-            VariableType(DirectUnqualifiedType(instruction.type), memory_qualifier, behavior_qualifiers)
+            value,
+            VariableType(DirectUnqualifiedType(value.type), memory_qualifier, behavior_qualifiers)
         )
 
 

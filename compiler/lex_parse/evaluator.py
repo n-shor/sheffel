@@ -108,10 +108,10 @@ class GrammarASTBuilder(GrammarListener):
         return Literal(int(ctx.value.text[:-1], 2), IntLiteralType())
 
     def exitCharExpr(self, ctx: GrammarParser.CharExprContext):
-        return Literal(ctx.value.text, CharLiteralType())
+        return Literal(ctx.value.text[1:-1], CharLiteralType())
 
     def exitStrExpr(self, ctx: GrammarParser.StrExprContext):
-        return Literal(ctx.value.text, StringLiteralType())
+        return Literal(ctx.value.text[1:-1], StringLiteralType())
 
     # Keyword Expression:
 

@@ -1,6 +1,8 @@
 from compiler.ast.nodes import *
 from compiler.ast.types import *
 
+from .lib import utils
+
 from . import resolve_type, Scope
 from .translated import Expression, TerminatorExpression, CopiedExpression, ViewedExpression, Variable as IRVariable, HeapVariable, StackVariable
 
@@ -18,17 +20,23 @@ class BlockTranslator(Scope):
 
         match _expression:
 
-            case Literal(value=value, type_=LiteralType() as type_):
-                return Expression(
+            case Literal(value=value, type_=StringLiteralType()):
+                return Expression.from_base_type_of(
+                    utils.string_literal(self.builder, value),
+                    ValueMemoryQualifier(), (NoWriteBehaviorQualifier(), )
+                )
+
+            case Literal(value=value, type_=type_):
+                return Expression.from_base_type_of(
                     ir.Constant(resolve_type(type_), value),
-                    VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
+                    ValueMemoryQualifier(), (NoWriteBehaviorQualifier(), )
                 )
 
             # negative literal
             case Operator(signature='-', operands=(Literal(value=value, type_=NumericLiteralType() as type_), )):
-                return Expression(
+                return Expression.from_base_type_of(
                     ir.Constant(resolve_type(type_), -value),
-                    VariableType(type_, ValueMemoryQualifier(), (ConstBehaviorQualifier(),))
+                    ValueMemoryQualifier(), (NoWriteBehaviorQualifier(), )
                 )
 
             case Return(returnee=returnee):
