@@ -7,8 +7,8 @@ venv/
 .idea/
 
 # antlr files
-grammar/
-!grammar/__init__.py
+generated/
+!generated/__init__.py
 
 # build files
 build_files/

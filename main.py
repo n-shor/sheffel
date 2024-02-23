@@ -1,9 +1,8 @@
-from compiler.compile import compile_from_file
+from grammar import utils
 
 
 def main():
-
-    compile_from_file('examples/primes.shf')
+    utils.regenerate()
 
 
 if __name__ == "__main__":
