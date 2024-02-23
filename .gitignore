@@ -1,14 +1,14 @@
 # python
 __pycache__/
-venv/
 *.pyc
+venv/
 
-# build files
-build/
+# pycharm
+.idea/
 
 # antlr files
-*.interp
-*.tokens
-*Lexer.py
-*Parser.py
-*Listener.py
+grammar/
+!grammar/__init__.py
+
+# build files
+build_files/

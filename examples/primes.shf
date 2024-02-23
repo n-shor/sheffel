@@ -1,0 +1,29 @@
+* is_prime = Bool&(Int& number)
+{
+    Int& i = 2
+
+    while i < number
+    {
+        if number % i == 0 { return false }
+        i = i + 1
+    }
+
+    return true
+}
+
+Int& n = 2
+
+while n < 1000
+{
+    if is_prime(n)
+    {
+        printf: "%d, ", n
+    }
+
+    n = n + 1
+}
+
+printf: "\nAre primes.\n"
+
+
+return 0
