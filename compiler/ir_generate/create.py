@@ -2,7 +2,7 @@ from llvmlite import ir, binding
 
 from ..ast.nodes import Block
 from .function_translator import make_entry_function
-from .lib import managed
+from .lib import managed, libc
 
 
 def create_ir(program: Block) -> tuple[ir.Module, ...]:
@@ -11,10 +11,11 @@ def create_ir(program: Block) -> tuple[ir.Module, ...]:
     module = ir.Module()
     module.triple = binding.get_default_triple()
 
-    managed.module.add_to(module)
+    managed.generic.add_to(module)
+    libc.utils.add_to(module)
 
     func = make_entry_function(module, program)
 
     func.translate()
 
-    return module, managed.module.module
+    return module, managed.generic.module

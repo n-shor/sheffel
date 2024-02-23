@@ -9,8 +9,8 @@ REF_COUNTER_INDICES = (utils.DEREFERENCE_STRUCT, utils.INDEX_TYPE(0))
 DATA_INDICES = (utils.DEREFERENCE_STRUCT, utils.INDEX_TYPE(1))
 
 
-module = InternalModule('managed')
-libc.module.add_to(module.module)
+generic = InternalModule('managed.generic')
+libc.heap.add_to(generic.module)
 
 
 def _cast_to_generic_struct(builder: ir.IRBuilder, ptr: ir.Value):
@@ -22,7 +22,7 @@ def _calculate_total_size(builder: ir.IRBuilder, size: ir.Value):
     return builder.add(size, utils.size_of(builder, libc.SIZE_TYPE))
 
 
-@module.function(ir.FunctionType(libc.GENERIC_PTR_TYPE, (libc.SIZE_TYPE,))).define
+@generic.function(ir.FunctionType(libc.GENERIC_PTR_TYPE, (libc.SIZE_TYPE,))).define
 def new(builder: ir.IRBuilder, size: ir.Value):
     """(data_size: i64) -> managed_object_ptr: i8*
     Allocates a new managed object on the heap, sets its reference count to 1, and returns a pointer to it.
@@ -36,7 +36,7 @@ def new(builder: ir.IRBuilder, size: ir.Value):
     builder.ret(generic_ptr)
 
 
-@module.function(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE,))).define
+@generic.function(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE,))).define
 def add_ref(builder: ir.IRBuilder, ptr: ir.Value):
     """(managed_object_ptr: i8*) -> : void
     Increments the reference count of a managed object.
@@ -52,7 +52,7 @@ def add_ref(builder: ir.IRBuilder, ptr: ir.Value):
     builder.ret_void()
 
 
-@module.function(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE,))).define
+@generic.function(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE,))).define
 def remove_ref(builder: ir.IRBuilder, ptr: ir.Value):
     """(managed_object_ptr: i8*) -> : void
     Decrements the reference count of a managed object.
@@ -75,7 +75,7 @@ def remove_ref(builder: ir.IRBuilder, ptr: ir.Value):
     builder.ret_void()
 
 
-@module.function(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE.as_pointer(), libc.GENERIC_PTR_TYPE.as_pointer()))).define
+@generic.function(ir.FunctionType(ir.VoidType(), (libc.GENERIC_PTR_TYPE.as_pointer(), libc.GENERIC_PTR_TYPE.as_pointer()))).define
 def assign_indirect(builder: ir.IRBuilder, ptr_to_a_ptr: ir.Value, ptr_to_v_ptr: ir.Value):
     """(ptr_to_managed_object_ptr: i8**, ptr_to_managed_object_ptr: i8**) -> : void
     Assigns `v` to `a`. Performs necessary incrementing and decrementing."""
@@ -92,7 +92,7 @@ def assign_indirect(builder: ir.IRBuilder, ptr_to_a_ptr: ir.Value, ptr_to_v_ptr:
     builder.ret_void()
 
 
-@module.function(ir.FunctionType(libc.GENERIC_PTR_TYPE, (libc.GENERIC_PTR_TYPE,))).define
+@generic.function(ir.FunctionType(libc.GENERIC_PTR_TYPE, (libc.GENERIC_PTR_TYPE,))).define
 def get(builder: ir.IRBuilder, ptr: ir.Value):
     """(managed_object_ptr: i8*) -> data_ptr: i8*
     Gets the pointer to the data of a managed object.
