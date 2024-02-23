@@ -23,8 +23,8 @@ class Break(Node):
 
 
 @dataclass
-class Break(Node):
-    """A statement immediately ending a loop's body."""
+class Continue(Node):
+    """A statement immediately finishing a loop's cycle."""
 
 
 @dataclass

@@ -9,6 +9,7 @@ stat:
 |   SPACE* expr '\n' (SPACE | '\n')*                    # ExpressionStat
 |   SPACE* block '\n' (SPACE | '\n')*                   # BlockStat
 |   SPACE* 'return' (SPACE+ expr)? (SPACE | '\n')*      # ReturnStat
+|   SPACE* name=VAR ':' ((expr ',')* expr)?             # ExternalCallStat
 ;
 
 block:

@@ -35,7 +35,8 @@ class Expression(BaseExpression):
     @classmethod
     def from_base_type_of(cls,
                           value: ir.Value,
-                          memory_qualifier: MemoryQualifier, behavior_qualifiers: tuple[BehaviorQualifier, ...]
+                          memory_qualifier: MemoryQualifier,
+                          behavior_qualifiers: tuple[BehaviorQualifier, ...]
                           ):
         return cls(
             value,

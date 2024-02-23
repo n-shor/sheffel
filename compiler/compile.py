@@ -6,7 +6,7 @@ from llvmlite.ir import Module
 
 def run_from_exe(name: str,
                  run: bool = True,
-                 print_result: bool = True,
+                 print_result: bool = False,
                  **kwargs):
     if not run:
         return name

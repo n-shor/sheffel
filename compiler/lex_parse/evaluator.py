@@ -48,6 +48,9 @@ class GrammarASTBuilder(GrammarListener):
         subexpression = ctx.expr()
         return Return(self.exit(subexpression)) if subexpression is not None else ReturnVoid()
 
+    def exitExternalCallStat(self, ctx: GrammarParser.ExternalCallStatContext):
+        return ExternalCall(ctx.name.text, tuple(self.exit(e) for e in ctx.expr()))
+
     # Block:
 
     def exitMultiLineBlock(self, ctx: GrammarParser.MultiLineBlockContext):

@@ -1,7 +1,7 @@
 from compiler.ast.nodes import *
 from compiler.ast.types import *
 
-from .lib import utils
+from .lib import libc, utils
 
 from . import resolve_type, Scope
 from .translated import Expression, TerminatorExpression, CopiedExpression, ViewedExpression, Variable as IRVariable, HeapVariable, StackVariable
@@ -57,6 +57,15 @@ class BlockTranslator(Scope):
 
             case View(viewed=viewed):
                 return ViewedExpression(self.add(viewed))
+
+            case ExternalCall(external_name=name, parameters=parameters):
+                return Expression.from_base_type_of(
+                    self._resolve_external(name)(
+                        self.builder,
+                        *(self.add(param).label(self.builder) for param in parameters)
+                    ),
+                    ValueMemoryQualifier(), (NoWriteBehaviorQualifier(), )
+                )
 
             case Function() as syntax:
                 function_translator = FunctionTranslator(syntax, self.builder.module)
@@ -193,6 +202,15 @@ class BlockTranslator(Scope):
 
             case _:
                 return Expression(var.assign(self.builder, val.label(self.builder)), val.type_)
+
+    def _resolve_external(self, name: str):
+
+        match name:
+            case 'printf':
+                return libc.printf
+
+            case _:
+                raise KeyError(f'Unresolved external {name}.')
 
 
 from .function_translator import FunctionTranslator
