@@ -59,6 +59,12 @@ class DoubleLiteralType(FloatingPointLiteralType):
         super().__init__(constant_types['Double'])
 
 
+class BoolLiteralType(LiteralType):
+    """The type information of a literal boolean value."""
+    def __init__(self):
+        super().__init__(constant_types['Bool'])
+
+
 class CharLiteralType(LiteralType):
     """The type information of a char literal."""
     def __init__(self):
@@ -69,10 +75,3 @@ class StringLiteralType(LiteralType):
     """The type information of a string literal."""
     def __init__(self):
         super().__init__(constant_types['String'])
-
-
-class BoolLiteralType(LiteralType):
-    """The type information of a literal boolean value."""
-    def __init__(self):
-        super().__init__(constant_types['Bool'])
-
