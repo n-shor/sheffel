@@ -1,8 +1,8 @@
-from grammar import utils
+from structure import grammar
 
 
 def main():
-    utils.regenerate()
+    grammar.utils.regenerate()
 
 
 if __name__ == "__main__":
