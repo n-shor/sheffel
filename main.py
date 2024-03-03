@@ -1,10 +1,10 @@
-from structure import grammar, reductive
+from structure import grammar, pure
 
 
 def main():
     # grammar.utils.regenerate()
 
-    structure = reductive.Node()
+    structure = pure.Node()
     print(structure.hierarchy())
 
 
