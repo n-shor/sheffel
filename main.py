@@ -1,8 +1,11 @@
-from structure import grammar
+from structure import grammar, reductive
 
 
 def main():
-    grammar.utils.regenerate()
+    # grammar.utils.regenerate()
+
+    structure = reductive.Node()
+    print(structure.hierarchy())
 
 
 if __name__ == "__main__":
