@@ -35,23 +35,21 @@ class Block(Node):
         self.nodes = nodes
 
 
-class Declaration(Node):
+class Variable(Node):
+    def __init__(self, name: str):
+        self.name = name
+
+
+class Declaration(Variable):
     def __init__(self, type_: QualifiedType, name: str):
+        super().__init__(name)
         self.type_ = type_
-        self.name = name
 
 
-class Assignment(Node):
-    def __init__(self, name: str, value: Value):
-        self.name = name
-        self.value = value
-
-
-class DeclarationAssignment(Node):
-    def __init__(self, type_: QualifiedType, name: str, value: Value):
-        self.type_ = type_
-        self.name = name
-        self.value = value
+class Operator(Node):
+    def __init__(self, operation: str, operands: tuple[Node, ...]):
+        self.operation = operation
+        self.operands = operands
 
 
 class Value(Node):
@@ -60,9 +58,9 @@ class Value(Node):
 
 
 class Type(Value):
-    def __init__(self, fields: dict[Declaration | DeclarationAssignment]):
+    def __init__(self, body: Block):
         super().__init__()
-        self.fields = fields
+        self.body = body
 
 
 class QualifiedType:
