@@ -2,7 +2,7 @@ from structure import grammar, pure
 
 
 def main():
-    # grammar.utils.regenerate()
+    grammar.utils.regenerate()
 
     structure = pure.Node()
     print(structure.hierarchy())
