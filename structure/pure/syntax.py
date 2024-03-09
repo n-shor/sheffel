@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from . import Node, Qualified
+from . import Node, Memory, Type, Qualified, Value
+
+
+class Literal(Value):
+    def __init__(self, type_: Type, value):
+        super().__init__(Qualified(type_, Memory.EVAL))
+        self.value = value
 
 
 class Variable(Node):
