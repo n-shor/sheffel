@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from . import Node, Memory, Value
+from . import Node, Qualified
 
 
 class Variable(Node):
@@ -9,10 +9,9 @@ class Variable(Node):
 
 
 class Declaration(Variable):
-    def __init__(self, type_: Value, memory: Memory, name: str):
+    def __init__(self, qualified: Qualified, name: str):
         super().__init__(name)
-        self.type_ = type_
-        self.memory = memory
+        self.qualified = qualified
 
 
 class Operator(Node):

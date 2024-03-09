@@ -1,19 +1,19 @@
 from llvmlite import ir
 
-from . import Block, Type, type_type
+from . import Block, Memory, Type, Qualified, eval_type_type
 
 
 class _PrimitiveTypeType(Type):
     def __init__(self):
-        super().__init__(type_type, Block(()))
+        super().__init__(eval_type_type, Block(()))
 
 
-primitive_type_type = _PrimitiveTypeType()  # currently empty
+eval_primitive_type_type = Qualified(_PrimitiveTypeType(), Memory.EVAL)
 
 
 class _PrimitiveTypeBase(Type):  # will not affect the type structure, this is a compiler helper
     def __init__(self, ir_type: ir.Type):
-        super().__init__(primitive_type_type, Block(()))
+        super().__init__(eval_primitive_type_type, Block(()))
         self.ir_type = ir_type
 
 
