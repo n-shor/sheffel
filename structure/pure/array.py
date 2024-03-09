@@ -17,18 +17,7 @@ array_type = _ArrayType()
 
 
 class Array(Value):
-    """Represents a run-time array defined by its count."""
-
-    def __init__(self, element_type: Value, count: Value):
-        super().__init__(array_type, Memory.COPY)
-        self.element_type = element_type
-        self.count = count
-
-
-class EvaluatedArray(Value):
-    """Represents a compile-time array defined with its values."""
-
     def __init__(self, element_type: Value, values: tuple[Value, ...]):
-        super().__init__(array_type, Memory.EVAL)
+        super().__init__(array_type, Memory.COPY)
         self.element_Type = element_type
         self.values = values

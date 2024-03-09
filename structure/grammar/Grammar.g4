@@ -1,60 +1,50 @@
 grammar Grammar;
 
 prog:
-    stat* SPACE* EOF
+    ONL_S? (stat RNL_S)* EOF
 ;
 
 stat:
-    SPACE* '\n'                                         # EmptyStat
-|   SPACE* expr '\n' (SPACE | '\n')*                    # ExpressionStat
-|   SPACE* block '\n' (SPACE | '\n')*                   # BlockStat
-|   SPACE* 'return' (SPACE+ expr)? (SPACE | '\n')*      # ReturnStat
-|   SPACE* name=VAR ':' ((expr ',')* expr)?             # ExternalCallStat
+    expr                    # ExpressionStat
+|   block                   # BlockStat
+|   'return' (INL_S expr)?  # ReturnStat
 ;
 
 block:
-    '{' SPACE* '\n'? stat* SPACE* '}'                         # MultiLineBlock
-|   '{' expr '}'                                # SingleLineBlock
-|   'while' SPACE+ expr (SPACE | '\n')*
-    block (SPACE | '\n')*                       # WhileBlock
-|   'if' SPACE+ expr (SPACE | '\n')*
-    block (SPACE | '\n')*
-    ('else' (SPACE | '\n')* block (SPACE | '\n')*)?      # IfBlock
+    '{' RNL_S (stat RNL_S)* '}'                               # MultiLineBlock
+|   '{' expr '}'                                              # SingleLineBlock
+|   'if' INL_S expr ONL_S block (ONL_S 'else' ONL_S block)?   # IfBlock
+|   'while' INL_S expr ONL_S block                            # WhileBlock
 ;
 
-memoryQualifier: '*' | '&';
-typeName: 'Int' | 'Long' | 'Float' | 'Double' | 'Function' | 'Bool' | 'Char' | 'String';
-behaviorQualifier: 'noread' | 'nowrite';
-
-variableType:
-    (behaviorQualifier SPACE+)* typeName memoryQualifier    # FullVariableType
-|   (behaviorQualifier SPACE+)* memoryQualifier             # AutoVariableType
+memory:
+    '^'     # EvalMemory
+|   '&'     # CopyMemory
+|   '*'     # RefMemory
 ;
 
 expr:
-    SPACE+ expr             # LeftSpacedExpr
-|   expr SPACE+             # RightSpacedExpr
-|   '(' expr ')'            # ParenthesizedExpr
+    INL_S expr      # LeftSpacedExpr
+|   expr INL_S      # RightSpacedExpr
+|   '(' expr ')'    # ParenthesizedExpr
 
-|   'copy' SPACE+ expr      # CopyExpr
-|   'view' SPACE+ expr      # ViewExpr
-
-|   expr SPACE* '(' ((expr ',')* expr)? ')'                 # CallOpExpr
+|   expr '(' ((expr ',')* expr)? ')'                        # CallOpExpr
 |   op=OP expr                                              # UnaryOpExpr
 |   expr op=('*' | '/' | '%') expr                          # MulDivModOpExpr
 |   expr op=('+' | '-') expr                                # AddSubOpExpr
 |   expr op=('<' | '<=' | '>' | '>=' | '==' | '!=') expr    # CompareOpExpr
 |   expr op='=' expr                                        # AssignOpExpr
 
-|   variableType SPACE+ name=VAR                            # VariableDeclarationExpr
+|   expr INL_S name=VAR     # DeclarationExpr
+|   name=VAR                # VarExpr
 
-|   (variableType SPACE*)? '(' ((expr ',')* expr)? ')' (SPACE | '\n')* block    # FunctionCreationExpr
-
-|   name=VAR        # VarExpr
+|   type_name=VAR memory                            # QualifiedTypeExpr
+|   expr '(' ((expr ',')* expr)? ')' ONL_S block    # ReturningFunctionExpr
+|   '(' ((expr ',')* expr)? ')' ONL_S block         # VoidFunctionExpr
+|   expr '[' ((expr ',')* expr)? ']'                # TypedArrayExpr
+|   '[' (expr ',')* expr ']'                        # UntypedArrayExpr
 |   value=INT       # IntExpr
 |   value=LONG      # LongExpr
-|   value=HEX       # HexExpr
-|   value=BINARY    # BinaryExpr
 |   value=DOUBLE    # DoubleExpr
 |   value=FLOAT     # FloatExpr
 |   value=BOOL      # BoolExpr
@@ -63,20 +53,28 @@ expr:
 ;
 
 
-// Lexer rules
+FULL_SKIP:  [\r]+ -> skip ;
+INL_S:      [ \t]+  ;
+ONL_S:      [ \t\n]+ ;
+RNL_S:      ONL_S? '\n' ONL_S? ;
 
-FULL_SKIP: [\r]+ -> skip ;
-SPACE: [ \t] ;
+VAR:        [a-zA-Z_][a-zA-Z_0-9]* ;
+OP:         [!#$%&*+-/:;<=>?@^|~]+ ;
 
-INT: [0-9]+ ;
-LONG: [0-9]+ [lL] ;
-HEX: '0x' ([0-9] | [a-f] | [A-F])+ [lL]? ;
-BINARY: [01]+ [bB] [lL]? ;
-DOUBLE: [0-9]* '.' [0-9]+ ;
-FLOAT: ([0-9]* '.')? [0-9]+ [fF] ;
-BOOL: 'true' | 'false' ;
-CHAR: '\'' . '\'' ;
-STR: '"' .+? '"' ;
-VAR: [a-zA-Z_][a-zA-Z_0-9]* ;
+INTEGRAL:
+    [0-9]
+|   '0x' ([0-9] | [a-f] | [A-F])+
+|   [01]+ [bB]
+;
 
-OP: [!#$%&*+-/:;<=>?@^|~]+ ;
+FLOATING:
+    [0-9]* '.' [0-9]+
+;
+
+INT:    INTEGRAL ;
+LONG:   INTEGRAL [lL];
+DOUBLE: FLOATING | (INTEGRAL [dD]) ;
+FLOAT:  FLOATING | INTEGRAL [fF] ;
+BOOL:   'true' | 'false' ;
+CHAR:   '\'' . '\'' ;
+STR:    '"' .+? '"' ;
