@@ -22,3 +22,5 @@ class Function(Value):
         self.return_type = return_type
         self.argument_types = argument_types
         self.body = body
+
+# Should add "non-eval" function
