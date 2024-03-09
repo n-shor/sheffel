@@ -1,11 +1,18 @@
-from structure import grammar, pure
+from compiler.structure import grammar, pure
+from compiler.translate import evaluator
 
 
 def main():
     grammar.utils.regenerate()
 
-    structure = pure.Node()
-    print(structure.hierarchy())
+    print(
+        evaluator.Evaluator()
+        .translate("""
+        Int& a = 3
+        Int* b = a
+        """)
+        .hierarchy()
+    )
 
 
 if __name__ == "__main__":
