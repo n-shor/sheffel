@@ -16,6 +16,9 @@ class _PrimitiveTypeBase(Type):  # will not affect the type structure, this is a
         super().__init__(eval_primitive_type_type, Block(()))
         self.ir_type = ir_type
 
+    def __repr__(self):
+        return f'{type(self).__name__}()'
+
 
 class _UnsignedIntType(_PrimitiveTypeBase):
     def __init__(self):

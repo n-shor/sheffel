@@ -12,33 +12,37 @@ class Memory(Enum):
 
 
 class Value(Node):
-    _short_fields = {'qualified'}
-
     def __init__(self, qualified: Qualified):
         self.qualified = qualified
 
 
 class Qualified(Value):
-    _omit_fields = {'qualified'}
-    _short_fields = {'type_'}
+    _as_field = True
 
     def __init__(self, type_: Type, memory: Memory, *, base=False):
         super().__init__(self if base else eval_type_type)
         self.type_ = type_
         self.memory = memory
 
+    def __repr__(self):
+        return f'{type(self).__name__}({repr(self.type_)}, {self.memory})'
+
 
 class Type(Node):
+
     def __init__(self, meta: Qualified, body: Block):
         self.meta = meta
         self.body = body
 
 
 class _TypeType(Type):
-    _short_fields = {'meta', 'body'}
+    _as_field = True
 
     def __init__(self):
         super().__init__(eval_type_type, Block(()))
+
+    def __repr__(self):
+        return f'{type(self).__name__}()'
 
 
 eval_type_type = Qualified(None, Memory.EVAL, base=True)
