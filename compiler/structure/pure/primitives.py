@@ -25,4 +25,10 @@ class _UnsignedIntType(_PrimitiveTypeBase):
         super().__init__(ir.IntType(32))
 
 
+class _DoubleType(_PrimitiveTypeBase):
+    def __init__(self):
+        super().__init__(ir.DoubleType())
+
+
 unsigned_int_type = _UnsignedIntType()
+double_type = _DoubleType()

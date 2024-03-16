@@ -5,7 +5,7 @@ code = """
 return 3
 xd = 4
 Int* b = 13
-Int& a = 8 - 2 * 2
+xd& a = 8 - 2 * 2
 """
 
 
