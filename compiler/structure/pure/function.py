@@ -1,4 +1,4 @@
-from . import Node, Block, Memory, Value, Qualified, Type, eval_type_type, array_type
+from . import Node, Block, Memory, Qualified, Type, eval_type_type, Literal, Declaration, array_type
 from .utils import make_declarations_block
 
 
@@ -7,8 +7,8 @@ class _FunctionType(Type):
         super().__init__(
             eval_type_type,
             make_declarations_block(
-                return_type=eval_type_type,
-                argument_types=Qualified(array_type, Memory.EVAL)
+                argument_types=Qualified(array_type, Memory.EVAL),
+                return_type=eval_type_type
             )
         )
 
@@ -16,11 +16,12 @@ class _FunctionType(Type):
 function_type = _FunctionType()
 
 
-class Function(Value):
-    def __init__(self, return_type: Value, argument_types: tuple[Node, ...], body: Block):
-        super().__init__(Qualified(function_type, Memory.COPY))
-        self.return_type = return_type
-        self.argument_types = argument_types
-        self.body = body
+class FunctionLiteral(Literal):
+    def __init__(self, arguments: tuple[Declaration, ...], return_type: Qualified, body: Block):
+        super().__init__(function_type, NotImplemented())  # should become this function literal's ir label
 
-# Should add "non-eval" function
+        self.argument_types = tuple(arg.qualified for arg in arguments)
+        self.return_type = return_type
+
+        self.arguments = arguments
+        self.body = body

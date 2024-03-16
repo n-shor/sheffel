@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from . import Node, Memory, Type, Qualified, Value
+from . import Node, Memory, Value, Qualified, Type
 
 
 class Literal(Value):
