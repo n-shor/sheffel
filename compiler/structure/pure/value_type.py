@@ -17,6 +17,9 @@ class Value(Node):
 
 
 class Qualified(Value):
+    _omit_fields = {'qualified'}
+    _short_fields = {'type_'}
+
     def __init__(self, type_: Type, memory: Memory, *, base=False):
         super().__init__(self if base else eval_type_type)
         self.type_ = type_
@@ -30,6 +33,8 @@ class Type(Node):
 
 
 class _TypeType(Type):
+    _short_fields = {'meta', 'body'}
+
     def __init__(self):
         super().__init__(eval_type_type, Block(()))
 

@@ -1,15 +1,36 @@
+from typing import Callable, Any
+
+
 class Node:
     def hierarchy(self, prefix=''):
-        subtext = ''
+        fields = ''
+        children = ''
 
         for name, value in self.__dict__.items():
+
+            if name in self._omit_fields:
+                continue
+
+            if name in self._short_fields:
+                fields += f'{name}={type(value).__name__}(...), '
+                continue
+
             match value:
                 case Node() as node:
-                    subtext += '\n' + node.hierarchy(prefix + '\t')
-                case (Node(), *_) as nodes:
-                    subtext += ''.join('\n' + node.hierarchy(prefix + '\t') for node in nodes)
+                    children += '\n' + node.hierarchy(prefix + '\t')
 
-        return f'{prefix}{self}{subtext}'
+                case (Node(), *_) as nodes:
+                    children += ''.join('\n' + node.hierarchy(prefix + '\t') for node in nodes)
+
+                case _:
+                    fields += f'{name}={value}, '
+
+        fields = fields.rstrip(', ')
+
+        return f'{prefix}{type(self).__name__}({fields}){children}'
+
+    _omit_fields: set[str] = set()
+    _short_fields: set[str] = set()
 
     def __repr__(self):
 
@@ -18,7 +39,7 @@ class Node:
         for name, value in self.__dict__.items():
             match value:
                 case Node() | (Node(), *_):
-                    pass
+                    attrs.append(f'{name}=...')
                 case _:
                     attrs.append(f'{name}={value}')
 
