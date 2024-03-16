@@ -11,7 +11,9 @@ def regenerate():
         'java',
         '-jar', os.path.join(dir_path, 'antlr-4.13.1-complete.jar'),
         '-Dlanguage=Python3', os.path.join(dir_path, 'Grammar.g4'),
-        '-o', os.path.join(dir_path, 'generated')
+        '-o', os.path.join(dir_path, 'generated'),
+        '-visitor',
+        '-no-listener'
     ])
 
     if result == 0:
