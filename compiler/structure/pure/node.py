@@ -12,7 +12,7 @@ class Node:
                 continue
 
             if name in self._short_fields:
-                fields += f'{name}={type(value).__name__}(...), '
+                fields += f'{name}={repr(value)}, '
                 continue
 
             match value:
@@ -20,10 +20,10 @@ class Node:
                     children += '\n' + node.hierarchy(prefix + '\t')
 
                 case (Node(), *_) as nodes:
-                    children += ''.join('\n' + node.hierarchy(prefix + '\t') for node in nodes)
+                    children += ''.join('\n' + node.hierarchy(prefix + '\t') for node in nodes if node is not None)
 
                 case _:
-                    fields += f'{name}={value}, '
+                    fields += f'{name}={repr(value)}, '
 
         fields = fields.rstrip(', ')
 

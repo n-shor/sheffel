@@ -12,6 +12,8 @@ class Memory(Enum):
 
 
 class Value(Node):
+    _short_fields = {'qualified'}
+
     def __init__(self, qualified: Qualified):
         self.qualified = qualified
 
