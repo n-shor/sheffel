@@ -39,23 +39,10 @@ class Evaluator(Translator[str, Node], GrammarVisitor):
         return Block(tuple(self.visit(s) for s in ctx.stat()))
 
     def visitIfBlock(self, ctx):
-        print('gex')
         raise NotImplementedError()
 
     def visitWhileBlock(self, ctx):
-        print('gex')
         raise NotImplementedError()
-
-    # expressions - syntax
-
-    def visitRightSpacedExpr(self, ctx):
-        return self.visit(ctx.expr())
-
-    def visitLeftSpacedExpr(self, ctx):
-        return self.visit(ctx.expr())
-
-    def visitParenthesizedExpr(self, ctx):
-        return self.visit(ctx.expr())
 
     # expressions - operators
 
@@ -94,6 +81,9 @@ class Evaluator(Translator[str, Node], GrammarVisitor):
 
     def visitIntLiteral(self, ctx):
         return Literal(unsigned_int_type, int(ctx.getText()))
+
+    def visitDoubleLiteral(self, ctx):
+        raise NotImplementedError()
 
     def visitQualifiedLiteral(self, ctx):
         return Qualified(
