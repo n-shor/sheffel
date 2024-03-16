@@ -18,17 +18,17 @@ block
 ;
 
 expr
-:   expr '(' ((expr ',')* expr)? ')'                        # CallOpExpr
+:   literal         # LiteralExpr
+
+|   qualified=expr name=VAR     # DeclarationExpr
+|   name=VAR                    # VarExpr
+
+|   expr '(' ((expr ',')* expr)? ')'                        # CallOpExpr
 |   op=OP expr                                              # UnaryOpExpr
 |   expr op=('*' | '/' | '%') expr                          # MulDivModOpExpr
 |   expr op=('+' | '-') expr                                # AddSubOpExpr
 |   expr op=('<' | '<=' | '>' | '>=' | '==' | '!=') expr    # CompareOpExpr
 |   expr '=' expr                                           # AssignOpExpr
-
-|   qualified=expr name=VAR     # DeclarationExpr
-|   name=VAR                    # VarExpr
-
-|   literal         # LiteralExpr
 ;
 
 literal
