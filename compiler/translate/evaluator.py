@@ -5,114 +5,113 @@ from ..structure.grammar import *
 from . import Translator
 
 
-class Evaluator(Translator[str, Node], GrammarListener):
+class Evaluator(Translator[str, Node], GrammarVisitor):
 
     def translate(self, source):
         lexer = GrammarLexer(ant.InputStream(source))
         stream = ant.CommonTokenStream(lexer)
         parser = GrammarParser(stream)
+        tree = parser.prog()
+        return self.visit(tree)
 
-        return self.prog(parser.prog())
+    # program
 
-    def prog(self, context: GrammarParser.ProgContext):
-        return Block(tuple(self.stat(s) for s in context.stat()))
+    def visitProg(self, ctx: GrammarParser.ProgContext):
+        return Block(tuple(self.visit(s) for s in ctx.stat()))
 
-    def block(self, context: GrammarParser.BlockContext):
+    # statements
 
-        match context:
+    def visitExpressionStat(self, ctx):
+        return self.visit(ctx.expr())
 
-            case GrammarParser.MultiLineBlockContext() as ctx:
-                return Block(tuple(self.stat(s) for s in ctx.stat()))
+    def visitBlockStat(self, ctx):
+        return self.visit(ctx.block())
 
-            case GrammarParser.SingleLineBlockContext() as ctx:
-                return Block((self.expr(ctx.expr()),))
+    def visitReturnStat(self, ctx):
+        return self._visit_operator('return', ctx.expr())
 
-            case GrammarParser.IfBlockContext() as ctx:
-                raise NotImplementedError()
+    # blocks
 
-            case GrammarParser.WhileBlockContext() as ctx:
-                raise NotImplementedError()
+    def visitSingleLineBlock(self, ctx):
+        return Block((self.visit(ctx.expr()),))
 
-            case _ as ctx:
-                raise TypeError(f"Unknown type {type(ctx)} is not a block context.")
+    def visitMultiLineBlock(self, ctx):
+        return Block(tuple(self.visit(s) for s in ctx.stat()))
 
-    def stat(self, context: GrammarParser.StatContext):
+    def visitIfBlock(self, ctx):
+        print('gex')
+        raise NotImplementedError()
 
-        match context:
+    def visitWhileBlock(self, ctx):
+        print('gex')
+        raise NotImplementedError()
 
-            case GrammarParser.ExpressionStatContext() as ctx:
-                return self.expr(ctx.expr())
+    # expressions - syntax
 
-            case GrammarParser.BlockStatContext() as ctx:
-                return self.block(ctx.block())
+    def visitRightSpacedExpr(self, ctx):
+        return self.visit(ctx.expr())
 
-            case GrammarParser.ReturnStatContext() as ctx:
-                returnee = ctx.expr()
-                return Operator('return', (self.expr(returnee),) if returnee is not None else ())
+    def visitLeftSpacedExpr(self, ctx):
+        return self.visit(ctx.expr())
 
-            case _ as ctx:
-                raise TypeError(f"Unknown type {type(ctx)} is not a statement context.")
+    def visitParenthesizedExpr(self, ctx):
+        return self.visit(ctx.expr())
 
-    def expr(self, context: GrammarParser.ExprContext):
+    # expressions - operators
 
-        match context:
+    def visitCallOpExpr(self, ctx):
+        return self._visit_operator('()', *ctx.expr())
 
-            case (GrammarParser.LeftSpacedExprContext() |
-                  GrammarParser.RightSpacedExprContext() |
-                  GrammarParser.ParenthesizedExprContext()) as ctx:
-                return self.expr(ctx.expr())
+    def visitUnaryOpExpr(self, ctx):
+        return self._visit_operator(ctx.op.text, ctx.expr())
 
-            case GrammarParser.CallOpExprContext() as ctx:
-                return Operator('()', tuple(self.expr(e) for e in ctx.expr()))
+    def visitMulDivModOpExpr(self, ctx):
+        return self._visit_operator(ctx.op.text, *ctx.expr())
 
-            case (GrammarParser.UnaryOpExprContext() |
-                  GrammarParser.MulDivModOpExprContext() |
-                  GrammarParser.AddSubOpExprContext() |
-                  GrammarParser.CompareOpExprContext() |
-                  GrammarParser.AssignOpExprContext()) as ctx:
-                return Operator(ctx.op.text, tuple(self.expr(e) for e in ctx.expr()))
+    def visitAddSubOpExpr(self, ctx):
+        return self._visit_operator(ctx.op.text, *ctx.expr())
 
-            case GrammarParser.DeclarationExprContext() as ctx:
-                return Declaration(self.expr(ctx.expr()), ctx.name.text)
+    def visitCompareOpExpr(self, ctx):
+        return self._visit_operator(ctx.op.text, *ctx.expr())
 
-            case GrammarParser.VarExprContext() as ctx:
-                return Variable(ctx.name.text)
+    def visitAssignOpExpr(self, ctx):
+        return self._visit_operator('=', *ctx.expr())
 
-            case GrammarParser.QualifiedTypeExprContext() as ctx:
-                return Qualified(ctx.type_name.text, self.memory(ctx.memory))
+    # expressions - variables
 
-            case GrammarParser.ReturningFunctionExprContext() as ctx:
-                return_type, *argument_types = (self.expr(e) for e in ctx.expr())
-                body = self.block(ctx.block())
-                return Function(return_type, argument_types, body)
+    def visitDeclarationExpr(self, ctx):
+        return Declaration(self.visit(ctx.qualified), ctx.name.text)
 
-            case GrammarParser.VoidFunctionExprContext() as ctx:
-                raise NotImplementedError()
+    def visitVarExpr(self, ctx):
+        return Variable(ctx.name.text)
 
-            case GrammarParser.TypedArrayExprContext() as ctx:
-                element_type, *values = (self.expr(e) for e in ctx.expr())
-                return Array(element_type, values)
+    # expressions - literals
 
-            case GrammarParser.UntypedArrayExprContext() as ctx:
-                raise NotImplementedError()
+    def visitLiteralExpr(self, ctx):
+        return self.visit(ctx.literal())
 
-            case GrammarParser.IntExprContext() as ctx:
-                return Literal(unsigned_int_type, int(ctx.value.text))
+    # literals
 
-            case _ as ctx:
-                raise TypeError(f"Unknown type {type(ctx)} is not a statement context.")
+    def visitIntLiteral(self, ctx):
+        return Literal(unsigned_int_type, int(ctx.getText()))
 
-    def memory(self, context: GrammarParser.MemoryContext):
+    def visitQualifiedLiteral(self, ctx):
+        return Qualified(
+            {'Type': eval_type_type.type_, 'Int': unsigned_int_type}[ctx.type_name.text],
+            {'^': Memory.EVAL, '&': Memory.COPY, '*': Memory.REF}[ctx.memory.text]
+        )
 
-        match context:
-            case GrammarParser.EvalMemoryContext():
-                return Memory.EVAL
+    def visitFunctionLiteral(self, ctx: GrammarParser.FunctionLiteralContext):
+        return FunctionLiteral(
+            tuple(self.visit(arg) for arg in ctx.args),
+            self.visit(ctx.ret_type),
+            self.visit(ctx.block())
+        )
 
-            case GrammarParser.CopyMemoryContext():
-                return Memory.COPY
+    def visitArrayLiteral(self, ctx):
+        return ArrayLiteral(tuple(self.visit(val) for val in ctx.vals), self.visit(ctx.elem_type))
 
-            case GrammarParser.RefMemoryContext():
-                return Memory.REF
+    # helpers
 
-            case _ as ctx:
-                raise TypeError(f"Unknown type {type(ctx)} is not a memory context.")
+    def _visit_operator(self, operator: str, *subexpressions: GrammarParser.ExprContext):
+        return Operator(operator, tuple(self.visit(e) for e in subexpressions if e is not None))
