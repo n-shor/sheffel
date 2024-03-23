@@ -30,7 +30,18 @@ class Node:
             value.hierarchy(prefix + '\t') for is_node, name, value in self._categorise_attrs() if is_node
         )}'
 
+    def __repr__(self):
+        return f'{type(self).__name__}({', '.join(f'{name}={value}' for name, value in self.__dict__.items())})'
+
 
 class Block(Node):
     def __init__(self, nodes: tuple[Node, ...]):
         self.nodes = nodes
+
+
+class _Undetermined(Node):
+    def __repr__(self):
+        return 'undetermined'
+
+
+undetermined = _Undetermined()

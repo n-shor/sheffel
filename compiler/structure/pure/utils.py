@@ -1,7 +1,7 @@
-from . import Block, Memory, Qualified, Declaration
+from . import Block, Type, Declaration
 
 
-def make_declarations_block(**declarations: Qualified):
+def make_declarations_block(**named_types: Type):
     return Block(tuple(
-        Declaration(type_, name) for name, type_ in declarations.items()
+        Declaration(type_, name) for name, type_ in named_types.items()
     ))

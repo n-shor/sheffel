@@ -1,46 +1,48 @@
 grammar Grammar;
 
 prog
-:   NL? stat* EOF?
+:   stat* EOF?
 ;
 
 stat
-:   expr NL             # ExpressionStat
+:   NL                  # EmptyStat
+|   expr NL             # ExpressionStat
 |   block NL            # BlockStat
 |   'return' expr? NL   # ReturnStat
 ;
 
 block
 :   '{' expr '}'                                    # SingleLineBlock
-|   '{' NL stat* '}'                                # MultiLineBlock
+|   '{' stat* '}'                                   # MultiLineBlock
 |   'if' expr NL? block (NL? 'else' NL? block)?     # IfBlock
 |   'while' expr NL? block                          # WhileBlock
 ;
 
 expr
-:   literal         # LiteralExpr
+:   INT         # IntLiteralExpr
+|   DOUBLE      # DoubleLiteralExpr
+|   BOOL        # BoolLiteralExpr
+|   CHAR        # CharLiteralExpr
+|   STR         # StrLiteralExpr
 
-|   qualified=expr name=VAR     # DeclarationExpr
-|   name=VAR                    # VarExpr
+|   expr '(' ((expr ',')* expr)? ')' NL? block      # FunctionCompositionExpr
+|   expr '[' ((expr ',')* expr)? ']'                # ArrayCompositionExpr
 
-|   expr '(' ((expr ',')* expr)? ')'                        # CallOpExpr
-|   op=OP expr                                              # UnaryOpExpr
-|   expr op=('*' | '/' | '%') expr                          # MulDivModOpExpr
-|   expr op=('+' | '-') expr                                # AddSubOpExpr
-|   expr op=('<' | '<=' | '>' | '>=' | '==' | '!=') expr    # CompareOpExpr
-|   expr '=' expr                                           # AssignOpExpr
-;
+|   name=VAR                # VariableExpr
+|   expr name=VAR           # DeclarationExpr
 
-literal
-:   INT         # IntLiteral
-|   DOUBLE      # DoubleLiteral
-|   BOOL        # BoolLiteral
-|   CHAR        # CharLiteral
-|   STR         # StrLiteral
+|   memory=MEMORY expr      # QualificationExpr
 
-|   type_name=VAR memory=('^' | '&' | '*')                              # QualifiedLiteral
-|   '(' ((args+=expr ',')* args+=expr)? ')' ret_type=expr? NL? block    # FunctionLiteral
-|   '[' ((vals+=expr ',')* vals+=expr)? ']' elem_type=expr              # ArrayLiteral
+|   expr NL? '{' NL? ((expr NL)* expr)? '}'                 # InitializeExpr
+|   expr '(' ((expr ',')* expr)? ')'                        # CallExpr
+|   expr '[' expr ']'                                       # IndexExpr
+
+|   expr op=('*' | '/' | '%') expr                          # MulDivModExpr
+|   expr op=('+' | '-') expr                                # AddSubExpr
+|   expr op=('<' | '<=' | '>' | '>=' | '==' | '!=') expr    # CompareExpr
+|   expr '=' expr                                           # AssignExpr
+
+|   '(' expr ')'  # ParenthesizeExpr
 ;
 
 
@@ -53,7 +55,8 @@ CHAR:   '\'' . '\'' ;
 STR:    '"' .+? '"' ;
 
 VAR:        [a-zA-Z_][a-zA-Z_0-9]* ;
-OP:         [!#$%&*+-/:;<=>?@^|~]+ ;
+OP:         [!#$%+-/:;<=>?@|~]+ ; // excludes memory ops
+MEMORY:     [^&*] ;
 
 INL_S:          [ \t]+ -> skip ;
 CARRAGE_RETURN: [\r]+ -> skip ;
