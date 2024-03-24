@@ -1,10 +1,7 @@
 import antlr4 as ant
-from llvmlite import ir
 
 from ..structure.pure import *
 from ..structure.grammar import *
-
-from ..structure.pure.utils import initialize
 
 from . import Translator
 
@@ -65,26 +62,16 @@ class Evaluator(Translator[str, Node], GrammarVisitor):
     # expressions - compositions
 
     def visitMemoryCompositionExpr(self, ctx):
-        return initialize({'&': copy_type, '*': ref_type, '^': eval_type}[ctx.memory.text], self.visit(ctx.expr()))
+        return MemoryComposition.from_symbol(ctx.memory.text, self.visit(ctx.expr()))
 
     def visitFunctionCompositionExpr(self, ctx):
         ret_type, *args = (self.visit(e) for e in ctx.expr())
-
-        return initialize(function_type,
-                          ret_type,
-                          initialize(array_type,
-                                     type_type,
-                                     unsigned_int_type.make_literal(len(args))
-                                     )
-                          )  # missing args values?
+        body = self.visit(ctx.block())
+        return FunctionComposition(ret_type, args, body)
 
     def visitArrayCompositionExpr(self, ctx):
         elem_type, *vals = (self.visit(e) for e in ctx.expr())
-
-        return initialize(array_type,
-                          elem_type,
-                          unsigned_int_type.make_literal(len(vals))
-                          )  # missing vals values?
+        return ArrayComposition(elem_type, vals)
 
     # expressions - variables
 
@@ -103,7 +90,7 @@ class Evaluator(Translator[str, Node], GrammarVisitor):
         return Operator(operation, tuple(self.visit(e) for e in subexpressions if e is not None))
 
     def visitInitializeExpr(self, ctx):
-        return self._visit_operator('{}', *ctx.expr())
+        return self._visit_operator('{}', ctx.expr(), ctx.block())
 
     def visitCallExpr(self, ctx):
         return self._visit_operator('()', *ctx.expr())

@@ -16,7 +16,6 @@ from compiler.translate import Translator, Evaluator
 # but are still kept as op keywords
 
 code = """
-
 ^Type Point = Type
 {
     &Double x
@@ -38,7 +37,7 @@ code = """
 }
 
 *Point p1 = Point.new(10, 5)
-&Point p2 = (&Point).new(3, 2)
+&Point p2 = Point.new(3, 2)
 
 &Double d = p1.diff(p2)
 &Double x1 = p1.x
@@ -65,7 +64,7 @@ def main():
 
     result = Compiler().translate(code)
 
-    print(result.hierarchy())
+    print(result.syntax())
 
 
 if __name__ == "__main__":

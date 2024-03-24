@@ -6,8 +6,8 @@ class Variable(Value):
         super().__init__(undetermined)
         self.name = name
 
-    def __repr__(self):
-        return f'{type(self).__name__}({repr(self.name)})'
+    def syntax(self):
+        return f'V<"{self.name}":{self.type_.syntax()}>'
 
 
 class Declaration(Variable):
@@ -20,3 +20,6 @@ class Access(Variable):
     def __init__(self, owner: Value, name: str):
         super().__init__(name)
         self.owner = owner
+
+    def syntax(self):
+        return f'{self.owner.syntax()} -> {super().syntax()}'

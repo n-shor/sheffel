@@ -13,7 +13,7 @@ stat
 
 block
 :   '{' expr '}'                                    # SingleLineBlock
-|   '{' stat* '}'                                   # MultiLineBlock
+|   '{' NL? stat* '}'                               # MultiLineBlock
 |   'if' expr NL? block (NL? 'else' NL? block)?     # IfBlock
 |   'while' expr NL? block                          # WhileBlock
 ;
@@ -25,7 +25,7 @@ expr
 |   CHAR        # CharLiteralExpr
 |   STR         # StrLiteralExpr
 
-|   memory=MEMORY expr                          # MemoryCompositionExpr
+|   memory=('&' | '*' | '^') expr                          # MemoryCompositionExpr
 |   expr '(' ((expr ',')* expr)? ')' NL? block  # FunctionCompositionExpr
 |   expr '[' ((expr ',')* expr)? ']'            # ArrayCompositionExpr
 
@@ -33,7 +33,7 @@ expr
 |   expr name=VAR           # DeclarationExpr
 |   expr '.' name=VAR       # AccessExpr
 
-|   expr NL? '{' NL? ((expr NL)* expr)? '}'                 # InitializeExpr
+|   expr NL? block                                          # InitializeExpr
 |   expr '(' ((expr ',')* expr)? ')'                        # CallExpr
 |   expr '[' expr ']'                                       # IndexExpr
 
@@ -55,8 +55,6 @@ CHAR:   '\'' . '\'' ;
 STR:    '"' .+? '"' ;
 
 VAR:        [a-zA-Z_][a-zA-Z_0-9]* ;
-OP:         [!#$%+-/:;<=>?@|~]+ ; // excludes memory ops
-MEMORY:     [^&*] ;
 
 INL_S:          [ \t]+ -> skip ;
 CARRAGE_RETURN: [\r]+ -> skip ;
