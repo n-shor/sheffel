@@ -1,6 +1,6 @@
 from llvmlite import ir
 
-from . import Block, Type, type_type
+from . import Block, Type, type_type, Literal
 
 
 class _PrimitiveTypeType(Type):
@@ -12,9 +12,14 @@ primitive_type_type = _PrimitiveTypeType()
 
 
 class _PrimitiveTypeBase(Type):
+    """Base class for primitive type definitions."""
+
     def __init__(self, ir_type: ir.Type):
         super().__init__(primitive_type_type, Block(()))
         self.ir_type = ir_type
+
+    def make_literal(self, value):
+        return Literal(self, self.ir_type(value))
 
 
 class _UnsignedIntType(_PrimitiveTypeBase):

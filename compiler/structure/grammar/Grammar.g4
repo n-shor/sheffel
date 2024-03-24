@@ -25,13 +25,13 @@ expr
 |   CHAR        # CharLiteralExpr
 |   STR         # StrLiteralExpr
 
-|   expr '(' ((expr ',')* expr)? ')' NL? block      # FunctionCompositionExpr
-|   expr '[' ((expr ',')* expr)? ']'                # ArrayCompositionExpr
+|   memory=MEMORY expr                          # MemoryCompositionExpr
+|   expr '(' ((expr ',')* expr)? ')' NL? block  # FunctionCompositionExpr
+|   expr '[' ((expr ',')* expr)? ']'            # ArrayCompositionExpr
 
 |   name=VAR                # VariableExpr
 |   expr name=VAR           # DeclarationExpr
-
-|   memory=MEMORY expr      # QualificationExpr
+|   expr '.' name=VAR       # AccessExpr
 
 |   expr NL? '{' NL? ((expr NL)* expr)? '}'                 # InitializeExpr
 |   expr '(' ((expr ',')* expr)? ')'                        # CallExpr
