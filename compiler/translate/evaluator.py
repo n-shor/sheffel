@@ -1,12 +1,13 @@
 import antlr4 as ant
 
-from ..structure.pure import *
+from ..structure.abstract import *
 from ..structure.grammar import *
 
 from . import Translator
 
 
 class Evaluator(Translator[str, Node], GrammarVisitor):
+    """Translates grammar into abstract node representation."""
 
     def translate(self, source):
         lexer = GrammarLexer(ant.InputStream(source))

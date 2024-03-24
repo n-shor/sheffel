@@ -1,4 +1,4 @@
-from compiler.structure import grammar, pure, reductive
+from compiler.structure import grammar, abstract
 from compiler.translate import Translator, Evaluator
 
 # Solution:
@@ -46,7 +46,7 @@ p2.y = x1
 """
 
 
-class Compiler(Translator[str, pure.Node]):
+class Compiler(Translator[str, abstract.Node]):
     def __init__(self):
         self.translators = (
             Evaluator(),
