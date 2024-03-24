@@ -14,3 +14,9 @@ class Declaration(Variable):
     def __init__(self, type_: Type, name: str):
         super().__init__(name)
         self.type_ = type_
+
+
+class Access(Variable):
+    def __init__(self, owner: Value, name: str):
+        super().__init__(name)
+        self.owner = owner
