@@ -1,5 +1,5 @@
 from compiler.structure import grammar, abstract
-from compiler.translate import Translator, Evaluator
+from compiler.translate import Translator, Evaluator, Resolver
 
 # Solution:
 # COPY = &, REFERENCE = *, EVALUATED = ^
@@ -50,6 +50,7 @@ class Compiler(Translator[str, abstract.Node]):
     def __init__(self):
         self.translators = (
             Evaluator(),
+            Resolver()
         )
 
     def translate(self, source):

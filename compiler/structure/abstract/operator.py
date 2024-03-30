@@ -1,8 +1,9 @@
-from . import Node, Value
+from . import undetermined, Value
 
 
-class Operator(Node):
+class Operator(Value):
     def __init__(self, operation: str, operands: tuple[Value, ...]):
+        super().__init__(undetermined)
         self.operation = operation
         self.operands = operands
 
