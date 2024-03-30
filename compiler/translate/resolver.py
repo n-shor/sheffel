@@ -18,6 +18,11 @@ class Resolver(Translator[Node, Node]):
                 with Scope():
                     return Block(tuple(self.translate(node) for node in nodes))
 
+            case FunctionComposition():
+                with Scope():
+                    transform_matching_attributes(source, Node, self.translate)
+                    return source
+
             case Declaration(type_=type_, name=name):
                 Scope.register(name, type_)
                 return source
