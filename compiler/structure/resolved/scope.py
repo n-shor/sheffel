@@ -1,63 +1,56 @@
-from ..abstract import Node, Block, Value, type_type, unsigned_int_type, double_type
+from __future__ import annotations
+
+from .. import abstract
 
 
-class _Static:
-    current = None
+class Scope(abstract.Block):
+    """Represents a scope: a sequence of code expressions,
+    which registers declarations made inside it, as well as being aware of its parent scope."""
 
+    def __init__(self, block: abstract.Block, parent: Scope = None):
+        super().__init__(block.nodes)
+        self._parent = parent
+        self._variables: dict[str, ...] = {}
 
-class ScopeBase:
-    def __init__(self):
-        self.parent = _Static.current
+    class _CtxManager:
+        current: Scope = None
 
-    def __enter__(self):
-        _Static.current = self
-        return self
+        def __init__(self, block: abstract.Block):
+            self.this = Scope(block, parent=self.current)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        _Static.current = self.parent
+        def __enter__(self):
+            type(self).current = self.this
+            return self.this
 
-
-class Scope(ScopeBase):
-    def __init__(self):
-        super().__init__()
-        self.variables: dict[str, Value] = {}
-
-    @classmethod
-    def register(cls, name: str, value: Value):
-        s = _Static.current
-
-        if s is None:
-            raise AssertionError(f"Call to register was made outside of a scope.")
-
-        if name in s.variables:
-            raise KeyError(f'Variable "{name}" already registered.')
-
-        s.variables[name] = value
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            type(self).current = self.this._parent
 
     @classmethod
-    def access(cls, name: str):
-        s = _Static.current
-
-        while s is not None:
-
-            if name in s.variables:
-                return s.variables[name]
-
-            s = s.parent
-
-        raise KeyError(f'Variable "{name}" is not registered.')
-
-
-class PredefinedScope(Scope):
-    def __init__(self):
-        super().__init__()
-
-    def _register_all(self):
-        self.register('Type', type_type)
-        self.register('Int', unsigned_int_type)
-        self.register('Double', double_type)
+    def enter(cls, block: abstract.Block):
+        """Creates a new context managed scope, and handles its parents."""
+        return cls._CtxManager(block)
 
     @classmethod
-    def apply(cls):
-        _Static.current = PredefinedScope()
-        _Static.current._register_all()
+    def current(cls):
+        """Returns the active scope."""
+        return cls._CtxManager.current
+
+    def create(self, name: str, value):
+        """Adds a variable to the scope."""
+        if name in self._variables:
+            raise KeyError(f"Variable '{name}' already exists.")
+
+        self._variables[name] = value
+
+    def get(self, name: str):
+        """Returns a variable from the scope or from its parents."""
+        if name in self._variables:
+            return self._variables[name]
+
+        if self._parent is None:
+            raise KeyError(f"Variable '{name}' does not exist.")
+
+        return self._parent.get(name)
+
+    def syntax(self):
+        return f'({', '.join(f'"{name}"' for name in self._variables.keys())}) {super().syntax()}'
