@@ -140,12 +140,13 @@ class BlockTranslator(Scope):
                     translated_callee.type_.base_type.return_type
                 )
 
-            case Operator(signature='+' | '-' | '*' | '%' as signature, operands=(left, right)):
+            case Operator(signature='+' | '-' | '*' | '/' | '%' as signature, operands=(left, right)):
                 return Expression.from_base_type_of(
                     {
                         '+': self.builder.add,
                         '-': self.builder.sub,
                         '*': self.builder.mul,
+                        '/': self.builder.sdiv,
                         '%': self.builder.srem
                     }[signature](self.add(left).label(self.builder), self.add(right).label(self.builder)),
                     ValueMemoryQualifier(),
