@@ -108,6 +108,9 @@ class Evaluator(Translator[str, Node], GrammarVisitor):
     def visitCompareExpr(self, ctx):
         return self._visit_operator(ctx.op.text, *ctx.expr())
 
+    def visitRelationExpr(self, ctx):
+        return self._visit_operator(ctx.op.text, ctx.expr())
+
     def visitAssignExpr(self, ctx):
         return self._visit_operator('=', *ctx.expr())
 

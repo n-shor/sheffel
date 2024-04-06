@@ -25,9 +25,9 @@ expr
 |   CHAR        # CharLiteralExpr
 |   STR         # StrLiteralExpr
 
-|   memory=('&' | '*' | '^') expr                          # MemoryCompositionExpr
-|   expr '(' ((expr ',')* expr)? ')' NL? block  # FunctionCompositionExpr
-|   expr '[' ((expr ',')* expr)? ']'            # ArrayCompositionExpr
+|   memory=('&' | '*' | '^') expr                   # MemoryCompositionExpr
+|   expr '(' ((expr ',')* expr)? ')' NL? block      # FunctionCompositionExpr
+|   expr '[' ((expr ',')* expr)? ']'                # ArrayCompositionExpr
 
 |   name=VAR                # VariableExpr
 |   expr name=VAR           # DeclarationExpr
@@ -40,6 +40,7 @@ expr
 |   expr op=('*' | '/' | '%') expr                          # MulDivModExpr
 |   expr op=('+' | '-') expr                                # AddSubExpr
 |   expr op=('<' | '<=' | '>' | '>=' | '==' | '!=') expr    # CompareExpr
+|   op=('copy' | 'ref' | 'eval') expr                       # RelationExpr
 |   expr '=' expr                                           # AssignExpr
 
 |   '(' expr ')'  # ParenthesizeExpr
