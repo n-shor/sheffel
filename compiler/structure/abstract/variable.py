@@ -7,7 +7,7 @@ class Variable(Value):
         self.name = name
 
     def syntax(self):
-        return f'V<"{self.name}":{self.type_.syntax()}>'
+        return f'"{self.name}":{self.type_.syntax()}'
 
 
 class Declaration(Variable):

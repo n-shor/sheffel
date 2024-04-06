@@ -9,4 +9,4 @@ class Literal(Value):
         self.value = value
 
     def syntax(self):
-        return f'L<({self.value}):{self.type_.syntax()}>'
+        return f'({self.value}):{self.type_.syntax()}'

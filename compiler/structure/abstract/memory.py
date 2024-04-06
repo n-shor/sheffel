@@ -44,11 +44,12 @@ class MemoryComposition(Node):
         self.memory_type = memory_type
         self.value_type = value_type
 
-    _symbol_dict = {'&': copy_type, '*': ref_type, '^': eval_type}
+    _symbol_to_type = {'&': copy_type, '*': ref_type, '^': eval_type}
+    _type_to_symbol = {copy_type: '&', ref_type: '*', eval_type: '^'}
 
     @classmethod
     def from_symbol(cls, symbol: str, value_type: Value):
-        return cls(cls._symbol_dict[symbol], value_type)
+        return cls(cls._symbol_to_type[symbol], value_type)
 
     def syntax(self):
-        return f'{self.value_type.syntax()}:{self.memory_type.syntax()}'
+        return f'{self._type_to_symbol[self.memory_type]}{self.value_type.syntax()}'
