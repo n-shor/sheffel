@@ -1,1 +1,2 @@
-from .scope import Scope, PredefinedScope
+from .node import Node, Block
+from .variable import Variable
