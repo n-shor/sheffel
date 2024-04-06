@@ -9,6 +9,7 @@ from .translated import Expression, TerminatorExpression, CopiedExpression, View
 
 class BlockTranslator(Scope):
     """A translation unit consisting of many uninterrupted lines."""
+    _numeric_value_priority = (constant_types['Int'], constant_types['Long'], constant_types['Float'], constant_types['Double'])
 
     def __init__(self, builder: ir.IRBuilder, parent: Scope):
         self.builder = builder
@@ -141,14 +142,39 @@ class BlockTranslator(Scope):
                 )
 
             case Operator(signature='+' | '-' | '*' | '/' | '%' as signature, operands=(left, right)):
+
+                translated_left = self.add(left)
+                translated_right = self.add(right)
+
+                left_type_priority = self._numeric_value_priority.index(resolve_type(translated_left.type_))
+                right_type_priority = self._numeric_value_priority.index(resolve_type(translated_right.type_))
+
+                left_label = translated_left.label(self.builder)
+                right_label = translated_right.label(self.builder)
+
+                highest_priority = max(left_type_priority, right_type_priority)
+                cast_to_integral = highest_priority < self._numeric_value_priority.index(constant_types['Float'])
+
+                if left_type_priority > right_type_priority:
+                    if cast_to_integral:
+                        right_label = self.builder.zext(right_label, self._numeric_value_priority[left_type_priority])
+                    else:
+                        right_label = self.builder.sitofp(right_label, self._numeric_value_priority[left_type_priority])
+
+                elif left_type_priority < right_type_priority:
+                    if cast_to_integral:
+                        left_label = self.builder.zext(left_label, self._numeric_value_priority[right_type_priority])
+                    else:
+                        left_label = self.builder.sitofp(left_label, self._numeric_value_priority[right_type_priority])
+
                 return Expression.from_base_type_of(
                     {
-                        '+': self.builder.add,
-                        '-': self.builder.sub,
-                        '*': self.builder.mul,
-                        '/': self.builder.sdiv,
-                        '%': self.builder.srem
-                    }[signature](self.add(left).label(self.builder), self.add(right).label(self.builder)),
+                        '+': self.builder.add if cast_to_integral else self.builder.fadd,
+                        '-': self.builder.sub if cast_to_integral else self.builder.fsub,
+                        '*': self.builder.mul if cast_to_integral else self.builder.fmul,
+                        '/': self.builder.sdiv if cast_to_integral else self.builder.fdiv,
+                        '%': self.builder.srem if cast_to_integral else self.builder.frem
+                    }[signature](left_label, right_label),
                     ValueMemoryQualifier(),
                     (NoWriteBehaviorQualifier(),)
                 )

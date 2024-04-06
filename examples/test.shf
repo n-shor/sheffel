@@ -1,6 +1,6 @@
 Int& a = 5
-Int& b = 3
-
-printf: "%d ", a + 5 / b
+Float& b = 3.0f
+Float& c = 5 + 5.5f
+printf: "%f ", c
 
 return 0
