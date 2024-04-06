@@ -1,28 +1,28 @@
 import antlr4 as ant
 
-from ..structure.abstract import *
-from ..structure.grammar import *
+from ..structure import grammar
+from ..structure import abstract
 
 from . import Translator
 
 
-class Evaluator(Translator[str, Node], GrammarVisitor):
+class Evaluator(Translator[str, abstract.Node], grammar.GrammarVisitor):
     """Translates grammar into abstract node representation."""
 
     def translate(self, source):
-        lexer = GrammarLexer(ant.InputStream(source))
+        lexer = grammar.GrammarLexer(ant.InputStream(source))
         stream = ant.CommonTokenStream(lexer)
-        parser = GrammarParser(stream)
+        parser = grammar.GrammarParser(stream)
         tree = parser.prog()
         return self.visit(tree)
 
-    def _visit_statements(self, *statements: GrammarParser.StatContext):
-        return tuple(self.visit(s) for s in statements if not isinstance(s, GrammarParser.EmptyStatContext))
+    def _visit_statements(self, *statements: grammar.GrammarParser.StatContext):
+        return tuple(self.visit(s) for s in statements if not isinstance(s, grammar.GrammarParser.EmptyStatContext))
 
     # program
 
-    def visitProg(self, ctx: GrammarParser.ProgContext):
-        return Block(self._visit_statements(*ctx.stat()))
+    def visitProg(self, ctx: grammar.GrammarParser.ProgContext):
+        return abstract.Block(self._visit_statements(*ctx.stat()))
 
     # statements
 
@@ -41,10 +41,10 @@ class Evaluator(Translator[str, Node], GrammarVisitor):
     # blocks
 
     def visitSingleLineBlock(self, ctx):
-        return Block((self.visit(ctx.expr()),))
+        return abstract.Block((self.visit(ctx.expr()),))
 
     def visitMultiLineBlock(self, ctx):
-        return Block(self._visit_statements(*ctx.stat()))
+        return abstract.Block(self._visit_statements(*ctx.stat()))
 
     def visitIfBlock(self, ctx):
         raise NotImplementedError()
@@ -55,40 +55,40 @@ class Evaluator(Translator[str, Node], GrammarVisitor):
     # expressions - literals
 
     def visitIntLiteralExpr(self, ctx):
-        return unsigned_int_type.make_literal(int(ctx.getText()))
+        return abstract.unsigned_int_type.make_literal(int(ctx.getText()))
 
     def visitDoubleLiteralExpr(self, ctx):
-        return double_type.make_literal(float(ctx.getText()))
+        return abstract.double_type.make_literal(float(ctx.getText()))
 
     # expressions - compositions
 
     def visitMemoryCompositionExpr(self, ctx):
-        return MemoryComposition.from_symbol(ctx.memory.text, self.visit(ctx.expr()))
+        return abstract.MemoryComposition.from_symbol(ctx.memory.text, self.visit(ctx.expr()))
 
     def visitFunctionCompositionExpr(self, ctx):
         ret_type, *args = (self.visit(e) for e in ctx.expr())
         body = self.visit(ctx.block())
-        return FunctionComposition(ret_type, args, body)
+        return abstract.FunctionComposition(ret_type, args, body)
 
     def visitArrayCompositionExpr(self, ctx):
         elem_type, *vals = (self.visit(e) for e in ctx.expr())
-        return ArrayComposition(elem_type, vals)
+        return abstract.ArrayComposition(elem_type, vals)
 
     # expressions - variables
 
     def visitVariableExpr(self, ctx):
-        return Variable(ctx.name.text)
+        return abstract.Variable(ctx.name.text)
 
     def visitDeclarationExpr(self, ctx):
-        return Declaration(self.visit(ctx.expr()), ctx.name.text)
+        return abstract.Declaration(self.visit(ctx.expr()), ctx.name.text)
 
     def visitAccessExpr(self, ctx):
-        return Access(self.visit(ctx.expr()), ctx.name.text)
+        return abstract.Access(self.visit(ctx.expr()), ctx.name.text)
 
     # expressions - operators
 
-    def _visit_operator(self, operation: str, *subexpressions: GrammarParser.ExprContext):
-        return Operator(operation, tuple(self.visit(e) for e in subexpressions if e is not None))
+    def _visit_operator(self, operation: str, *subexpressions: grammar.GrammarParser.ExprContext):
+        return abstract.Operator(operation, tuple(self.visit(e) for e in subexpressions if e is not None))
 
     def visitInitializeExpr(self, ctx):
         return self._visit_operator('{}', ctx.expr(), ctx.block())
