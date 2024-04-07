@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from ..structure import scope
+from ..structure.resolved import scoped
 from ..structure import abstract
 from ..structure import resolved
 
 from . import ITranslator
 
 
-class Resolver(scope.Scope[resolved.Variable], ITranslator[abstract.Node, resolved.Node]):
-    """Resolves variable names and ir typing in an abstract node structure.
-    It is responsible for evaluating eval-qualified variables."""
+class Resolver(scoped.Scope, ITranslator[abstract.Node, resolved.Node]):
+    """Resolves operators for function names and variable sub-attributes. Name mangles variables and functions."""
 
     def __init__(self, parent: Resolver = None):
         super().__init__(parent)
