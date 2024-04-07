@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class Translator[T, K](metaclass=ABCMeta):
+class ITranslator[T, K](metaclass=ABCMeta):
     """Represents a compilation stage."""
 
     @abstractmethod

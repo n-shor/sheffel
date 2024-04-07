@@ -1,4 +1,4 @@
-from .translator import Translator
+from .itranslator import ITranslator
 from .evaluator import Evaluator
 from .resolver import Resolver
-from .assembler import Assembler
+from .assembler import ModuleAssembler

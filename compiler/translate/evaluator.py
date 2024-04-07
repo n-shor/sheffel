@@ -3,10 +3,10 @@ import antlr4 as ant
 from ..structure import grammar
 from ..structure import abstract
 
-from . import Translator
+from . import ITranslator
 
 
-class Evaluator(Translator[str, abstract.Node], grammar.GrammarVisitor):
+class Evaluator(ITranslator[str, abstract.Node], grammar.GrammarVisitor):
     """Translates grammar into abstract node representation."""
 
     def translate(self, source):
