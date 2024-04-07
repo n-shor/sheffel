@@ -1,27 +1,27 @@
 import antlr4 as ant
 
-from ..structure import grammar
+from ..structure.grammar import GrammarLexer, GrammarParser, GrammarVisitor
 from ..structure import abstract
 
 from . import ITranslator
 
 
-class Evaluator(ITranslator[str, abstract.Node], grammar.GrammarVisitor):
+class Parser(ITranslator[str, abstract.Node], GrammarVisitor):
     """Translates grammar into abstract node representation."""
 
     def translate(self, source):
-        lexer = grammar.GrammarLexer(ant.InputStream(source))
+        lexer = GrammarLexer(ant.InputStream(source))
         stream = ant.CommonTokenStream(lexer)
-        parser = grammar.GrammarParser(stream)
+        parser = GrammarParser(stream)
         tree = parser.prog()
         return self.visit(tree)
 
-    def _visit_statements(self, *statements: grammar.GrammarParser.StatContext):
-        return tuple(self.visit(s) for s in statements if not isinstance(s, grammar.GrammarParser.EmptyStatContext))
+    def _visit_statements(self, *statements: GrammarParser.StatContext):
+        return tuple(self.visit(s) for s in statements if not isinstance(s, GrammarParser.EmptyStatContext))
 
     # program
 
-    def visitProg(self, ctx: grammar.GrammarParser.ProgContext):
+    def visitProg(self, ctx: GrammarParser.ProgContext):
         return abstract.Block(self._visit_statements(*ctx.stat()))
 
     # statements
@@ -87,7 +87,7 @@ class Evaluator(ITranslator[str, abstract.Node], grammar.GrammarVisitor):
 
     # expressions - operators
 
-    def _visit_operator(self, operation: str, *subexpressions: grammar.GrammarParser.ExprContext):
+    def _visit_operator(self, operation: str, *subexpressions: GrammarParser.ExprContext):
         return abstract.Operator(operation, tuple(self.visit(e) for e in subexpressions if e is not None))
 
     def visitInitializeExpr(self, ctx):
