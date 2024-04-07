@@ -2,30 +2,27 @@ from __future__ import annotations
 
 
 class Scope:
-    """Responsible for giving variables unique names."""
+    """Responsible for giving variables a unique id."""
 
-    def __init__(self, scope_name: str, parent: Scope = None):
-        self._name = scope_name
+    def __init__(self, parent: Scope = None):
         self._parent = parent
         self._variable_names = {}
 
-    _mangle_seperator = '.'
+    _current_id = 0
 
-    def _mangling(self):
-        if self._parent is None:
-            return self._name + self._mangle_seperator
-
-        return self._parent._mangling() + self._name + self._mangle_seperator
+    def _get_unique_id(self):
+        self._current_id += 1
+        return str(self._current_id)
 
     def register(self, name: str):
         """Adds a variable to the scope."""
         if name in self._variable_names:
             raise KeyError(f"Variable '{name}' already exists.")
 
-        self._variable_names[name] = self._mangling() + name
+        self._variable_names[name] = self._get_unique_id()
 
     def get(self, name: str) -> str:
-        """Returns a variable's mangled name from the scope or from its parents."""
+        """Returns a variable's id from the scope or from its parents."""
         if name in self._variable_names:
             return self._variable_names[name]
 

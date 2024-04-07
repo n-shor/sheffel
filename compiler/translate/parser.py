@@ -3,13 +3,11 @@ import antlr4 as ant
 from ..structure.grammar import GrammarLexer, GrammarParser, GrammarVisitor
 from ..structure import abstract
 
-from . import ITranslator
 
-
-class Parser(ITranslator[str, abstract.Node], GrammarVisitor):
+class Parser(GrammarVisitor):
     """Translates grammar into abstract node representation."""
 
-    def translate(self, source):
+    def translate(self, source: str) -> abstract.Node:
         lexer = GrammarLexer(ant.InputStream(source))
         stream = ant.CommonTokenStream(lexer)
         parser = GrammarParser(stream)

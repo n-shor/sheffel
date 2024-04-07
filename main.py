@@ -1,5 +1,5 @@
 from compiler.structure import grammar, abstract
-from compiler.translate import Translator, Evaluator, Resolver
+from compiler.translate import Parser, Resolver
 
 # Solution:
 # COPY = &, REFERENCE = *, EVALUATED = ^
@@ -15,7 +15,7 @@ from compiler.translate import Translator, Evaluator, Resolver
 #   eval x -> [execution]
 # but are still kept as op keywords
 
-code = """
+code_1 = """
 ^Type Point = Type
 {
     &Double x
@@ -45,27 +45,24 @@ p1.y = p2.x
 p2.y = x1
 """
 
+code_2 = """
+^Int a = 13
+&Int b = 4
+&Double c = 5.6 + 7.8
+^Double d = eval b + c
+"""
 
-class Compiler(Translator[str, abstract.Node]):
-    def __init__(self):
-        self.translators = (
-            Evaluator(),
-            Resolver()
-        )
 
-    def translate(self, source):
-        step = source
-        for translator in self.translators:
-            step = translator.translate(step)
-        return step
+def compile(source):
+    abstract = Parser().translate(source)
+    resolved = Resolver().translate(abstract)
+    return resolved
 
 
 def main():
     grammar.utils.regenerate()
 
-    result = Compiler().translate(code)
-
-    print(result.syntax())
+    print(compile(code_2).syntax())
 
 
 if __name__ == "__main__":

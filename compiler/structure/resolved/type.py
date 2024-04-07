@@ -16,6 +16,6 @@ class TypeDeclaration(Named):
 
 class TypeInitialization(Node):
     """Initialization by struct constructor; i.e. {}."""
-    def __init__(self, type_: TypeDeclaration, values: tuple[VariableDeclaration, ...]):
+    def __init__(self, type_: TypeDeclaration, values: tuple[Node, ...]):
         self.type_ = type_
         self.values = values
