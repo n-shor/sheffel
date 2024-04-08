@@ -1,6 +1,6 @@
 from enum import Enum
 
-from . import Node, Value
+from . import Node
 
 
 class Memory(Enum):
@@ -10,7 +10,7 @@ class Memory(Enum):
 
 
 class MemoryComposition(Node):
-    def __init__(self, memory: Memory, type_: Value):
+    def __init__(self, memory: Memory, type_: Node):
         self.memory = memory
         self.type_ = type_
 

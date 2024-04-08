@@ -43,15 +43,15 @@ code_2 = """
 
 
 def compile(source):
-    abstract = Parser().translate(source)
-    llvm_ir = ModuleAssembler().translate(abstract)
-    return llvm_ir
+    prog = Parser().translate(source)
+    # prog = ModuleAssembler().translate(prog)
+    return prog
 
 
 def main():
     grammar.utils.regenerate()
 
-    print(compile(code_2))
+    print(compile(code_2).syntax())
 
 
 if __name__ == "__main__":

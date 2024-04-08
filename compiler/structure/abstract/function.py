@@ -1,8 +1,8 @@
-from . import Node, Block, Value, Declaration
+from . import Node, Block
 
 
 class FunctionComposition(Node):
-    def __init__(self, return_type: Value, arguments: tuple[Declaration, ...], body: Block):
+    def __init__(self, return_type: Node, arguments: tuple[Node, ...], body: Block):
         self.return_type = return_type
         self.arguments = arguments
         self.body = body

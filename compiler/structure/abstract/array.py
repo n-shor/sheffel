@@ -1,8 +1,8 @@
-from . import Node, Value
+from . import Node
 
 
 class ArrayComposition(Node):
-    def __init__(self, element_type: Value, values: tuple[Value, ...]):
+    def __init__(self, element_type: Node, values: tuple[Node, ...]):
         self.element_type = element_type
         self.values = values
 

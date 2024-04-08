@@ -1,25 +1,27 @@
-from . import Value, Type, undetermined
+from . import Node
 
 
-class Variable(Value):
+class Variable(Node):
     def __init__(self, name: str):
-        super().__init__(undetermined)
         self.name = name
 
     def syntax(self):
-        return f'"{self.name}"' if self.type_ is undetermined else f'"{self.name}":{self.type_.syntax()}'
+        return f'"{self.name}"'
 
 
 class Declaration(Variable):
-    def __init__(self, type_: Type, name: str):
-        super().__init__(name)
+    def __init__(self, type_: Node, name: str):
         self.type_ = type_
+        super().__init__(name)
+
+    def syntax(self):
+        return f'{super().syntax()}:{self.type_.syntax()}'
 
 
 class Access(Variable):
-    def __init__(self, owner: Value, name: str):
+    def __init__(self, owner: Node, name: str):
         super().__init__(name)
         self.owner = owner
 
     def syntax(self):
-        return f'{self.owner.syntax()} -> {super().syntax()}'
+        return f'{self.owner.syntax()}->{super().syntax()}'
