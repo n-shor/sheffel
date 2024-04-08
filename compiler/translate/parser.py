@@ -1,5 +1,7 @@
 import antlr4 as ant
 
+from llvmlite import ir
+
 from ..structure.grammar import GrammarLexer, GrammarParser, GrammarVisitor
 from ..structure import abstract
 
@@ -52,16 +54,19 @@ class Parser(GrammarVisitor):
 
     # expressions - literals
 
+    _int_type = ir.IntType(32)
+    _double_type = ir.DoubleType()
+
     def visitIntLiteralExpr(self, ctx):
-        return abstract.unsigned_int_type.make_literal(int(ctx.getText()))
+        return abstract.Literal(self._int_type(int(ctx.getText())))
 
     def visitDoubleLiteralExpr(self, ctx):
-        return abstract.double_type.make_literal(float(ctx.getText()))
+        return abstract.Literal(self._double_type(float(ctx.getText())))
 
     # expressions - compositions
 
     def visitMemoryCompositionExpr(self, ctx):
-        return abstract.MemoryComposition.from_symbol(ctx.memory.text, self.visit(ctx.expr()))
+        return abstract.MemoryComposition(abstract.Memory(ctx.memory.text), self.visit(ctx.expr()))
 
     def visitFunctionCompositionExpr(self, ctx):
         ret_type, *args = (self.visit(e) for e in ctx.expr())

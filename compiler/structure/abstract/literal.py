@@ -1,12 +1,11 @@
 from llvmlite import ir
 
-from . import Value, Type
+from . import Node
 
 
-class Literal(Value):
-    def __init__(self, type_: Type, value: ir.Value):
-        super().__init__(type_)
+class Literal(Node):
+    def __init__(self, value: ir.Value):
         self.value = value
 
     def syntax(self):
-        return f'({self.value}):{self.type_.syntax()}'
+        return f'{self.value}'

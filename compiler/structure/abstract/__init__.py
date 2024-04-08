@@ -5,7 +5,6 @@ from .variable import Variable, Declaration, Access
 from .operator import Operator
 from .literal import Literal
 
-from .memory import copy_type, ref_type, eval_type, MemoryComposition
-from .primitives import primitive_type_type, unsigned_int_type, double_type
-from .array import array_type, ArrayComposition
-from .function import function_type, FunctionComposition
+from .memory import Memory, MemoryComposition
+from .array import ArrayComposition
+from .function import FunctionComposition
