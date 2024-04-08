@@ -45,7 +45,7 @@ code_3 = """
 ^Int a = 13
 ^Int b = a
 &Int c = b
-^Int b = 4
+&Int d = 4
 """
 
 
