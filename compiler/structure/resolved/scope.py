@@ -16,6 +16,16 @@ class VariableMissingError(CompilationError):
 class Scoped(metaclass=ABCMeta):
     """Represents an object adhering to a scope."""
 
+    def __init__(self, name_hint=''):
+        self.name_hint = name_hint
+
+    def get_name(self):
+        """Returns a user-friendly variant of the name hint."""
+        if self.name_hint == '':
+            return '[unnamed]'
+
+        return f'"{self.name_hint}"'
+
 
 class Scope:
     """Responsible for storing variables in a stack-like scope structure."""

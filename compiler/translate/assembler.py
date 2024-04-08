@@ -36,7 +36,7 @@ class FunctionAssembler(resolved.Scope):
         self.function = function
 
     def translate(self, source: abstract.Node):
-        block = self.function.append_basic_block()
+        block = self.function.append_basic_block('entry')
         assembler = BlockAssembler(ir.IRBuilder(block), self)
         assembler.translate(source)
 

@@ -13,8 +13,8 @@ class Variable(Scoped, Value, metaclass=ABCMeta):
     """Represents a value holding object."""
 
     def __init__(self, type_: Type, name_hint=''):
+        super().__init__(name_hint)
         self.type_ = type_
-        self.name_hint = name_hint
 
     @abstractmethod
     def declare(self, builder: ir.IRBuilder) -> None:
@@ -37,13 +37,13 @@ class EvalVariable(Variable):
 
     def load(self, builder):
         if self.value is None:
-            raise VariableOperationError(f'Usage of uninitialized eval variable {self.name_hint}.')
+            raise VariableOperationError(f'Usage of uninitialized eval variable {self.get_name()}.')
 
         return self.value
 
     def store(self, builder, value):
         if self.value is not None:
-            raise VariableOperationError(f"Eval variable {self.name_hint}={self.value} cannot be changed.")
+            raise VariableOperationError(f"Eval variable {self.get_name()}={self.value} cannot be changed.")
 
         self.value = value
 
@@ -61,10 +61,27 @@ class CopyVariable(Variable):
 
     def load(self, builder):
         if self._has_value is False:
-            raise VariableOperationError(f"Usage of uninitialized copy variable {self.name_hint}.")
+            raise VariableOperationError(f"Usage of uninitialized copy variable {self.get_name()}.")
 
         return builder.load(self._ptr)
 
     def store(self, builder, value):
         builder.store(value, self._ptr)
         self._has_value = True
+
+
+class WeakRefVariable(Variable):
+    """Represents a non-owning reference to another variable."""
+
+    def __init__(self, type_: Type, ptr: ir.NamedValue, name_hint=''):
+        super().__init__(type_, name_hint)
+        self._ptr = ptr
+
+    def declare(self, builder):
+        raise VariableOperationError(f"Weak ref variable {self.name_hint} cannot be declared.")
+
+    def load(self, builder):
+        return builder.load(self._ptr)
+
+    def store(self, builder, value):
+        builder.store(value, self._ptr)
