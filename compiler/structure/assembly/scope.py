@@ -1,7 +1,16 @@
 from __future__ import annotations
 from abc import ABCMeta
 
-from llvmlite import ir
+
+from . import CompilationError
+
+
+class VariableAlreadyExistsError(CompilationError):
+    """Raised when trying to declare a variable with an existing name."""
+
+
+class VariableMissingError(CompilationError):
+    """Raised when trying to access a non-existent variable."""
 
 
 class Scoped(metaclass=ABCMeta):
@@ -17,7 +26,7 @@ class Scope:
 
     def register(self, name: str, value: Scoped) -> None:
         if name in self._values:
-            raise KeyError(f"Variable '{name}' already exists.")
+            raise VariableAlreadyExistsError(f"Variable '{name}' already exists.")
 
         self._values[name] = value
 
@@ -26,6 +35,6 @@ class Scope:
             return self._values[name]
 
         if self._parent is None:
-            raise KeyError(f"Variable '{name}' does not exist.")
+            raise VariableMissingError(f"Variable '{name}' does not exist.")
 
         return self._parent.get(name)

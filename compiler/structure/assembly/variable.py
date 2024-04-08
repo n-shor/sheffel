@@ -2,7 +2,11 @@ from abc import ABCMeta, abstractmethod
 
 from llvmlite import ir
 
-from . import Scoped, Type, Value
+from . import CompilationError, Scoped, Type, Value
+
+
+class VariableOperationError(CompilationError):
+    """An unsupported operation on a variable."""
 
 
 class Variable(Scoped, Value, metaclass=ABCMeta):
@@ -33,13 +37,13 @@ class EvalVariable(Variable):
 
     def load(self, builder):
         if self.value is None:
-            raise ValueError(f'Usage of uninitialized eval variable {self.name_hint}.')
+            raise VariableOperationError(f'Usage of uninitialized eval variable {self.name_hint}.')
 
         return self.value
 
     def store(self, builder, value):
         if self.value is not None:
-            raise TypeError(f"Eval variable {self.name_hint} with value='{self.value}' does not support modifications.")
+            raise VariableOperationError(f"Eval variable {self.name_hint}={self.value} cannot be changed.")
 
         self.value = value
 
@@ -57,7 +61,7 @@ class CopyVariable(Variable):
 
     def load(self, builder):
         if self._has_value is False:
-            raise ValueError(f"Usage of uninitialized copy variable {self.name_hint}.")
+            raise VariableOperationError(f"Usage of uninitialized copy variable {self.name_hint}.")
 
         return builder.load(self._ptr)
 

@@ -55,9 +55,8 @@ class BlockAssembler(assembly.Scope):
                 for node in nodes:
                     try:
                         assembler.translate(node)
-                    except Exception:
-                        print(node.syntax(), ' <--- Here')
-                        raise
+                    except assembly.CompilationError:
+                        raise assembly.CompilerError(f'{node.syntax()} <---- Here')
 
             case abstract.Literal(value=value):
                 return assembly.LiteralValue(value)
@@ -67,7 +66,7 @@ class BlockAssembler(assembly.Scope):
                 resolved_type = self.translate(type_)
 
                 if not isinstance(resolved_type, assembly.Type):
-                    raise TypeError(f"Cannot declare a variable with {type_.syntax()} translated to {resolved_type}.")
+                    raise assembly.CompilationError(f"Cannot declare a variable with {type_.syntax()} translated to {resolved_type}.")
 
                 variable = {
                     abstract.Memory.EVAL: assembly.EvalVariable,
@@ -81,7 +80,7 @@ class BlockAssembler(assembly.Scope):
 
             case abstract.Declaration(type_=type_):
                 if not isinstance(type_, abstract.MemoryComposition):
-                    raise TypeError(f"Cannot declare a variable with the non-memory type {type_.syntax()}.")
+                    raise assembly.CompilationError(f"Cannot declare a variable with the non-memory type {type_.syntax()}.")
 
             case abstract.Variable(name=name):
                 return self.get(name)
@@ -91,10 +90,10 @@ class BlockAssembler(assembly.Scope):
                 value = self.translate(right)
 
                 if not isinstance(variable, assembly.Variable):
-                    raise TypeError(f"Cannot set to the non-variable {variable}.")
+                    raise assembly.CompilationError(f"Cannot set to the non-variable {variable}.")
 
                 if not isinstance(value, assembly.Value):
-                    raise TypeError(f"Cannot set from the non-value {value}.")
+                    raise assembly.CompilationError(f"Cannot set from the non-value {value}.")
 
                 variable.store(self.builder, value.load(self.builder))
 
