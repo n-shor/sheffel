@@ -2,53 +2,65 @@ from abc import ABCMeta, abstractmethod
 
 from llvmlite import ir
 
-from . import Scoped, Type
+from . import Scoped, Type, Value
 
 
-class Variable(Scoped, metaclass=ABCMeta):
+class Variable(Scoped, Value, metaclass=ABCMeta):
     """Represents a value holding object."""
+
+    def __init__(self, type_: Type, name_hint=''):
+        self.type_ = type_
+        self.name_hint = name_hint
 
     @abstractmethod
     def declare(self, builder: ir.IRBuilder) -> None:
         """Adds ir code which declares the variable."""
 
     @abstractmethod
-    def load(self, builder: ir.IRBuilder) -> ir.Value:
-        """Adds ir code which loads data from the variable."""
-
-    @abstractmethod
     def store(self, builder: ir.IRBuilder, value: ir.Value) -> None:
         """Adds ir code which stores data to the variable."""
 
 
-class Evaluated(Variable):
+class EvalVariable(Variable):
     """Represents an eval variable; i.e. a compile time constant."""
 
-    def __init__(self, value: ir.Value):
-        self.value = value
+    def __init__(self, type_: Type, name_hint=''):
+        super().__init__(type_, name_hint)
+        self.value: ir.Value | None = None
 
     def declare(self, builder):
         pass
 
     def load(self, builder):
+        if self.value is None:
+            raise ValueError(f'Usage of uninitialized eval variable {self.name_hint}.')
+
         return self.value
 
     def store(self, builder, value):
-        raise TypeError(f"Evaluated variable with value='{self.value}' does not support modifications.")
+        if self.value is not None:
+            raise TypeError(f"Eval variable {self.name_hint} with value='{self.value}' does not support modifications.")
+
+        self.value = value
 
 
 class CopyVariable(Variable):
     """Represents a variable kept on the stack, which is always copied between uses."""
 
-    def __init__(self, type_: Type):
-        self.type_ = type_
+    def __init__(self, type_: Type, name_hint=''):
+        super().__init__(type_, name_hint)
         self._ptr: ir.NamedValue = None
+        self._has_value = False
 
     def declare(self, builder):
-        self._ptr = builder.alloca(self.type_.ir_type)
+        self._ptr = builder.alloca(self.type_.ir_type, name=self.name_hint)
 
     def load(self, builder):
+        if self._has_value is False:
+            raise ValueError(f"Usage of uninitialized copy variable {self.name_hint}.")
+
         return builder.load(self._ptr)
 
     def store(self, builder, value):
         builder.store(value, self._ptr)
+        self._has_value = True

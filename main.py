@@ -41,17 +41,24 @@ code_2 = """
 ^Double d = eval b + c
 """
 
+code_3 = """
+^Int a = 13
+^Int b = a
+&Int c = b
+^Int b = 4
+"""
+
 
 def compile(source):
     prog = Parser().translate(source)
-    # prog = ModuleAssembler().translate(prog)
+    prog = ModuleAssembler().translate(prog)
     return prog
 
 
 def main():
-    grammar.utils.regenerate()
+    # grammar.utils.regenerate()
 
-    print(compile(code_2).syntax())
+    print(compile(code_3))
 
 
 if __name__ == "__main__":

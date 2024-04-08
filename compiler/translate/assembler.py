@@ -9,7 +9,7 @@ from ..structure import assembly
 class ModuleAssembler(assembly.Scope):
     """Translates abstract node representation into a llvm ir module."""
     def __init__(self):
-        super().__init__(None)  # no parent
+        super().__init__(self._get_predefined_scope())
         self.module = ir.Module()
 
     def translate(self, main: abstract.Node) -> ir.Module:
@@ -18,6 +18,14 @@ class ModuleAssembler(assembly.Scope):
         assembler = FunctionAssembler(main_function, self)
         assembler.translate(main)
         return self.module
+
+    @staticmethod
+    def _get_predefined_scope():
+        scope = assembly.Scope(None)
+        scope.register("Type", assembly.Type.primitive(ir.VoidType(), {}))
+        scope.register("Int", assembly.Type.primitive(ir.IntType(32), {}))
+        scope.register("Double", assembly.Type.primitive(ir.DoubleType(), {}))
+        return scope
 
 
 class FunctionAssembler(assembly.Scope):
@@ -41,7 +49,57 @@ class BlockAssembler(assembly.Scope):
         self.builder = builder
 
     def translate(self, source: abstract.Node):
-        pass
+        match source:
+            case abstract.Block(nodes=nodes):
+                assembler = BlockAssembler(self.builder, self)
+                for node in nodes:
+                    try:
+                        assembler.translate(node)
+                    except Exception:
+                        print(node.syntax(), ' <--- Here')
+                        raise
+
+            case abstract.Literal(value=value):
+                return assembly.LiteralValue(value)
+
+            case abstract.Declaration(type_=abstract.MemoryComposition(type_=type_, memory=memory), name=name):
+
+                resolved_type = self.translate(type_)
+
+                if not isinstance(resolved_type, assembly.Type):
+                    raise TypeError(f"Cannot declare a variable with {type_.syntax()} translated to {resolved_type}.")
+
+                variable = {
+                    abstract.Memory.EVAL: assembly.EvalVariable,
+                    abstract.Memory.COPY: assembly.CopyVariable,
+                    abstract.Memory.REF: NotImplemented
+                }[memory](resolved_type, name)
+
+                variable.declare(self.builder)
+                self.register(name, variable)
+                return variable
+
+            case abstract.Declaration(type_=type_):
+                if not isinstance(type_, abstract.MemoryComposition):
+                    raise TypeError(f"Cannot declare a variable with the non-memory type {type_.syntax()}.")
+
+            case abstract.Variable(name=name):
+                return self.get(name)
+
+            case abstract.Operator(operation='=', operands=(left, right)):
+                variable = self.translate(left)
+                value = self.translate(right)
+
+                if not isinstance(variable, assembly.Variable):
+                    raise TypeError(f"Cannot set to the non-variable {variable}.")
+
+                if not isinstance(value, assembly.Value):
+                    raise TypeError(f"Cannot set from the non-value {value}.")
+
+                variable.store(self.builder, value.load(self.builder))
+
+            case abstract.Node():
+                raise NotImplementedError()
 
 
 
