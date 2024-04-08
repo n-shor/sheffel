@@ -1,6 +1,11 @@
 from __future__ import annotations
+from abc import ABCMeta
 
-from . import Variable, Type
+from llvmlite import ir
+
+
+class Scoped(metaclass=ABCMeta):
+    """Represents an object adhering to a scope."""
 
 
 class Scope:
@@ -10,13 +15,13 @@ class Scope:
         self._parent = parent
         self._values = {}
 
-    def register(self, name: str, value: Variable | Type) -> None:
+    def register(self, name: str, value: Scoped) -> None:
         if name in self._values:
             raise KeyError(f"Variable '{name}' already exists.")
 
         self._values[name] = value
 
-    def get(self, name: str) -> Variable | Type:
+    def get(self, name: str) -> Scoped:
         if name in self._values:
             return self._values[name]
 
