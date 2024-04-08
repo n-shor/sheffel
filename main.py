@@ -1,19 +1,8 @@
 from compiler.structure import grammar, abstract
-from compiler.translate import Parser, Resolver
+from compiler.translate import Parser, ModuleAssembler
 
-# Solution:
-# COPY = &, REFERENCE = *, EVALUATED = ^
-# and are immediately "translated" into:
-#   &t -> Copy{t}
-#   *t -> Ref{t}
-#   ^t -> Eval{t}
-# which effectively makes them syntax sugar
-
-# the associated keywords are "translated" as follows:
-#   ref x -> x
-#   copy x -> x.value
-#   eval x -> [execution]
-# but are still kept as op keywords
+# TODO: register args | general: type constraints, and how to pass types to functions?
+# NOTE: currently only eval-variables are scoped into a function.
 
 code_1 = """
 ^Type Point = Type
@@ -55,14 +44,14 @@ code_2 = """
 
 def compile(source):
     abstract = Parser().translate(source)
-    resolved = Resolver().translate(abstract)
-    return resolved
+    llvm_ir = ModuleAssembler().translate(abstract)
+    return llvm_ir
 
 
 def main():
     grammar.utils.regenerate()
 
-    print(compile(code_2).syntax())
+    print(compile(code_2))
 
 
 if __name__ == "__main__":
