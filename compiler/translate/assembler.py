@@ -103,7 +103,15 @@ class BlockAssembler(resolved.Scope):
                     case '.', [resolved.Value(eval_fields=eval_fields), resolved.LiteralValue(type_=resolved.string_type, py_value=field_name)]:
                         return eval_fields.get(field_name)
 
+                match_errors = []
 
+                for operand in translated_operands:
+                    try:
+                        return operand.type_.operator(self.builder, operation, translated_operands)
+                    except resolved.UnresolvedOperatorError as e:
+                        match_errors.append(e)
+
+                raise resolved.UnresolvedOperatorError(f"No operand could provide the operation.", *match_errors)
 
             case abstract.Node():
                 raise NotImplementedError()
