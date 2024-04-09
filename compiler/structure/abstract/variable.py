@@ -16,12 +16,3 @@ class Declaration(Variable):
 
     def syntax(self):
         return f'{super().syntax()}:{self.type_.syntax()}'
-
-
-class Access(Variable):
-    def __init__(self, owner: Node, name: str):
-        super().__init__(name)
-        self.owner = owner
-
-    def syntax(self):
-        return f'{self.owner.syntax()}->{super().syntax()}'

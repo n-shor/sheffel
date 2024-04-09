@@ -1,6 +1,6 @@
 from .node import Node, Block
 
-from .variable import Variable, Declaration, Access
+from .variable import Variable, Declaration
 from .operator import Operator
 from .literal import Literal
 

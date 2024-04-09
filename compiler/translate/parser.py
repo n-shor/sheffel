@@ -56,12 +56,24 @@ class Parser(GrammarVisitor):
 
     _int_type = ir.IntType(32)
     _double_type = ir.DoubleType()
+    _bool_type = ir.IntType(1)
+    _char_type = ir.IntType(8)
+    _string_type = _char_type.as_pointer()
 
     def visitIntLiteralExpr(self, ctx):
         return abstract.Literal(self._int_type(int(ctx.getText())))
 
     def visitDoubleLiteralExpr(self, ctx):
         return abstract.Literal(self._double_type(float(ctx.getText())))
+
+    def visitBoolLiteralExpr(self, ctx):
+        abstract.Literal(self._bool_type(ctx.getText()))
+
+    def visitCharLiteralExpr(self, ctx):
+        return abstract.Literal(self._char_type(f"'{ctx.getText()}'"))
+
+    def visitStrLiteralExpr(self, ctx):
+        return abstract.Literal(self._char_type(f'"{ctx.getText()}"'))
 
     # expressions - compositions
 
@@ -85,13 +97,13 @@ class Parser(GrammarVisitor):
     def visitDeclarationExpr(self, ctx):
         return abstract.Declaration(self.visit(ctx.expr()), ctx.name.text)
 
-    def visitAccessExpr(self, ctx):
-        return abstract.Access(self.visit(ctx.expr()), ctx.name.text)
-
     # expressions - operators
 
     def _visit_operator(self, operation: str, *subexpressions: GrammarParser.ExprContext):
         return abstract.Operator(operation, tuple(self.visit(e) for e in subexpressions if e is not None))
+
+    def visitAccessExpr(self, ctx):
+        return self._visit_operator('.', *ctx.expr())
 
     def visitInitializeExpr(self, ctx):
         return self._visit_operator('{}', ctx.expr(), ctx.block())

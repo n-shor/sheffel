@@ -31,7 +31,8 @@ expr
 
 |   name=VAR                # VariableExpr
 |   expr name=VAR           # DeclarationExpr
-|   expr '.' name=VAR       # AccessExpr
+
+|   expr '.' expr                                           # AccessExpr
 
 |   expr NL? block                                          # InitializeExpr
 |   expr '(' ((expr ',')* expr)? ')'                        # CallExpr
