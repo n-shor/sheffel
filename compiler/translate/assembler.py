@@ -43,14 +43,6 @@ class BlockAssembler(resolved.Scope):
 
     def translate(self, source: abstract.Node):
         match source:
-            case abstract.Block(nodes=nodes):
-                assembler = BlockAssembler(self.builder, self)
-                for node in nodes:
-                    try:
-                        assembler.translate(node)
-                    except resolved.CompilationError:
-                        raise resolved.CompilerError(f'{node.syntax()} <---- Here')
-
             case abstract.Literal(py_value=py_value, ir_value=ir_value) as literal:
                 type_ = {
                     abstract.IntLiteral: resolved.int_type,
@@ -113,6 +105,14 @@ class BlockAssembler(resolved.Scope):
                         match_errors.append(e)
 
                 raise resolved.UnresolvedOperatorError(f"No operand could provide the operation.", *match_errors)
+
+            case abstract.Block(nodes=nodes):
+                assembler = BlockAssembler(self.builder, self)
+                for node in nodes:
+                    try:
+                        assembler.translate(node)
+                    except resolved.CompilationError:
+                        raise resolved.CompilerError(f'{node.syntax()} <---- Here')
 
             case abstract.Node():
                 raise NotImplementedError()

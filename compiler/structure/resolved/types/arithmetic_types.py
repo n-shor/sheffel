@@ -39,7 +39,7 @@ def _cast_to(builder: ir.IRBuilder, value: ir.NamedValue | ir.Constant, type_: T
     return _get_conversion_op(builder, value.type, type_.ir_type)(value, type_.ir_type)
 
 
-_type_hierarchy = ()
+_type_hierarchy = ()  # forward declaration
 
 
 def _type_precedence(type_: Type):
@@ -103,9 +103,6 @@ class _PrimitiveArithmeticType(Type):
 
 int_type = _PrimitiveArithmeticType(ir.IntType(32), 'Int')
 double_type = _PrimitiveArithmeticType(ir.DoubleType(), 'Double')
-bool_type = Type(ir.IntType(1), 'Bool')
-char_type = Type(ir.IntType(8), 'Char')
-string_type = Type(ir.IntType(8).as_pointer(), 'String')
 
 
 _type_hierarchy = double_type, int_type
