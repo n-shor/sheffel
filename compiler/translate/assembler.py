@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from llvmlite import ir
 
+import compiler.structure.resolved.values.literal_value
+import compiler.structure.resolved.variables.copy_variable
+import compiler.structure.resolved.variables.eval_variable
 from ..structure import abstract
 from ..structure import resolved
 
@@ -59,19 +62,19 @@ class BlockAssembler(resolved.Scope):
                         raise resolved.CompilerError(f'{node.syntax()} <---- Here')
 
             case abstract.IntLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, py_value, ir_value)
+                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
 
             case abstract.DoubleLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, py_value, ir_value)
+                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
 
             case abstract.BoolLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, py_value, ir_value)
+                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
 
             case abstract.CharLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, py_value, ir_value)
+                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
 
             case abstract.StrLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, py_value, ir_value)
+                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
 
             case abstract.Declaration(type_=abstract.MemoryComposition(type_=type_, memory=memory), name=name):
 
@@ -81,8 +84,8 @@ class BlockAssembler(resolved.Scope):
                     raise resolved.CompilationError(f"Cannot declare a variable with {type_.syntax()} translated to {resolved_type}.")
 
                 variable = {
-                    abstract.Memory.EVAL: resolved.EvalVariable,
-                    abstract.Memory.COPY: resolved.CopyVariable,
+                    abstract.Memory.EVAL: compiler.structure.resolved.variables.eval_variable.EvalVariable,
+                    abstract.Memory.COPY: compiler.structure.resolved.variables.copy_variable.CopyVariable,
                     abstract.Memory.REF: NotImplemented
                 }[memory](resolved_type, name)
 

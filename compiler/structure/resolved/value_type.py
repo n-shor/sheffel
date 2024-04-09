@@ -1,12 +1,22 @@
 from __future__ import annotations
+from abc import ABCMeta, abstractmethod
 
 from llvmlite import ir
-
-from . import CompilationError, Scoped
+from . import Scoped, CompilationError
 
 
 class UnresolvedOperatorError(CompilationError):
     """Raised when attempting to use an undefined operator of a type or one of mismatching types."""
+
+
+class Value(metaclass=ABCMeta):
+
+    def __init__(self, type_: Type):
+        self.type_ = type_
+
+    @abstractmethod
+    def load(self, builder: ir.IRBuilder) -> ir.Value:
+        """Adds ir code which loads data from this value."""
 
 
 class Type(Scoped):
@@ -18,6 +28,3 @@ class Type(Scoped):
         """Adds proper instructions to execute an operator of a value of this type."""
         raise UnresolvedOperatorError(f'Operation {repr(operation)} on {operands} '
                                       f'cannot be resolved by type {self.get_name()}.')
-
-
-from .value import Value

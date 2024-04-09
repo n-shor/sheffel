@@ -1,6 +1,8 @@
 from .compilation_error import CompilationError, CompilerError
 from .scope import Scoped, Scope
-from .type import Type, UnresolvedOperatorError
-from .value import Value, LiteralValue
-from .variable import Variable, EvalVariable, CopyVariable, WeakRefVariable
-from .struct_type import StructType
+from .value_type import UnresolvedOperatorError, Value, Type
+from .variable import VariableOperationError, Variable
+
+from .values import *
+from .types import *
+from .variables import *
