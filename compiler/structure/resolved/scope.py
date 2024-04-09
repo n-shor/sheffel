@@ -34,13 +34,15 @@ class Scope:
         self._parent = parent
         self._values = {}
 
-    def register(self, name: str, value: Scoped) -> None:
+    def register(self, name: str, value: Scoped):
+        """Registered a scoped value by name."""
         if name in self._values:
             raise VariableAlreadyExistsError(f"Variable '{name}' already exists.")
 
         self._values[name] = value
 
     def get(self, name: str) -> Scoped:
+        """Gets a scoped value by name."""
         if name in self._values:
             return self._values[name]
 

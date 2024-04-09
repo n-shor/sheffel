@@ -27,7 +27,7 @@ class StructType(Type):
         if not isinstance(field_name_value, LiteralValue):
             raise UnresolvedOperatorError(f'The right operand of operator {repr(operation)} must be a literal.')
 
-        field_name = field_name_value.value()
+        field_name = field_name_value.py_value
 
         if not isinstance(field_name, str):
             raise UnresolvedOperatorError(f'The right operand of operator {repr(operation)} must be a string.')

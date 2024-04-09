@@ -96,6 +96,15 @@ class BlockAssembler(resolved.Scope):
 
                 variable.store(self.builder, value.load(self.builder))
 
+            case abstract.Operator(operation=operation, operands=operands):
+                translated_operands = tuple(self.translate(operand) for operand in operands)
+
+                match operation, translated_operands:
+                    case '.', [resolved.Value(eval_fields=eval_fields), resolved.LiteralValue(type_=resolved.string_type, py_value=field_name)]:
+                        return eval_fields.get(field_name)
+
+
+
             case abstract.Node():
                 raise NotImplementedError()
 

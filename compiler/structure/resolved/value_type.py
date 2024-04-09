@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 
 from llvmlite import ir
-from . import Scoped, CompilationError
+from . import Scoped, Scope, CompilationError
 
 
 class UnresolvedOperatorError(CompilationError):
@@ -13,6 +13,7 @@ class Value(metaclass=ABCMeta):
 
     def __init__(self, type_: Type):
         self.type_ = type_
+        self.eval_fields = type_.make_eval_fields_scope()
 
     @abstractmethod
     def load(self, builder: ir.IRBuilder) -> ir.Constant | ir.NamedValue:
@@ -28,3 +29,7 @@ class Type(Scoped):
         """Adds proper instructions to execute an operator of a value of this type."""
         raise UnresolvedOperatorError(f'Operation {repr(operation)} on {operands} '
                                       f'cannot be resolved by type {self.get_name()}.')
+
+    def make_eval_fields_scope(self) -> Scope:
+        """Creates a base scope of unset eval fields."""
+        return Scope(None)
