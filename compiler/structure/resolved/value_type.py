@@ -15,7 +15,7 @@ class Value(metaclass=ABCMeta):
         self.type_ = type_
 
     @abstractmethod
-    def load(self, builder: ir.IRBuilder) -> ir.Value:
+    def load(self, builder: ir.IRBuilder) -> ir.Constant | ir.NamedValue:
         """Adds ir code which loads data from this value."""
 
 

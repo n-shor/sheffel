@@ -8,7 +8,7 @@ class EvalVariable(Variable):
 
     def __init__(self, type_: Type, name_hint=''):
         super().__init__(type_, name_hint)
-        self.value: ir.Value | None = None
+        self.value: ir.Constant | None = None
 
     def declare(self, builder):
         pass
@@ -25,5 +25,8 @@ class EvalVariable(Variable):
     def store(self, builder, value):
         if self.value is not None:
             raise VariableOperationError(f"Eval variable {self.get_name()}={self.value} cannot be changed.")
+
+        if not isinstance(value, ir.Constant):
+            raise VariableOperationError(f"Eval variable {self.get_name()} set from the non-constant {value}.")
 
         self.value = value

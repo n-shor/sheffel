@@ -21,7 +21,7 @@ class Variable(Value, Scoped, metaclass=ABCMeta):
         """Adds ir code which declares the variable."""
 
     @abstractmethod
-    def get_ptr(self, builder: ir.IRBuilder) -> ir.Value:
+    def get_ptr(self, builder: ir.IRBuilder) -> ir.NamedValue:
         """Returns a pointer to the variable's value"""
 
     @abstractmethod
