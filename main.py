@@ -37,17 +37,9 @@ p2.y = x1
 code_2 = """
 ^Int a = 13
 &Int b = 4
-&Double c = 5.6 + 7.8
-^Double d = eval b + c
+&Double c = 5.6 + a
+&Double d = b + c
 """
-
-code_3 = """
-^Int a = 13
-^Int b = a
-&Int c = b
-&Int d = 4
-"""
-
 
 def compile(source):
     prog = Parser().translate(source)
@@ -58,7 +50,7 @@ def compile(source):
 def main():
     # grammar.utils.regenerate()
 
-    print(compile(code_3))
+    print(compile(code_2))
 
 
 if __name__ == "__main__":

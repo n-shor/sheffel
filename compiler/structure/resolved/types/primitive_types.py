@@ -4,45 +4,50 @@ import functools as ft
 from llvmlite import ir
 
 from .. import UnresolvedOperatorError, Value, Type
+from ..values import ResultValue
 
 
-int_type, double_type, bool_type, char_type, string_type = (Type(ir.VoidType()), ) * 5
-# forward declaration
+def _get_conversion_op(builder: ir.IRBuilder,
+                       type_from: ir.Type, type_to: ir.Type) -> Callable[[ir.Value, ir.Type], ir.NamedValue]:
 
-
-def _cast_to(builder: ir.IRBuilder, value: ir.NamedValue | ir.Constant, type_: ir.Type) -> ir.NamedValue:
-    match value.type, type_:
-
+    match type_from, type_to:
         case type_from, type_to if type_from == type_to:
-            return value
+            return lambda value, type_: value
 
         case ir.IntType(), ir.FloatType() | ir.DoubleType():
-            return builder.uitofp(value, type_)
+            return builder.uitofp
 
         case ir.FloatType() | ir.DoubleType(), ir.IntType():
-            return builder.fptoui(value, type_)
+            return builder.fptoui
 
         case ir.IntType(size_from), ir.IntType(size_to) if size_from < size_to:
-            return builder.zext(value, type_)
+            return builder.zext
 
         case ir.IntType(size_from), ir.IntType(size_to) if size_from > size_to:
-            return builder.trunc(value, type_)
+            return builder.trunc
 
         case ir.FloatType(), ir.DoubleType():
-            return builder.fpext(value, type_)
+            return builder.fpext
 
         case ir.DoubleType(), ir.FloatType():
-            return builder.fptrunc(value, type_)
+            return builder.fptrunc
 
     raise NotImplementedError('Impossible case.')
 
 
-def _type_precedence(type_: Type, *, _type_hierarchy=(double_type, int_type)):
+def _cast_to(builder: ir.IRBuilder, value: ir.NamedValue | ir.Constant, type_: Type):
+    return _get_conversion_op(builder, value.type, type_.ir_type)(value, type_.ir_type)
+
+
+_type_hierarchy = ()
+
+
+def _type_precedence(type_: Type):
     return _type_hierarchy.index(type_)
 
 
 def _arithmetic_op(builder: ir.IRBuilder, operands: tuple[Value, ...], max_type: Type,
-                   int_op: Callable, float_op: Callable) -> ir.Instruction:
+                   int_op: Callable, float_op: Callable):
     """Casts the operands up to the type of the largest present operand, unless it is larger than `max_type`.
     Calls `int_op` if the largest type is an int type, else `float_op` is called.
     """
@@ -53,14 +58,17 @@ def _arithmetic_op(builder: ir.IRBuilder, operands: tuple[Value, ...], max_type:
 
     cast_operands = tuple(_cast_to(builder, operand.load(builder), largest_operand_type) for operand in operands)
 
-    match largest_operand_type:
+    match largest_operand_type.ir_type:
         case ir.IntType():
-            return int_op(*cast_operands)
+            result = int_op(*cast_operands)
 
         case ir.FloatType() | ir.DoubleType():
-            return float_op(*cast_operands)
+            result = float_op(*cast_operands)
 
-    raise NotImplementedError('Impossible case.')
+        case _:
+            raise NotImplementedError('Impossible case.')
+
+    return ResultValue(largest_operand_type, result)
 
 
 class _PrimitiveArithmeticType(Type):
@@ -98,3 +106,6 @@ double_type = _PrimitiveArithmeticType(ir.DoubleType(), 'Double')
 bool_type = Type(ir.IntType(1), 'Bool')
 char_type = Type(ir.IntType(8), 'Char')
 string_type = Type(ir.IntType(8).as_pointer(), 'String')
+
+
+_type_hierarchy = double_type, int_type
