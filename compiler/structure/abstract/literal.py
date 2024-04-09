@@ -47,7 +47,7 @@ class CharLiteral(Literal):
         super().__init__(text, self._type(f"'{text}'"))
 
 
-class StrLiteral(Literal):
+class StringLiteral(Literal):
     _type = ir.IntType(8).as_pointer()
 
     def __init__(self, text: str):

@@ -1,7 +1,6 @@
 import antlr4 as ant
 
-from llvmlite import ir
-
+import compiler.structure.abstract.compositions
 from ..structure.grammar import GrammarLexer, GrammarParser, GrammarVisitor
 from ..structure import abstract
 
@@ -67,21 +66,22 @@ class Parser(GrammarVisitor):
         return abstract.CharLiteral(ctx.getText())
 
     def visitStrLiteralExpr(self, ctx):
-        return abstract.StrLiteral(ctx.getText())
+        return abstract.StringLiteral(ctx.getText())
 
     # expressions - compositions
 
     def visitMemoryCompositionExpr(self, ctx):
-        return abstract.MemoryComposition(abstract.Memory(ctx.memory.text), self.visit(ctx.expr()))
+        return compiler.structure.abstract.compositions.MemoryComposition(
+            compiler.structure.abstract.compositions.Memory(ctx.memory.text), self.visit(ctx.expr()))
 
     def visitFunctionCompositionExpr(self, ctx):
         ret_type, *args = (self.visit(e) for e in ctx.expr())
         body = self.visit(ctx.block())
-        return abstract.FunctionComposition(ret_type, args, body)
+        return compiler.structure.abstract.compositions.FunctionComposition(ret_type, args, body)
 
     def visitArrayCompositionExpr(self, ctx):
         elem_type, *vals = (self.visit(e) for e in ctx.expr())
-        return abstract.ArrayComposition(elem_type, vals)
+        return compiler.structure.abstract.compositions.ArrayComposition(elem_type, vals)
 
     # expressions - variables
 

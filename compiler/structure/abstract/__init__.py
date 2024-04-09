@@ -2,8 +2,6 @@ from .node import Node, Block
 
 from .variable import Variable, Declaration
 from .operator import Operator
-from .literal import Literal, IntLiteral, DoubleLiteral, BoolLiteral, CharLiteral, StrLiteral
+from .literal import Literal, IntLiteral, DoubleLiteral, BoolLiteral, CharLiteral, StringLiteral
 
-from .memory import Memory, MemoryComposition
-from .array import ArrayComposition
-from .function import FunctionComposition
+from .compositions import ArrayComposition, FunctionComposition, MemoryComposition, Memory
