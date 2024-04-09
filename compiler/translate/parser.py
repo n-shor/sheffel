@@ -54,26 +54,20 @@ class Parser(GrammarVisitor):
 
     # expressions - literals
 
-    _int_type = ir.IntType(32)
-    _double_type = ir.DoubleType()
-    _bool_type = ir.IntType(1)
-    _char_type = ir.IntType(8)
-    _string_type = _char_type.as_pointer()
-
     def visitIntLiteralExpr(self, ctx):
-        return abstract.Literal(self._int_type(int(ctx.getText())))
+        return abstract.IntLiteral(ctx.getText())
 
     def visitDoubleLiteralExpr(self, ctx):
-        return abstract.Literal(self._double_type(float(ctx.getText())))
+        return abstract.DoubleLiteral(ctx.getText())
 
     def visitBoolLiteralExpr(self, ctx):
-        abstract.Literal(self._bool_type(ctx.getText()))
+        return abstract.BoolLiteral(ctx.getText())
 
     def visitCharLiteralExpr(self, ctx):
-        return abstract.Literal(self._char_type(f"'{ctx.getText()}'"))
+        return abstract.CharLiteral(ctx.getText())
 
     def visitStrLiteralExpr(self, ctx):
-        return abstract.Literal(self._char_type(f'"{ctx.getText()}"'))
+        return abstract.StrLiteral(ctx.getText())
 
     # expressions - compositions
 

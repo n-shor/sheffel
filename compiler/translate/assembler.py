@@ -58,8 +58,20 @@ class BlockAssembler(resolved.Scope):
                     except resolved.CompilationError:
                         raise resolved.CompilerError(f'{node.syntax()} <---- Here')
 
-            case abstract.Literal(value=value):
-                return resolved.LiteralValue(value)
+            case abstract.IntLiteral(py_value=py_value, ir_value=ir_value):
+                return resolved.LiteralValue(None, ir_value, py_value)
+
+            case abstract.DoubleLiteral(py_value=py_value, ir_value=ir_value):
+                return resolved.LiteralValue(None, ir_value, py_value)
+
+            case abstract.BoolLiteral(py_value=py_value, ir_value=ir_value):
+                return resolved.LiteralValue(None, ir_value, py_value)
+
+            case abstract.CharLiteral(py_value=py_value, ir_value=ir_value):
+                return resolved.LiteralValue(None, ir_value, py_value)
+
+            case abstract.StrLiteral(py_value=py_value, ir_value=ir_value):
+                return resolved.LiteralValue(None, ir_value, py_value)
 
             case abstract.Declaration(type_=abstract.MemoryComposition(type_=type_, memory=memory), name=name):
 

@@ -9,12 +9,12 @@ class VariableOperationError(CompilationError):
     """An unsupported operation on a variable."""
 
 
-class Variable(Scoped, Value, metaclass=ABCMeta):
+class Variable(Value, Scoped, metaclass=ABCMeta):
     """Represents a value holding object."""
 
     def __init__(self, type_: Type, name_hint=''):
-        super().__init__(name_hint)
-        self.type_ = type_
+        Value.__init__(self, type_)
+        Scoped.__init__(self, name_hint)
 
     @abstractmethod
     def declare(self, builder: ir.IRBuilder) -> None:
