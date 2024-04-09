@@ -21,6 +21,10 @@ class Variable(Value, Scoped, metaclass=ABCMeta):
         """Adds ir code which declares the variable."""
 
     @abstractmethod
+    def get_ptr(self, builder: ir.IRBuilder) -> ir.Value:
+        """Returns a pointer to the variable's value"""
+
+    @abstractmethod
     def store(self, builder: ir.IRBuilder, value: ir.Value) -> None:
         """Adds ir code which stores data to the variable."""
 
@@ -34,6 +38,9 @@ class EvalVariable(Variable):
 
     def declare(self, builder):
         pass
+
+    def get_ptr(self, builder):
+        raise VariableOperationError(f'Cannot get the pointer to an eval variable as it has no storage space.')
 
     def load(self, builder):
         if self.value is None:
@@ -59,6 +66,12 @@ class CopyVariable(Variable):
     def declare(self, builder):
         self._ptr = builder.alloca(self.type_.ir_type, name=self.name_hint)
 
+    def get_ptr(self, builder):
+        if self._ptr is None:
+            raise VariableOperationError(f"Attempted to get the pointer to the undeclared copy variable {self.get_name()}.")
+
+        return self._ptr
+
     def load(self, builder):
         if self._has_value is False:
             raise VariableOperationError(f"Usage of uninitialized copy variable {self.get_name()}.")
@@ -79,6 +92,9 @@ class WeakRefVariable(Variable):
 
     def declare(self, builder):
         raise VariableOperationError(f"Weak ref variable {self.name_hint} cannot be declared.")
+
+    def get_ptr(self, builder):
+        return self._ptr
 
     def load(self, builder):
         return builder.load(self._ptr)

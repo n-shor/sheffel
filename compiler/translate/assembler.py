@@ -22,9 +22,9 @@ class ModuleAssembler(resolved.Scope):
     @staticmethod
     def _get_predefined_scope():
         scope = resolved.Scope(None)
-        scope.register("Type", resolved.Type.primitive(ir.VoidType(), {}))
-        scope.register("Int", resolved.Type.primitive(ir.IntType(32), {}))
-        scope.register("Double", resolved.Type.primitive(ir.DoubleType(), {}))
+        scope.register("Type", resolved.Type(ir.VoidType(), 'Type'))
+        scope.register("Int", resolved.Type(ir.IntType(32), 'Int'))
+        scope.register("Double", resolved.Type(ir.DoubleType(), 'Double'))
         return scope
 
 
@@ -59,19 +59,19 @@ class BlockAssembler(resolved.Scope):
                         raise resolved.CompilerError(f'{node.syntax()} <---- Here')
 
             case abstract.IntLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, ir_value, py_value)
+                return resolved.LiteralValue(None, py_value, ir_value)
 
             case abstract.DoubleLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, ir_value, py_value)
+                return resolved.LiteralValue(None, py_value, ir_value)
 
             case abstract.BoolLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, ir_value, py_value)
+                return resolved.LiteralValue(None, py_value, ir_value)
 
             case abstract.CharLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, ir_value, py_value)
+                return resolved.LiteralValue(None, py_value, ir_value)
 
             case abstract.StrLiteral(py_value=py_value, ir_value=ir_value):
-                return resolved.LiteralValue(None, ir_value, py_value)
+                return resolved.LiteralValue(None, py_value, ir_value)
 
             case abstract.Declaration(type_=abstract.MemoryComposition(type_=type_, memory=memory), name=name):
 

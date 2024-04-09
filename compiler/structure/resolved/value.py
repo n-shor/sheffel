@@ -1,8 +1,7 @@
+from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 
 from llvmlite import ir
-
-from . import Type
 
 
 class Value(metaclass=ABCMeta):
@@ -27,3 +26,6 @@ class LiteralValue(Value):
 
     def load(self, builder):
         return self._ir_value
+
+
+from .type import Type
