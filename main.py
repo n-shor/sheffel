@@ -36,12 +36,13 @@ p2.y = x1
 
 code_2 = """
 ^Int a = 13
-&Int b = 4
+&Int b = 4 + a + 43
 &Double c = 5.6 + a
 &Double d = b + c
 """
 
-def compile(source):
+
+def compile_(source):
     prog = Parser().translate(source)
     prog = ModuleAssembler().translate(prog)
     return prog
@@ -50,7 +51,7 @@ def compile(source):
 def main():
     # grammar.utils.regenerate()
 
-    print(compile(code_2))
+    print(compile_(code_2))
 
 
 if __name__ == "__main__":
