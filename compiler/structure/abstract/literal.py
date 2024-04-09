@@ -11,7 +11,7 @@ class Literal(Node):
         self.ir_value = ir_value
 
     def syntax(self):
-        return self.py_value
+        return repr(self.py_value)
 
 
 class IntLiteral(Literal):
