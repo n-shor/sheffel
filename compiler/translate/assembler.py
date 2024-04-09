@@ -2,9 +2,6 @@ from __future__ import annotations
 
 from llvmlite import ir
 
-import compiler.structure.resolved.values.literal_value
-import compiler.structure.resolved.variables.copy_variable
-import compiler.structure.resolved.variables.eval_variable
 from ..structure import abstract
 from ..structure import resolved
 
@@ -12,7 +9,7 @@ from ..structure import resolved
 class ModuleAssembler(resolved.Scope):
     """Translates abstract node representation into a llvm ir module."""
     def __init__(self):
-        super().__init__(self._get_predefined_scope())
+        super().__init__(resolved.make_builtins_scope())
         self.module = ir.Module()
 
     def translate(self, main: abstract.Node) -> ir.Module:
@@ -21,14 +18,6 @@ class ModuleAssembler(resolved.Scope):
         assembler = FunctionAssembler(main_function, self)
         assembler.translate(main)
         return self.module
-
-    @staticmethod
-    def _get_predefined_scope():
-        scope = resolved.Scope(None)
-        scope.register("Type", resolved.Type(ir.VoidType(), 'Type'))
-        scope.register("Int", resolved.Type(ir.IntType(32), 'Int'))
-        scope.register("Double", resolved.Type(ir.DoubleType(), 'Double'))
-        return scope
 
 
 class FunctionAssembler(resolved.Scope):
@@ -61,20 +50,15 @@ class BlockAssembler(resolved.Scope):
                     except resolved.CompilationError:
                         raise resolved.CompilerError(f'{node.syntax()} <---- Here')
 
-            case abstract.IntLiteral(py_value=py_value, ir_value=ir_value):
-                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
-
-            case abstract.DoubleLiteral(py_value=py_value, ir_value=ir_value):
-                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
-
-            case abstract.BoolLiteral(py_value=py_value, ir_value=ir_value):
-                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
-
-            case abstract.CharLiteral(py_value=py_value, ir_value=ir_value):
-                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
-
-            case abstract.StrLiteral(py_value=py_value, ir_value=ir_value):
-                return compiler.structure.resolved.values.literal_value.LiteralValue(None, py_value, ir_value)
+            case abstract.Literal(py_value=py_value, ir_value=ir_value) as literal:
+                type_ = {
+                    abstract.IntLiteral: resolved.int_type,
+                    abstract.DoubleLiteral: resolved.double_type,
+                    abstract.BoolLiteral: resolved.bool_type,
+                    abstract.CharLiteral: resolved.char_type,
+                    abstract.StrLiteral: resolved.string_type,
+                }[type(literal)]
+                return resolved.LiteralValue(type_, py_value, ir_value)
 
             case abstract.Declaration(type_=abstract.MemoryComposition(type_=type_, memory=memory), name=name):
 
@@ -84,8 +68,8 @@ class BlockAssembler(resolved.Scope):
                     raise resolved.CompilationError(f"Cannot declare a variable with {type_.syntax()} translated to {resolved_type}.")
 
                 variable = {
-                    abstract.Memory.EVAL: compiler.structure.resolved.variables.eval_variable.EvalVariable,
-                    abstract.Memory.COPY: compiler.structure.resolved.variables.copy_variable.CopyVariable,
+                    abstract.Memory.EVAL: resolved.EvalVariable,
+                    abstract.Memory.COPY: resolved.CopyVariable,
                     abstract.Memory.REF: NotImplemented
                 }[memory](resolved_type, name)
 

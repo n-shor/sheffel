@@ -3,7 +3,8 @@ from __future__ import annotations
 from llvmlite import ir
 
 from ...ir_utils import SIZE_TYPE, INDEX_TYPE
-from .. import Type, UnresolvedOperatorError, Variable, LiteralValue
+from .. import UnresolvedOperatorError, Type, Variable
+from ..values import LiteralValue
 from ..variables import WeakRefVariable
 
 
