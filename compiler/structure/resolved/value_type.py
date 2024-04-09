@@ -20,9 +20,10 @@ class Value(metaclass=ABCMeta):
         """Adds ir code which loads data from this value."""
 
 
-class Type(Scoped):
-    def __init__(self, ir_type: ir.Type, name_hint=''):
-        super().__init__(name_hint)
+class Type(Value, Scoped):
+    def __init__(self, meta: Type, ir_type: ir.Type, name_hint=''):
+        Value.__init__(self, meta)
+        Scoped.__init__(self, name_hint)
         self.ir_type = ir_type
 
     def operator(self, builder: ir.IRBuilder, operation: str, operands: tuple[Value, ...]) -> Value:
@@ -33,3 +34,6 @@ class Type(Scoped):
     def make_eval_fields_scope(self) -> Scope:
         """Creates a base scope of unset eval fields."""
         return Scope(None)
+
+    def load(self, builder):
+        return self

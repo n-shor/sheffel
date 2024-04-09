@@ -6,6 +6,7 @@ from ...ir_utils import SIZE_TYPE, INDEX_TYPE
 from .. import UnresolvedOperatorError, Type, Variable
 from ..values import LiteralValue
 from ..variables import WeakRefVariable
+from . import type_type
 
 
 class StructType(Type):
@@ -13,7 +14,7 @@ class StructType(Type):
 
     def __init__(self, fields: tuple[tuple[str, Type], ...]):
         self.fields = {name: (type_, index) for index, (name, type_) in enumerate(fields)}
-        super().__init__(ir.LiteralStructType(tuple(type_.ir_type for name, type_ in fields)))
+        super().__init__(type_type, ir.LiteralStructType(tuple(type_.ir_type for name, type_ in fields)))
 
     def operator(self, builder, operation, operands):
         if operation != '.':

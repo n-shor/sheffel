@@ -26,7 +26,7 @@ class EvalVariable(Variable):
         if self._value is not None:
             raise VariableOperationError(f"Eval variable {self.get_name()}={self._value} cannot be changed.")
 
-        if not isinstance(value, ir.Constant):
+        if not isinstance(value, ir.Constant | Type):
             raise VariableOperationError(f"Eval variable {self.get_name()} set from the non-constant {value}.")
 
         self._value = value

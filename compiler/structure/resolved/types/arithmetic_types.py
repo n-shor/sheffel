@@ -5,6 +5,7 @@ from llvmlite import ir
 
 from .. import UnresolvedOperatorError, Value, Type
 from ..values import ResultValue
+from . import type_type
 
 
 def _get_conversion_op(builder: ir.IRBuilder,
@@ -73,7 +74,7 @@ def _arithmetic_op(builder: ir.IRBuilder, operands: tuple[Value, ...], max_type:
 
 class _PrimitiveArithmeticType(Type):
     def __init__(self, ir_type: ir.Type, name: str):
-        super().__init__(ir_type, name)
+        super().__init__(type_type, ir_type, name)
 
     def operator(self, builder, operation, operands):
         try:

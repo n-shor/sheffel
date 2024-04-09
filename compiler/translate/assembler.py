@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from llvmlite import ir
 
-import compiler.structure.abstract.compositions
 from ..structure import abstract
 from ..structure import resolved
 
@@ -53,17 +52,17 @@ class BlockAssembler(resolved.Scope):
                 }[type(literal)]
                 return resolved.LiteralValue(type_, py_value, ir_value)
 
-            case abstract.Declaration(type_=compiler.structure.abstract.compositions.MemoryComposition(type_=type_, memory=memory), name=name):
+            case abstract.Declaration(type_=abstract.MemoryComposition(type_=type_, memory=memory), name=name):
 
-                resolved_type = self.translate(type_)
+                resolved_type = self.translate(type_).load(self.builder)
 
                 if not isinstance(resolved_type, resolved.Type):
                     raise resolved.CompilationError(f"Cannot declare a variable with {type_.syntax()} translated to {resolved_type}.")
 
                 variable = {
-                    compiler.structure.abstract.compositions.Memory.EVAL: resolved.EvalVariable,
-                    compiler.structure.abstract.compositions.Memory.COPY: resolved.CopyVariable,
-                    compiler.structure.abstract.compositions.Memory.REF: NotImplemented
+                    abstract.Memory.EVAL: resolved.EvalVariable,
+                    abstract.Memory.COPY: resolved.CopyVariable,
+                    abstract.Memory.REF: NotImplemented
                 }[memory](resolved_type, name)
 
                 variable.declare(self.builder)
@@ -71,7 +70,7 @@ class BlockAssembler(resolved.Scope):
                 return variable
 
             case abstract.Declaration(type_=type_):
-                if not isinstance(type_, compiler.structure.abstract.compositions.MemoryComposition):
+                if not isinstance(type_, abstract.MemoryComposition):
                     raise resolved.CompilationError(f"Cannot declare a variable with the non-memory type {type_.syntax()}.")
 
             case abstract.Variable(name=name):

@@ -35,8 +35,9 @@ p2.y = x1
 """
 
 code_2 = """
-^Int a = 13
-&Int b = 4 + a + 43
+^Type T = Int
+^T a = 13
+&T b = 4 + a + 43
 &Double c = 5.6 + a
 &Double d = b + c
 """
