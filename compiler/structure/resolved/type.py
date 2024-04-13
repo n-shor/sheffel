@@ -11,6 +11,8 @@ class UnresolvedOperatorError(CompilationError):
 
 
 class Type(EvalValue, Scoped):
+    """A type which can be initialized to create values."""
+
     def __init__(self, meta: Type, ir_type: ir.Type, name_hint=''):
         EvalValue.__init__(self, meta, self, None)
         Scoped.__init__(self, name_hint)

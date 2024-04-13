@@ -4,7 +4,7 @@ import functools as ft
 from llvmlite import ir
 
 from .. import UnresolvedOperatorError, Value, Type
-from ..values import ResultValue
+from ..values import ConstValue
 from . import type_type
 
 
@@ -69,7 +69,7 @@ def _arithmetic_op(builder: ir.IRBuilder, operands: tuple[Value, ...], max_type:
         case _:
             raise NotImplementedError('Impossible case.')
 
-    return ResultValue(largest_operand_type, result)
+    return ConstValue(largest_operand_type, result)
 
 
 class _PrimitiveArithmeticType(Type):
