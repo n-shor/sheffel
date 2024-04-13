@@ -1,6 +1,6 @@
 from llvmlite import ir
 
-from .. import Value, Type
+from .. import ValueOperationError, Value, Type
 
 
 class WeakRefValue(Value):
@@ -9,9 +9,17 @@ class WeakRefValue(Value):
     def __init__(self, type_: Type, ptr: ir.NamedValue):
         super().__init__(type_)
         self._ptr = ptr
-
-    def load(self, builder):
-        return builder.load(self._ptr)
+        self._has_value = False
 
     def ptr(self, builder):
         return self._ptr
+
+    def load(self, builder):
+        if not self._has_value:
+            raise ValueOperationError("Cannot load a weak reference with no value.")
+
+        return builder.load(self._ptr)
+
+    def copy_from(self, builder: ir.IRBuilder, other: Value):
+        builder.store(other.load(builder), self._ptr)
+        self._has_value = True

@@ -1,6 +1,7 @@
 from .compilation_error import CompilationError, CompilerError
 from .scope import Scoped, Scope
-from .value_type import UnresolvedOperatorError, Value, Type
+from .value import ValueOperationError, Value
+from .type import UnresolvedOperatorError, Type
 from .variable import VariableOperationError, Variable
 
 from .values import *

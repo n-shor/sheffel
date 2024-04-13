@@ -3,6 +3,12 @@ from abc import ABCMeta, abstractmethod
 
 from llvmlite import ir
 
+from . import CompilationError
+
+
+class ValueOperationError(CompilationError):
+    """An unsupported operation on a value."""
+
 
 class Value(metaclass=ABCMeta):
 
@@ -10,9 +16,9 @@ class Value(metaclass=ABCMeta):
         self.type_ = type_
 
     @abstractmethod
-    def load(self, builder: ir.IRBuilder) -> ir.Constant | ir.NamedValue:
-        """Adds ir code which loads data from this value."""
-
-    @abstractmethod
     def ptr(self, builder: ir.IRBuilder) -> ir.NamedValue:
         """Returns a pointer to the value."""
+
+    @abstractmethod
+    def load(self, builder: ir.IRBuilder) -> ir.Constant | ir.NamedValue:
+        """Adds ir code which loads data from this value."""

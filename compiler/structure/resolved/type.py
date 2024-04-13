@@ -1,28 +1,18 @@
 from __future__ import annotations
-from abc import ABCMeta, abstractmethod
 
 from llvmlite import ir
-from . import Scoped, Scope, CompilationError
+
+from . import CompilationError, Scoped, Value
+from .values import EvalValue
 
 
 class UnresolvedOperatorError(CompilationError):
     """Raised when attempting to use an undefined operator of a type or one of mismatching types."""
 
 
-class Value(metaclass=ABCMeta):
-
-    def __init__(self, type_: Type):
-        self.type_ = type_
-        self.eval_fields = type_.make_eval_fields_scope()
-
-    @abstractmethod
-    def load(self, builder: ir.IRBuilder) -> ir.Constant | ir.NamedValue:
-        """Adds ir code which loads data from this value."""
-
-
-class Type(Value, Scoped):
+class Type(EvalValue, Scoped):
     def __init__(self, meta: Type, ir_type: ir.Type, name_hint=''):
-        Value.__init__(self, meta)
+        EvalValue.__init__(self, meta, self, None)
         Scoped.__init__(self, name_hint)
         self.ir_type = ir_type
 
@@ -30,10 +20,3 @@ class Type(Value, Scoped):
         """Adds proper instructions to execute an operator of a value of this type."""
         raise UnresolvedOperatorError(f'Operation {repr(operation)} on {operands} '
                                       f'cannot be resolved by type {self.get_name()}.')
-
-    def make_eval_fields_scope(self) -> Scope:
-        """Creates a base scope of unset eval fields."""
-        return Scope(None)
-
-    def load(self, builder):
-        return self

@@ -1,32 +1,26 @@
 from llvmlite import ir
 
 from .. import VariableOperationError, Variable, Type
+from ..values import EvalValue
 
 
-class EvalVariable(Variable):
+class EvalVariable(Variable, EvalValue):
     """Represents an eval variable; i.e. a compile time constant."""
 
     def __init__(self, type_: Type, name_hint=''):
-        super().__init__(type_, name_hint)
-        self._value: ir.Constant | None = None
+        Variable.__init__(self, type_, name_hint)
+        EvalValue.__init__(self, type_, None, None)
 
     def declare(self, builder):
         pass
 
-    def get_ptr(self, builder):
-        raise VariableOperationError(f'Cannot get the pointer to an eval variable as it has no storage space.')
+    def copy_from(self, builder, other):
+        if not isinstance(other, EvalValue):
+            raise VariableOperationError(f'Cannot set the eval variable {self.get_name()} from a non eval value.')
 
-    def load(self, builder):
-        if self._value is None:
-            raise VariableOperationError(f'Usage of uninitialized eval variable {self.get_name()}.')
+        if self.py_value is not None:
+            raise VariableOperationError(f'Cannot set the eval variable {self.get_name()}'
+                                         f'as it already contains a value.')
 
-        return self._value
-
-    def store(self, builder, value):
-        if self._value is not None:
-            raise VariableOperationError(f"Eval variable {self.get_name()}={self._value} cannot be changed.")
-
-        if not isinstance(value, ir.Constant | Type):
-            raise VariableOperationError(f"Eval variable {self.get_name()} set from the non-constant {value}.")
-
-        self._value = value
+        self._ir_value = other.load(builder)
+        self.py_value = other.py_value
