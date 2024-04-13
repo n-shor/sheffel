@@ -1,12 +1,12 @@
 from llvmlite import ir
 
-from .. import CompilationError, Value, Type
+from .. import CompilationError, Value
 
 
 class ConstValue(Value):
     """A value which can only be read."""
 
-    def __init__(self, type_: Type, value: ir.Value):
+    def __init__(self, type_: 'Type', value: ir.Value):
         super().__init__(type_)
         self._value = value
 

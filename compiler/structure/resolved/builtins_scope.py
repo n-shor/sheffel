@@ -16,7 +16,7 @@ def make_builtins_scope():
 
     for name, type_ in _types.items():
         type_var = EvalVariable(type_type, name)
-        type_var.store(None, type_)
+        type_var.copy_from(None, type_)
         scope.register(name, type_var)
 
     return scope

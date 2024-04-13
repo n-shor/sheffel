@@ -50,14 +50,20 @@ class BlockAssembler(resolved.Scope):
                     abstract.CharLiteral: resolved.char_type,
                     abstract.StringLiteral: resolved.string_type,
                 }[type(literal)]
-                return resolved.LiteralValue(type_, py_value, ir_value)
+                return resolved.EvalValue(type_, py_value, ir_value)
 
             case abstract.Declaration(type_=abstract.MemoryComposition(type_=type_, memory=memory), name=name):
 
-                resolved_type = self.translate(type_).load(self.builder)
+                translated = self.translate(type_)
+
+                if not isinstance(translated, resolved.EvalValue):
+                    raise resolved.CompilationError(f"Cannot declare a variable with the non-eval type {translated}.")
+
+                resolved_type = translated.py_value
 
                 if not isinstance(resolved_type, resolved.Type):
-                    raise resolved.CompilationError(f"Cannot declare a variable with {type_.syntax()} translated to {resolved_type}.")
+                    raise resolved.CompilationError(f"Cannot declare a variable with type {type_.syntax()}"
+                                                    f"translated to {resolved_type}.")
 
                 variable = {
                     abstract.Memory.EVAL: resolved.EvalVariable,
@@ -86,14 +92,10 @@ class BlockAssembler(resolved.Scope):
                 if not isinstance(value, resolved.Value):
                     raise resolved.CompilationError(f"Cannot set from the non-value {value}.")
 
-                variable.store(self.builder, value.load(self.builder))
+                variable.copy_from(self.builder, value)
 
             case abstract.Operator(operation=operation, operands=operands):
                 translated_operands = tuple(self.translate(operand) for operand in operands)
-
-                match operation, translated_operands:
-                    case '.', [resolved.Value(eval_fields=eval_fields), resolved.LiteralValue(type_=resolved.string_type, py_value=field_name)]:
-                        return eval_fields.get(field_name)
 
                 match_errors = []
 

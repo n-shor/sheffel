@@ -1,6 +1,6 @@
 from llvmlite import ir
 
-from .. import Variable, Type
+from .. import Variable, Type, Value
 from ..values import WeakRefValue
 
 
@@ -13,3 +13,6 @@ class CopyVariable(Variable, WeakRefValue):
 
     def declare(self, builder):
         self._ptr = builder.alloca(self.type_.ir_type, name=self.name_hint)
+
+    def copy_from(self, builder, other):
+        return WeakRefValue.copy_from(self, builder, other)

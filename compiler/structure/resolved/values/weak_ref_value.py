@@ -1,12 +1,12 @@
 from llvmlite import ir
 
-from .. import ValueOperationError, Value, Type
+from .. import ValueOperationError, Value
 
 
 class WeakRefValue(Value):
     """A weak reference to a value, which can be edited and read as long as the original value is still in scope."""
 
-    def __init__(self, type_: Type, ptr: ir.NamedValue):
+    def __init__(self, type_: 'Type', ptr: ir.NamedValue):
         super().__init__(type_)
         self._ptr = ptr
         self._has_value = False
